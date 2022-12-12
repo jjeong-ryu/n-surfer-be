@@ -1,12 +1,12 @@
 package com.notion.nsuffer.mypage.entity;
 
+import com.notion.nsuffer.common.config.Authority;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
 import java.util.Date;
 
 @Entity
@@ -23,5 +23,6 @@ public class User {
     @Temporal(value = TemporalType.DATE)
     private Date userBirthday;
 
+    private Authority authority;
 
 }
