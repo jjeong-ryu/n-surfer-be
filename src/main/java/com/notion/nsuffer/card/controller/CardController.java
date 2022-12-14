@@ -4,7 +4,9 @@ import com.notion.nsuffer.card.dto.GetCardDto;
 import com.notion.nsuffer.card.dto.GetCardListDto;
 import com.notion.nsuffer.card.service.CardService;
 import com.notion.nsuffer.common.ResponseDto;
+import com.notion.nsuffer.mypage.entity.User;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -22,7 +24,8 @@ public class CardController {
         return cardService.getCardList();
     }
     @GetMapping("/{cardId}")
-    public ResponseDto<GetCardDto.Response> getCard(@PathVariable Long cardId){
+    public ResponseDto<GetCardDto.Response> getCard(@PathVariable Long cardId,
+                                                    @AuthenticationPrincipal User user){
         return cardService.getCard(cardId);
     }
 
