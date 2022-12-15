@@ -21,8 +21,8 @@ public class User {
     private String name;
 
     @Temporal(value = TemporalType.DATE)
-    private Date userBirthday;
+    private Date birthday;
 
+    @Enumerated(value = EnumType.STRING)
     private Authority authority;
-
 }

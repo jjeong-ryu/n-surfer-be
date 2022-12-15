@@ -10,7 +10,8 @@ import org.springframework.stereotype.Service;
 public class NotionCardService {
     private final CardRepository cardRepository;
 
-    public ResponseDto<Object> syncWithNotionDB(){
+    public ResponseDto<Object> syncWithNotionDB(String notionAPIKey){
+        // 사용자
         return ResponseDto.builder().build();
     }
 }

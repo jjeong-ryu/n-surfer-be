@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 public class UserController {
     private final UserService userService;
 
+    @PostMapping()
     @GetMapping("/profile")
     public ResponseEntity<Object> getUserProfile(@AuthenticationPrincipal User user){
         return ResponseEntity.ok().body(userService.getUserProfile(user));

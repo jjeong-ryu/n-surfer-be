@@ -1,5 +1,6 @@
 package com.notion.nsuffer.card.dto;
 
+import com.notion.nsuffer.card.entity.Label;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -12,10 +13,13 @@ public class GetCardDto {
         private Long cardId;
         private Long userId;
         private String title;
-        private String label;
         private String content;
         private Date createDate;
         private Date lastEditDate;
-        private Date prevEditDate;
+        private Label label;
+        public static class Label {
+            private String name;
+            private String color;
+        }
     }
 }
