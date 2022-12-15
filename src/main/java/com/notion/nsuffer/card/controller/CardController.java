@@ -29,8 +29,7 @@ public class CardController {
         return cardService.getCardList();
     }
     @GetMapping("/{cardId}")
-    public ResponseDto<GetCardDto.Response> getCard(@PathVariable Long cardId,
-                                                    @AuthenticationPrincipal User user){
+    public ResponseDto<GetCardDto.Response> getCard(@PathVariable Long cardId){
         return cardService.getCard(cardId);
     }
 
@@ -40,6 +39,6 @@ public class CardController {
     }
     @DeleteMapping("/{cardId}")
     public ResponseDto<Object> deleteCard(@PathVariable Long cardId){
-        return cardService.deleteCard();
+        return cardService.deleteCard(cardId);
     }
 }

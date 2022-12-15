@@ -10,6 +10,7 @@ import com.notion.nsuffer.common.ResponseCode;
 import com.notion.nsuffer.common.ResponseDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
@@ -40,6 +41,7 @@ public class CardService {
                 .build();
     }
 
+    @Transactional
     public ResponseDto<Object> postCard(PostCardDto.Request dto, List<MultipartFile> files){
         // 먼저 노션에 card post 요청 보냄
         // 이 후, 해당 id를 받아 백엔드 DB에 저장
@@ -48,6 +50,7 @@ public class CardService {
                 .data(null).build();
     }
 
+    @Transactional
     public ResponseDto<Object> updateCard(){
         // 먼저 노션에 card update 요청 보냄
         // 이 후, 백엔드 DB에 저장
@@ -56,7 +59,10 @@ public class CardService {
                 .data(null).build();
     }
 
-    public ResponseDto<Object> deleteCard(){
+    @Transactional
+    public ResponseDto<Object> deleteCard(Long cardId){
+        Card card = cardRepository.findById(cardId).orElseThrow(CardNotFoundException::new);
+        cardRepository.delete(card);
         return ResponseDto.builder()
                 .responseCode(ResponseCode.DELETE_CARD)
                 .data(null).build();

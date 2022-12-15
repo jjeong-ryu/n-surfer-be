@@ -23,8 +23,10 @@ public class Card {
 
     private String content;
 
+    @Temporal(TemporalType.TIMESTAMP)
     private Date createDate;
 
+    @Temporal(TemporalType.TIMESTAMP)
     private Date lastEditDate;
 
     private String notionId;
