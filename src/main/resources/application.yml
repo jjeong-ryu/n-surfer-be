@@ -1,11 +1,24 @@
 spring:
   datasource:
-    driver-class-name: com.mysql.jdbc.Driver
+    driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://localhost:3306/nsuffer
-    username: nsuffer
-    password: nsuffer
-
+    username: tmax
+    password: tmax
+  jpa:
+    generate-ddl: true
+    properties:
+      hibernate:
+        format_sql: true
+    show-sql: true
+    database: mysql
+    database-platform: org.hibernate.dialect.MySQLDialect
+#    database-platform: org.hibernate.spatial.dialect.mysql.MySQL56InnoDBSpatialDialect
+    hibernate:
+      ddl-auto: create-drop
+    defer-datasource-initialization: true
 
 notion:
   database: c1b4b8a152e94d90909717d92be2c116
   token: secret_LSshj9zJf38xrnerHSLW0fZLLxYmFtPkx1nNCeqEAUX
+
+

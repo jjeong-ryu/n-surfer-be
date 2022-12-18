@@ -25,4 +25,8 @@ public class User {
 
     @Enumerated(value = EnumType.STRING)
     private Authority authority;
+
+    private String notionApiKey;
+
+    private String notionDbId;
 }

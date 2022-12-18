@@ -1,10 +1,13 @@
 package com.notion.nsuffer.common;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 @AllArgsConstructor
+@Getter
+@JsonFormat(shape = JsonFormat.Shape.OBJECT)
 public enum ResponseCode {
 
     // Card
@@ -15,10 +18,13 @@ public enum ResponseCode {
     DELETE_CARD("Success", "C005", "delete card", "카드 삭제"),
 
     //Error - Card
-    CARD_NOT_FOUND("Failure", "EC001", "Card not Found", "해당 카드가 존재하지 않습니다.");
+    CARD_NOT_FOUND("Failure", "EC001", "Card not Found", "해당 카드가 존재하지 않습니다."),
+
+    // DbSync
+    DB_SYNC("Success", "DS001", "DB sync", "노션DB와 n-suffer의 싱크 맞추기");
     private String status;
     private String code;
     private String message;
-    @JsonIgnore @Getter
+    @JsonIgnore
     private String description;
 }
