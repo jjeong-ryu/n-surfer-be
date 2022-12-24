@@ -1,5 +1,5 @@
 # n-suffer-be
-노션API를 연동한 메모 카드 작성 서비스
+Notion database 을 이용한 학습 일지 기록 및 일일 사용량 시각화 서비스
 
 ## Introduction Url
 
