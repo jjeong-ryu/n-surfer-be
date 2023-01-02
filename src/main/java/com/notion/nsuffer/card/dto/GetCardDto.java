@@ -17,6 +17,8 @@ public class GetCardDto {
         private Date createDate;
         private Date lastEditDate;
         private Label label;
+        @Getter
+        @Builder
         public static class Label {
             private String name;
             private String color;

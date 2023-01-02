@@ -24,6 +24,7 @@ public class CardController {
                                         @RequestPart("file") List<MultipartFile> files){
         return cardService.postCard(dto,files);
     }
+
     @GetMapping("/list")
     public ResponseDto<GetCardListDto.Response> getCardList(){
         return cardService.getCardList();
