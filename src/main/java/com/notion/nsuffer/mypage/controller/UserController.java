@@ -5,6 +5,7 @@ import com.notion.nsuffer.mypage.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -13,11 +14,11 @@ import org.springframework.web.bind.annotation.*;
 public class UserController {
     private final UserService userService;
 
-    @PostMapping()
     @GetMapping("/profile")
     public ResponseEntity<Object> getUserProfile(@AuthenticationPrincipal User user){
         return ResponseEntity.ok().body(userService.getUserProfile(user));
     }
+
     @PostMapping("/profile")
     public ResponseEntity<Object> postUserProfile(@AuthenticationPrincipal User user){
         return ResponseEntity.ok().body(userService.postUserProfile(user));
