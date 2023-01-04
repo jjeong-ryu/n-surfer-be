@@ -6,18 +6,12 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+
 public class AuthKakaoLoginProfileDto {
     @Getter
     @Builder
     public static class Request {
-        private String code;
-        @JsonProperty("redirect_uri")
-        private String redirectUri;
-        @Builder.Default
-        @JsonProperty("grant_type")
-        private String grantType = "authorization_code";
-        @JsonProperty("client_id")
-        private String clientId;
     }
 
     @Getter
@@ -25,27 +19,30 @@ public class AuthKakaoLoginProfileDto {
     @AllArgsConstructor
     @NoArgsConstructor
     public static class Response {
-        @JsonProperty("token_type")
-        private String tokenType;
-        @JsonProperty("refresh_token")
-        private String refresh_token;
-        @JsonProperty("expires_in")
-        private int expiresIn;
-        private String scope;
-        @JsonProperty("refresh_token_expires_in")
-        private int refreshTokenExpiresIn;
-        @JsonProperty("access_token")
-        private String accessToken;
-
-        @JsonProperty("id_token")
-        private IdToken idToken;
+        private long id;
+        @JsonProperty("kakao_account")
+        private KakaoAccount kakaoAccount;
 
         @Getter
         @Builder
-        @AllArgsConstructor
-        @NoArgsConstructor
-        public static class IdToken {
-            private String nickname;
+        public static class KakaoAccount {
+            private Profile profile;
+            @Getter
+            @Builder
+            public static class Profile {
+                private String nickname;
+                @JsonProperty("thumbnail_image_url")
+                private String thumbnailImageUrl;
+                @JsonProperty("profile_image_url")
+                private String profileImageUrl;
+            }
+            private String name;
+            private String email;
+            private String birthyear;
+            private String gender;
+
+            @JsonProperty("phone_number")
+            private String phoneNumber;
         }
     }
 

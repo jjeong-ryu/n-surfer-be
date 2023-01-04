@@ -7,6 +7,8 @@ import org.springframework.stereotype.Component;
 @Component
 public class AuthUtil {
     public static String KAKAO = "KAKAO";
+    public static String KAKAO_ACCESS_TOKEN_REQUEST_URL = "https://kauth.kakao.com/oauth/token";
+    public static String KAKAO_PROFILE_REQUEST_URL = "https://kapi.kakao.com/v2/user/me";
     public static String GOOGLE = "GOOGLE";
     public static String KAKAO_CLIENT_ID;
 
