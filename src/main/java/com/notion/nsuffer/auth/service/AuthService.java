@@ -15,6 +15,8 @@ import org.springframework.boot.context.properties.bind.ConstructorBinding;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.reactive.function.client.WebClient;
 
 @Service
@@ -22,23 +24,29 @@ import org.springframework.web.reactive.function.client.WebClient;
 public class AuthService {
     public ResponseDto<AuthKakaoLoginDto.Response> kakaoLogin(final String code, final String redirectUrl) {
         WebClient webClient = WebClient.builder()
-                .baseUrl("http://kauth.kakao.com/oauth/token")
+                .baseUrl("https://kauth.kakao.com/oauth/token")
                 .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED_VALUE)
                 .build();
-        AuthKakaoLoginProfileDto.Request profileRequest = AuthKakaoLoginProfileDto.Request.builder()
-                        .code(code).redirectUri(redirectUrl).clientId(AuthUtil.KAKAO_CLIENT_ID)
-                        .build();
+        MultiValueMap<String, String> profileRequest = makeProfileRequest(code, redirectUrl, AuthUtil.KAKAO);
         AuthKakaoLoginProfileDto.Response profileResponse = webClient
                 .post()
-                .body(profileRequest, AuthKakaoLoginProfileDto.Request.class)
+                .bodyValue(profileRequest)
                 .retrieve()
                 .bodyToMono(AuthKakaoLoginProfileDto.Response.class)
                 .block();
-
         return ResponseDto.<AuthKakaoLoginDto.Response>builder()
                 .data(AuthKakaoLoginDto.Response.builder()
                         .accessToken(code)
                         .build())
                 .build();
+    }
+
+    private MultiValueMap<String, String> makeProfileRequest(String code, String redirectUrl, String provider) {
+        MultiValueMap<String, String> profileRequest = new LinkedMultiValueMap<>();
+        profileRequest.add("grant_type", "authorization_code");
+        profileRequest.add("code", code);
+        profileRequest.add("redirect_url", redirectUrl);
+        profileRequest.add("client_id", AuthUtil.getClientId(provider));
+        return profileRequest;
     }
 }
