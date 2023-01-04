@@ -21,4 +21,7 @@ notion:
   database: c1b4b8a152e94d90909717d92be2c116
   token: secret_LSshj9zJf38xrnerHSLW0fZLLxYmFtPkx1nNCeqEAUX
 
+auth:
+  kakao:
+    client-id: hi
 

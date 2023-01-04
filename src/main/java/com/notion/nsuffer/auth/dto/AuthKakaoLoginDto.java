@@ -1,4 +1,4 @@
-package com.notion.nsuffer.card.dto;
+package com.notion.nsuffer.auth.dto;
 
 import lombok.Builder;
 import lombok.Getter;
@@ -6,10 +6,12 @@ import lombok.Getter;
 public class AuthKakaoLoginDto {
     @Getter
     public static class Request {
-        private String token;
+        private String code;
+        private String redirectUrl;
     }
+    @Getter
     @Builder
     public static class Response {
-
+        private String accessToken;
     }
 }

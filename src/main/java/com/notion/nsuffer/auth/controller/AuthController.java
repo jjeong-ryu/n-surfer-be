@@ -1,14 +1,11 @@
 package com.notion.nsuffer.auth.controller;
 
 import com.notion.nsuffer.auth.service.AuthService;
-import com.notion.nsuffer.card.dto.AuthKakaoLoginDto;
+import com.notion.nsuffer.auth.dto.AuthKakaoLoginDto;
 import com.notion.nsuffer.common.ResponseDto;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import static org.springframework.http.HttpStatus.*;
 
@@ -16,10 +13,11 @@ import static org.springframework.http.HttpStatus.*;
 @RequestMapping("/auth")
 @RequiredArgsConstructor
 public class AuthController {
-    private AuthService authService;
+    private final AuthService authService;
 
-    @PostMapping("/login/kakao")
-    public ResponseEntity<ResponseDto<AuthKakaoLoginDto.Response>> kakaoLogin(AuthKakaoLoginDto.Request request){
-        return new ResponseEntity(authService.kakaoLogin(request), OK);
+    @GetMapping("/login/kakao")
+    public ResponseEntity<ResponseDto<AuthKakaoLoginDto.Response>> kakaoLogin(@RequestParam String code,
+                                                                              @RequestParam String redirectUrl){
+        return new ResponseEntity(authService.kakaoLogin(code, redirectUrl), OK);
     }
 }
