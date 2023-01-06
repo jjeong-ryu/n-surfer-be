@@ -22,13 +22,16 @@ public class AuthKakaoLoginProfileDto {
         private long id;
         @JsonProperty("kakao_account")
         private KakaoAccount kakaoAccount;
-
         @Getter
         @Builder
+        @AllArgsConstructor
+        @NoArgsConstructor
         public static class KakaoAccount {
             private Profile profile;
             @Getter
             @Builder
+            @AllArgsConstructor
+            @NoArgsConstructor
             public static class Profile {
                 private String nickname;
                 @JsonProperty("thumbnail_image_url")
@@ -36,13 +39,7 @@ public class AuthKakaoLoginProfileDto {
                 @JsonProperty("profile_image_url")
                 private String profileImageUrl;
             }
-            private String name;
             private String email;
-            private String birthyear;
-            private String gender;
-
-            @JsonProperty("phone_number")
-            private String phoneNumber;
         }
     }
 
