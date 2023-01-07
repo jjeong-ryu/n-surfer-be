@@ -1,4 +1,4 @@
-package com.notion.nsuffer.mypage.entity;
+package com.notion.nsuffer.user.entity;
 
 import com.notion.nsuffer.common.config.Authority;
 import jakarta.persistence.*;
@@ -20,9 +20,12 @@ import java.util.Date;
 public class User implements UserDetails {
     @Id @GeneratedValue
     private Long Id;
-    private String name;
+
+    private String nickname;
 
     private String provider;
+
+    private String email;
 
     @Temporal(value = TemporalType.DATE)
     private Date birthday;
@@ -47,7 +50,7 @@ public class User implements UserDetails {
 
     @Override
     public String getUsername() {
-        return this.name;
+        return this.nickname;
     }
 
     @Override

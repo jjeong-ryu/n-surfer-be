@@ -1,6 +1,6 @@
 package com.notion.nsuffer.card.entity;
 
-import com.notion.nsuffer.mypage.entity.User;
+import com.notion.nsuffer.user.entity.User;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
