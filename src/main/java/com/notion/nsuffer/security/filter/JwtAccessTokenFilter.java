@@ -1,4 +1,4 @@
-package com.notion.nsuffer.common.config.security.filter;
+package com.notion.nsuffer.security.filter;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
