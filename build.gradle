@@ -24,11 +24,14 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-security'
     implementation 'org.springframework.boot:spring-boot-starter-webflux'
     annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
-// For lombok
+    // For lombok
+    // lombok이 mapstruct보다 위에 위치해야 함
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
     testCompileOnly 'org.projectlombok:lombok'
     testAnnotationProcessor 'org.projectlombok:lombok'
+
+    implementation group: 'jakarta.validation', name: 'jakarta.validation-api', version: '3.0.2'
 
     implementation group: 'org.mapstruct', name: 'mapstruct', version: '1.5.2.Final'
     // https://mvnrepository.com/artifact/org.mapstruct/mapstruct-processor
