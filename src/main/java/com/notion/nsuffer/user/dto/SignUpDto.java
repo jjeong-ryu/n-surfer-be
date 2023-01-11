@@ -9,8 +9,8 @@ public class SignUpDto {
     @Builder
     public static class Request {
         private String email;
+        private String provider;
         private String nickname;
-        private String birthday;
         private Authority authority;
     }
 }

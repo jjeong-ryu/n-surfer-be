@@ -22,6 +22,7 @@ public class AuthKakaoLoginProfileDto {
         private long id;
         @JsonProperty("kakao_account")
         private KakaoAccount kakaoAccount;
+        private String provider;
         @Getter
         @Builder
         @AllArgsConstructor

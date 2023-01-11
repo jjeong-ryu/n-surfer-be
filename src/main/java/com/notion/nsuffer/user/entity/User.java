@@ -19,7 +19,7 @@ import java.util.Date;
 @Builder
 public class User implements UserDetails {
     @Id @GeneratedValue
-    private Long Id;
+    private Long id;
 
     private String nickname;
 
@@ -32,11 +32,8 @@ public class User implements UserDetails {
 
     private String password;
     @Enumerated(value = EnumType.STRING)
-    private Authority authority;
-
-    private String notionApiKey;
-
-    private String notionDbId;
+    @Builder.Default
+    private Authority authority = Authority.USER;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

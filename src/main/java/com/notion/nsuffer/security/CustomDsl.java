@@ -1,9 +1,7 @@
-package com.notion.nsuffer.common.config;
+package com.notion.nsuffer.security;
 
-import com.notion.nsuffer.common.config.security.filter.JwtAccessTokenFilter;
-import com.notion.nsuffer.user.service.UserDetailsServiceImpl;
+import com.notion.nsuffer.security.filter.JwtAccessTokenFilter;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;

@@ -25,3 +25,6 @@ auth:
   kakao:
     client-id: a0565a02972a2d88bbf1eed72c6fa1ad
 
+jwt:
+  secret: Z3VuLWpvby1haG4tand0LXNlY3JldC1ndW4tam9vLWFobi1qd3Qtc2VjcmV0LWd1bi1qb28tYWhuLWp3dC1zZWNyZXQtZ3VuLWpvby1haG4tand0LXNlY3JldC1oZWxsbw
+  token-validity-in-seconds: 999999

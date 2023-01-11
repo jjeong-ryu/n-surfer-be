@@ -1,5 +1,6 @@
-package com.notion.nsuffer.common.config;
+package com.notion.nsuffer.security.config;
 
+import com.notion.nsuffer.security.CustomDsl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -12,7 +13,9 @@ import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
 @EnableWebSecurity(debug = true)
+@RequiredArgsConstructor
 public class SecurityConfig {
+    private final CustomDsl customDsl;
     @Bean
     public PasswordEncoder passwordEncoder() { return new BCryptPasswordEncoder();
     }
@@ -25,6 +28,8 @@ public class SecurityConfig {
                 .sessionManagement(sessionManagement -> sessionManagement
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .cors().and()
+                .apply(customDsl)
+                .and()
                 .build();
     }
 }
