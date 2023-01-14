@@ -4,13 +4,11 @@ import com.notion.nsuffer.card.dto.NotionGetSyncDbDto;
 import com.notion.nsuffer.card.repository.CardRepository;
 import com.notion.nsuffer.common.ResponseCode;
 import com.notion.nsuffer.common.ResponseDto;
-import com.notion.nsuffer.mypage.entity.User;
+import com.notion.nsuffer.user.entity.User;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
-import reactor.core.publisher.Mono;
 
 @Service
 @RequiredArgsConstructor

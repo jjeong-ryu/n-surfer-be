@@ -14,7 +14,6 @@ import static org.springframework.http.HttpStatus.*;
 @RequiredArgsConstructor
 public class AuthController {
     private final AuthService authService;
-
     @GetMapping("/login/kakao")
     public ResponseEntity<ResponseDto<AuthKakaoLoginDto.Response>> kakaoLogin(@RequestParam String code,
                                                                               @RequestParam String redirectUrl){

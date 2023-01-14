@@ -21,7 +21,15 @@ public enum ResponseCode {
     CARD_NOT_FOUND("Failure", "EC001", "Card not Found", "해당 카드가 존재하지 않습니다."),
 
     // DbSync
-    DB_SYNC("Success", "DS001", "DB sync", "노션DB와 n-suffer의 싱크 맞추기");
+    DB_SYNC("Success", "DS001", "DB sync", "노션DB와 n-suffer의 싱크 맞추기"),
+
+    // User
+    SIGN_UP("Success", "U001", "User sign up", "유저 회원가입"),
+
+    // Error - User
+    ERROR_UNAUTHENTICATED("Failure", "EU001", "Unauthentication", "인증 실패"),
+    ERROR_EMAIL_NOT_FOUND("Failure", "EU002", "Email not found", "존재하지 않는 이메일입니다.");
+
     private String status;
     private String code;
     private String message;
