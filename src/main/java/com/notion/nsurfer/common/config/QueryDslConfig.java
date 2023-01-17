@@ -1,4 +1,4 @@
-package com.notion.nsuffer.common.config;
+package com.notion.nsurfer.common.config;
 
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;

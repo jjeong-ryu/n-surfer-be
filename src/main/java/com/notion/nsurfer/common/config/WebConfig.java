@@ -1,4 +1,4 @@
-package com.notion.nsuffer.common.config;
+package com.notion.nsurfer.common.config;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;

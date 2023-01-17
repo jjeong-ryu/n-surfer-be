@@ -1,13 +1,13 @@
-package com.notion.nsuffer;
+package com.notion.nsurfer;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class NSufferApplication {
+public class NSurferApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(NSufferApplication.class, args);
+        SpringApplication.run(NSurferApplication.class, args);
     }
 
 }

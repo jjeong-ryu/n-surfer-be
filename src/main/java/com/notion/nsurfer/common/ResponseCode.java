@@ -1,4 +1,4 @@
-package com.notion.nsuffer.common;
+package com.notion.nsurfer.common;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -21,13 +21,14 @@ public enum ResponseCode {
     CARD_NOT_FOUND("Failure", "EC001", "Card not Found", "해당 카드가 존재하지 않습니다."),
 
     // DbSync
-    DB_SYNC("Success", "DS001", "DB sync", "노션DB와 n-suffer의 싱크 맞추기"),
+    DB_SYNC("Success", "DS001", "DB sync", "notion DB와 n-surfer의 싱크 맞추기"),
 
     // User
     SIGN_UP("Success", "U001", "User sign up", "유저 회원가입"),
+    GET_USER_PROFILE("Success", "U002", "Get user profile", "유저 프로필 조회"),
 
     // Error - User
-    ERROR_UNAUTHENTICATED("Failure", "EU001", "Unauthentication", "인증 실패"),
+    ERROR_UNAUTHENTICATED("Failure", "EU001", "Authentication fail", "인증 실패"),
     ERROR_EMAIL_NOT_FOUND("Failure", "EU002", "Email not found", "존재하지 않는 이메일입니다.");
 
     private String status;
