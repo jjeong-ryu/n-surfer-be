@@ -1,4 +1,4 @@
-package com.notion.nsuffer.common;
+package com.notion.nsurfer.common;
 
 public class BusinessException extends RuntimeException {
     private ResponseCode responseCode;

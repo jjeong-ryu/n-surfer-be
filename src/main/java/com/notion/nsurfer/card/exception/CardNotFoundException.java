@@ -1,7 +1,7 @@
-package com.notion.nsuffer.card.exception;
+package com.notion.nsurfer.card.exception;
 
-import com.notion.nsuffer.common.BusinessException;
-import com.notion.nsuffer.common.ResponseCode;
+import com.notion.nsurfer.common.BusinessException;
+import com.notion.nsurfer.common.ResponseCode;
 
 public class CardNotFoundException extends BusinessException {
     public CardNotFoundException(){

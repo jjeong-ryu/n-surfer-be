@@ -1,4 +1,4 @@
-package com.notion.nsuffer.card.entity;
+package com.notion.nsurfer.card.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;

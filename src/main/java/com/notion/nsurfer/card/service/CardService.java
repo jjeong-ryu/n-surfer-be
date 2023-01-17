@@ -1,20 +1,17 @@
-package com.notion.nsuffer.card.service;
+package com.notion.nsurfer.card.service;
 
-import com.notion.nsuffer.card.dto.GetCardDto;
-import com.notion.nsuffer.card.dto.GetCardListDto;
-import com.notion.nsuffer.card.dto.PostCardDto;
-import com.notion.nsuffer.card.entity.Card;
-import com.notion.nsuffer.card.exception.CardNotFoundException;
-import com.notion.nsuffer.card.repository.CardRepository;
-import com.notion.nsuffer.common.ResponseCode;
-import com.notion.nsuffer.common.ResponseDto;
+import com.notion.nsurfer.card.dto.GetCardDto;
+import com.notion.nsurfer.card.dto.GetCardListDto;
+import com.notion.nsurfer.card.dto.PostCardDto;
+import com.notion.nsurfer.card.entity.Card;
+import com.notion.nsurfer.card.exception.CardNotFoundException;
+import com.notion.nsurfer.card.repository.CardRepository;
+import com.notion.nsurfer.common.ResponseCode;
+import com.notion.nsurfer.common.ResponseDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.RequestPart;
-import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.reactive.function.client.WebClient;
 
 import java.util.List;
 

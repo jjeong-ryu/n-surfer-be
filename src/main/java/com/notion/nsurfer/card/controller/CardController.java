@@ -1,10 +1,10 @@
-package com.notion.nsuffer.card.controller;
+package com.notion.nsurfer.card.controller;
 
-import com.notion.nsuffer.card.dto.GetCardDto;
-import com.notion.nsuffer.card.dto.GetCardListDto;
-import com.notion.nsuffer.card.dto.PostCardDto;
-import com.notion.nsuffer.card.service.CardService;
-import com.notion.nsuffer.common.ResponseDto;
+import com.notion.nsurfer.card.dto.GetCardDto;
+import com.notion.nsurfer.card.dto.GetCardListDto;
+import com.notion.nsurfer.card.dto.PostCardDto;
+import com.notion.nsurfer.card.service.CardService;
+import com.notion.nsurfer.common.ResponseDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
