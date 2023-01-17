@@ -1,7 +1,7 @@
-package com.notion.nsuffer.mypage.service;
+package com.notion.nsurfer.mypage.service;
 
-import com.notion.nsuffer.user.entity.User;
-import com.notion.nsuffer.user.repository.UserRepository;
+import com.notion.nsurfer.user.entity.User;
+import com.notion.nsurfer.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

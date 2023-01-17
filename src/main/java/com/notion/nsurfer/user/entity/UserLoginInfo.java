@@ -1,4 +1,4 @@
-package com.notion.nsuffer.user.entity;
+package com.notion.nsurfer.user.entity;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;

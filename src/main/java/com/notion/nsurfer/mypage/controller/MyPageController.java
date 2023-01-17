@@ -1,9 +1,8 @@
-package com.notion.nsuffer.mypage.controller;
+package com.notion.nsurfer.mypage.controller;
 
-import com.notion.nsuffer.mypage.service.MyPageService;
-import com.notion.nsuffer.user.entity.User;
+import com.notion.nsurfer.mypage.service.MyPageService;
+import com.notion.nsurfer.user.entity.User;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;

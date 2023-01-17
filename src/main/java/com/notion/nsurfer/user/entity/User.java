@@ -1,6 +1,6 @@
-package com.notion.nsuffer.user.entity;
+package com.notion.nsurfer.user.entity;
 
-import com.notion.nsuffer.common.config.Authority;
+import com.notion.nsurfer.common.config.Authority;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -31,6 +31,8 @@ public class User implements UserDetails {
     private Date birthday;
 
     private String password;
+
+    private String thumbnailImageUrl;
     @Enumerated(value = EnumType.STRING)
     @Builder.Default
     private Authority authority = Authority.USER;

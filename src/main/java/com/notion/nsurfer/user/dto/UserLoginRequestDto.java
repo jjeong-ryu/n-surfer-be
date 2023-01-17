@@ -1,4 +1,4 @@
-package com.notion.nsuffer.user.dto;
+package com.notion.nsurfer.user.dto;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;

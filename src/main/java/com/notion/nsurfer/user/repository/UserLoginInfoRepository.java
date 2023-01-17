@@ -1,6 +1,6 @@
-package com.notion.nsuffer.user.repository;
+package com.notion.nsurfer.user.repository;
 
-import com.notion.nsuffer.user.entity.UserLoginInfo;
+import com.notion.nsurfer.user.entity.UserLoginInfo;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;

@@ -1,4 +1,4 @@
-package com.notion.nsuffer.user.service;
+package com.notion.nsurfer.user.service;
 
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
