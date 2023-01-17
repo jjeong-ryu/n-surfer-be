@@ -1,4 +1,4 @@
-package com.notion.nsuffer.card.dto;
+package com.notion.nsurfer.card.dto;
 
 import lombok.Builder;
 import lombok.Getter;

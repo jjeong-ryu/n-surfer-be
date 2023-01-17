@@ -1,8 +1,8 @@
-package com.notion.nsuffer.card.controller;
+package com.notion.nsurfer.card.controller;
 
-import com.notion.nsuffer.card.service.NotionCardService;
-import com.notion.nsuffer.common.ResponseDto;
-import com.notion.nsuffer.user.entity.User;
+import com.notion.nsurfer.card.service.NotionCardService;
+import com.notion.nsurfer.common.ResponseDto;
+import com.notion.nsurfer.user.entity.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;

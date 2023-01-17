@@ -1,7 +1,6 @@
-package com.notion.nsuffer.card.dto;
+package com.notion.nsurfer.card.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.Builder;
 import lombok.Getter;
 
 import java.util.ArrayList;

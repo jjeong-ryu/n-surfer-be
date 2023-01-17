@@ -1,6 +1,5 @@
-package com.notion.nsuffer.card.dto;
+package com.notion.nsurfer.card.dto;
 
-import com.notion.nsuffer.card.entity.Label;
 import lombok.Builder;
 import lombok.Getter;
 

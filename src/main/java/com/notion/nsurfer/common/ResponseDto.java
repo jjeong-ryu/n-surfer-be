@@ -1,4 +1,4 @@
-package com.notion.nsuffer.common;
+package com.notion.nsurfer.common;
 
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import lombok.*;
