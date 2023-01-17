@@ -1,4 +1,4 @@
-package com.notion.nsuffer.auth.dto;
+package com.notion.nsurfer.auth.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;

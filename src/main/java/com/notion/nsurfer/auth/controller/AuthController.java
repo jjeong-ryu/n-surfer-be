@@ -1,8 +1,8 @@
-package com.notion.nsuffer.auth.controller;
+package com.notion.nsurfer.auth.controller;
 
-import com.notion.nsuffer.auth.service.AuthService;
-import com.notion.nsuffer.auth.dto.AuthKakaoLoginDto;
-import com.notion.nsuffer.common.ResponseDto;
+import com.notion.nsurfer.auth.service.AuthService;
+import com.notion.nsurfer.auth.dto.AuthKakaoLoginDto;
+import com.notion.nsurfer.common.ResponseDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

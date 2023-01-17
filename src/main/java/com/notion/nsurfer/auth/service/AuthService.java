@@ -1,22 +1,16 @@
-package com.notion.nsuffer.auth.service;
+package com.notion.nsurfer.auth.service;
 
-import com.notion.nsuffer.auth.common.AuthUtil;
-import com.notion.nsuffer.auth.dto.AuthKakaoLoginDto;
-import com.notion.nsuffer.auth.dto.AuthKakaoLoginProfileDto;
-import com.notion.nsuffer.auth.dto.AuthKakaoLoginTokenDto;
-import com.notion.nsuffer.common.ResponseCode;
-import com.notion.nsuffer.common.ResponseDto;
-import com.notion.nsuffer.user.dto.SignUpDto;
-import com.notion.nsuffer.user.mapper.UserMapper;
-import com.notion.nsuffer.user.service.UserService;
-import jakarta.annotation.PostConstruct;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
+import com.notion.nsurfer.auth.common.AuthUtil;
+import com.notion.nsurfer.auth.dto.AuthKakaoLoginDto;
+import com.notion.nsurfer.auth.dto.AuthKakaoLoginProfileDto;
+import com.notion.nsurfer.auth.dto.AuthKakaoLoginTokenDto;
+import com.notion.nsurfer.common.ResponseCode;
+import com.notion.nsurfer.common.ResponseDto;
+import com.notion.nsurfer.user.dto.SignUpDto;
+import com.notion.nsurfer.user.mapper.UserMapper;
+import com.notion.nsurfer.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.boot.context.properties.bind.ConstructorBinding;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
@@ -24,8 +18,8 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.reactive.function.client.WebClient;
 
-import static com.notion.nsuffer.auth.common.AuthUtil.KAKAO_ACCESS_TOKEN_REQUEST_URL;
-import static com.notion.nsuffer.auth.common.AuthUtil.KAKAO_PROFILE_REQUEST_URL;
+import static com.notion.nsurfer.auth.common.AuthUtil.KAKAO_ACCESS_TOKEN_REQUEST_URL;
+import static com.notion.nsurfer.auth.common.AuthUtil.KAKAO_PROFILE_REQUEST_URL;
 
 @Slf4j
 @Service
@@ -36,11 +30,15 @@ public class AuthService {
     public ResponseDto<AuthKakaoLoginDto.Response> kakaoLogin(final String code, final String redirectUrl) {
         String kakaoAccessToken = getKakaoAccessToken(code, redirectUrl, AuthUtil.KAKAO);
         AuthKakaoLoginProfileDto.Response userprofile = getKaKaoUserprofile(kakaoAccessToken);
-        signUpWithKakao(userprofile);
+        System.out.println(userprofile.getKakaoAccount().getProfile().getThumbnailImageUrl());
+        SignUpDto.Response response = signUpWithKakao(userprofile);
         return ResponseDto.<AuthKakaoLoginDto.Response>builder()
+                .responseCode(ResponseCode.SIGN_UP)
                 .data(AuthKakaoLoginDto.Response.builder()
                         .accessToken(code)
-                        .build())
+                        .thumbnailImageUrl(response.getThumbnailImageUrl())
+                        .email(response.getEmail())
+                        .nickname(response.getNickname()).build())
                 .build();
     }
 
@@ -75,9 +73,10 @@ public class AuthService {
                 .bodyToMono(AuthKakaoLoginProfileDto.Response.class)
                 .block();
     }
-    private void signUpWithKakao(AuthKakaoLoginProfileDto.Response userprofile){
+    private SignUpDto.Response signUpWithKakao(AuthKakaoLoginProfileDto.Response userprofile){
         SignUpDto.Request signUpRequest = userMapper.signUpKakaoToRequest(userprofile);
-        userService.signUp(signUpRequest);
+        return userService.signUpWithKakao(signUpRequest);
+        //
     }
 //    private void signUpWithGoogle(AuthKakaoLoginProfileDto.Response userprofile){
 //        userService.signUp(userMapper.signUpKakaoToRequest(userprofile));
