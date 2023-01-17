@@ -1,4 +1,4 @@
-package com.notion.nsuffer.common;
+package com.notion.nsurfer.common;
 
 import org.mapstruct.MapperConfig;
 import org.mapstruct.ReportingPolicy;

@@ -1,7 +1,7 @@
-package com.notion.nsuffer.security.filter;
+package com.notion.nsurfer.security.filter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.notion.nsuffer.user.repository.UserLoginInfoRepository;
+import com.notion.nsurfer.user.repository.UserLoginInfoRepository;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;

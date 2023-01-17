@@ -1,4 +1,4 @@
-package com.notion.nsuffer.security;
+package com.notion.nsurfer.security;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

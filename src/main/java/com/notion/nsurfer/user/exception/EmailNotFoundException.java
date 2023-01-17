@@ -1,7 +1,7 @@
-package com.notion.nsuffer.user.exception;
+package com.notion.nsurfer.user.exception;
 
-import com.notion.nsuffer.common.BusinessException;
-import com.notion.nsuffer.common.ResponseCode;
+import com.notion.nsurfer.common.BusinessException;
+import com.notion.nsurfer.common.ResponseCode;
 
 public class EmailNotFoundException extends BusinessException {
     public EmailNotFoundException(){

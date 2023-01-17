@@ -1,4 +1,4 @@
-package com.notion.nsuffer.security.exception;
+package com.notion.nsurfer.security.exception;
 
 import org.springframework.security.core.AuthenticationException;
 

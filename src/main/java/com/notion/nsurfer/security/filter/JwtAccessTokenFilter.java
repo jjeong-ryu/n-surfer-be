@@ -1,8 +1,8 @@
-package com.notion.nsuffer.security.filter;
+package com.notion.nsurfer.security.filter;
 
-import com.notion.nsuffer.security.VerifyResult;
-import com.notion.nsuffer.security.util.JwtUtil;
-import com.notion.nsuffer.user.entity.User;
+import com.notion.nsurfer.security.VerifyResult;
+import com.notion.nsurfer.security.util.JwtUtil;
+import com.notion.nsurfer.user.entity.User;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

@@ -1,8 +1,8 @@
-package com.notion.nsuffer.security.handler;
+package com.notion.nsurfer.security.handler;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.notion.nsuffer.common.ResponseCode;
-import com.notion.nsuffer.common.ResponseDto;
+import com.notion.nsurfer.common.ResponseCode;
+import com.notion.nsurfer.common.ResponseDto;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;

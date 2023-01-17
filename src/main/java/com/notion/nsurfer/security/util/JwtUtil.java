@@ -1,8 +1,8 @@
-package com.notion.nsuffer.security.util;
+package com.notion.nsurfer.security.util;
 
-import com.notion.nsuffer.security.VerifyResult;
-import com.notion.nsuffer.security.exception.InvalidJwtException;
-import com.notion.nsuffer.user.entity.User;
+import com.notion.nsurfer.security.VerifyResult;
+import com.notion.nsurfer.security.exception.InvalidJwtException;
+import com.notion.nsurfer.user.entity.User;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import jakarta.servlet.http.HttpServletRequest;
