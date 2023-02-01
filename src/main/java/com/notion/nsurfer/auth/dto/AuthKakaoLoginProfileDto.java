@@ -1,6 +1,7 @@
 package com.notion.nsurfer.auth.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.notion.nsurfer.auth.common.AuthUtil;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -18,9 +19,11 @@ public class AuthKakaoLoginProfileDto {
     @NoArgsConstructor
     public static class Response {
         private long id;
+
+        @Builder.Default
+        private String provider = AuthUtil.KAKAO;
         @JsonProperty("kakao_account")
         private KakaoAccount kakaoAccount;
-        private String provider;
         @Getter
         @Builder
         @AllArgsConstructor

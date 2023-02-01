@@ -1,5 +1,6 @@
 package com.notion.nsurfer.user.dto;
 
+import com.notion.nsurfer.common.config.Authority;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -15,7 +16,7 @@ public class GetUserProfileDto {
         private String provider;
         private String userName;
         private String userBirth;
-        private String userType;
+        private Authority userType;
         private String imgUrl;
         private List<Wave> waves;
 
