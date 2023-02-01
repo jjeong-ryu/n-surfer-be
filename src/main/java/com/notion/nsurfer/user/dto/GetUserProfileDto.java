@@ -3,12 +3,26 @@ package com.notion.nsurfer.user.dto;
 import lombok.Builder;
 import lombok.Getter;
 
+import java.time.LocalDate;
+import java.util.List;
+
 public class GetUserProfileDto {
     @Getter
     @Builder
     public static class Response {
-        private String email;
-        private String nickname;
-        private String thumbnailImageUrl;
+        private Long userId;
+        private String userEmail;
+        private String provider;
+        private String userName;
+        private String userBirth;
+        private String userType;
+        private String imgUrl;
+        private List<Wave> waves;
+
+        @Builder
+        public static class Wave {
+            private LocalDate date;
+            private Integer count;
+        }
     }
 }
