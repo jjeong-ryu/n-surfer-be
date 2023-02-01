@@ -44,16 +44,6 @@ public class UserService {
                 .email(request.getEmail())
                 .nickname(request.getNickname()).build();
     }
-
     public void signUpValidation(SignUpDto.Request request){
-    }
-
-    public ResponseDto<GetUserProfileDto.Response> getUserProfile(User user) {
-        final String email = user.getEmail();
-        User findUser = userRepositoryCustom.findByEmail(email);
-        return ResponseDto.<GetUserProfileDto.Response>builder()
-                .responseCode(ResponseCode.GET_USER_PROFILE)
-                .data(userMapper.getUserProfileToResponse(userRepositoryCustom.findByEmail(email)))
-                .build();
     }
 }

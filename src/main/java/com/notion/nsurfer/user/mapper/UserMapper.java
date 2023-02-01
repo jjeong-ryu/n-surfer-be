@@ -28,12 +28,12 @@ public interface UserMapper {
 
 
     @Mapping(target = "userId", source = "user.id")
-    @Mapping(target = "userEmail", source = "user.id")
-    @Mapping(target = "provider", source = "user.id")
-    @Mapping(target = "userName", source = "user.id")
-    @Mapping(target = "userBirth", source = "user.id")
-    @Mapping(target = "userType", source = "user.id")
-    @Mapping(target = "imgUrl", source = "user.id")
+    @Mapping(target = "userEmail", source = "user.email")
+    @Mapping(target = "provider", source = "user.provider")
+    @Mapping(target = "userName", source = "user.nickname")
+    @Mapping(target = "userBirth", source = "user.birthday")
+    @Mapping(target = "userType", source = "user.authority")
+    @Mapping(target = "imgUrl", source = "user.thumbnailImageUrl")
     @Mapping(target = "waves", source = "user.waves")
     GetUserProfileDto.Response getUserProfileToResponse(User user);
 //    @Mapping(target = "nickname", ignore = true)
