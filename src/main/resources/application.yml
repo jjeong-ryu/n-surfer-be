@@ -1,3 +1,5 @@
+
+
 spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -28,3 +30,5 @@ auth:
 jwt:
   secret: Z3VuLWpvby1haG4tand0LXNlY3JldC1ndW4tam9vLWFobi1qd3Qtc2VjcmV0LWd1bi1qb28tYWhuLWp3dC1zZWNyZXQtZ3VuLWpvby1haG4tand0LXNlY3JldC1oZWxsbw
   token-validity-in-seconds: 999999
+server:
+  port: 8082
