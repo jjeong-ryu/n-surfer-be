@@ -48,7 +48,7 @@ public class JwtUtil implements InitializingBean {
     public static String createAccessToken(User user) {
         long now = (new Date()).getTime();
         Date validity = new Date(now + JwtUtil.tokenValidityInMilliSeconds);
-        return Jwts.builder().setSubject(user.getUsername())
+        return Jwts.builder().setSubject(user.getUsername() + "_" + user.getProvider())
                 .claim("exp", Instant.now().getEpochSecond() + AUTH_TIME)
                 .signWith(key, getAlgorithm())
                 .setExpiration(validity)
@@ -96,6 +96,6 @@ public class JwtUtil implements InitializingBean {
             logger.info("JWT 토큰이 잘못되었습니다.");
             throw new InvalidJwtException("JWT 토큰이 잘못되었습니다.");
         }
-        return VerifyResult.builder().success(true).username(claimsJws.getBody().getSubject()).build();
+        return VerifyResult.builder().success(true).emailAndProvider(claimsJws.getBody().getSubject()).build();
     }
 }
