@@ -11,6 +11,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
 import java.util.Date;
+import java.util.List;
 
 @Entity
 @AllArgsConstructor
@@ -36,6 +37,9 @@ public class User implements UserDetails {
     @Enumerated(value = EnumType.STRING)
     @Builder.Default
     private Authority authority = Authority.USER;
+
+    @OneToMany(mappedBy = "user")
+    private List<Wave> waves;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
