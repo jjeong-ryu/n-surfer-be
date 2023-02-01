@@ -18,15 +18,9 @@ import static org.springframework.http.HttpStatus.*;
 public class UserController {
     private final UserService userService;
 
-    @GetMapping
-    public ResponseEntity<ResponseDto<GetUserProfileDto.Response>> getUserProfile(@AuthenticationPrincipal User user){
-        return new ResponseEntity(userService.getUserProfile(user), OK);
-    }
-
     @PostMapping("/sign-up")
     public ResponseEntity<Object> signUp(SignUpDto.Request request){
         return new ResponseEntity(userService.signUp(request), OK);
     }
-
 
 }

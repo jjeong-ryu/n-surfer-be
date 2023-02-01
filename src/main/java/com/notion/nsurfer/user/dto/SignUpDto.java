@@ -11,7 +11,8 @@ public class SignUpDto {
         private String email;
         private String provider;
         private String nickname;
-        private Authority authority;
+        @Builder.Default
+        private Authority authority = Authority.USER;
         private String thumbnailImageUrl;
     }
 

@@ -11,5 +11,5 @@ import lombok.NoArgsConstructor;
 @Builder
 public class VerifyResult {
     private boolean success;
-    private String username;
+    private String emailAndProvider;
 }

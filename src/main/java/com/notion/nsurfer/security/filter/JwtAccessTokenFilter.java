@@ -35,14 +35,13 @@ public class JwtAccessTokenFilter extends BasicAuthenticationFilter {
             String jwt = JwtUtil.resolveToken(request);
             VerifyResult verifiedResult = JwtUtil.validateToken(jwt);
 
-            String userName = verifiedResult.getUsername();
-            User user = (User) this.userDetailsService.loadUserByUsername(userName);
+            String emailAndProvider = verifiedResult.getEmailAndProvider();
+            User user = (User) this.userDetailsService.loadUserByUsername(emailAndProvider);
 
             // jwt가 유효하다는 것은 이미 인증이 되었다는 뜻이므로 authenticated로 넘긴다
             UsernamePasswordAuthenticationToken token = UsernamePasswordAuthenticationToken.authenticated(user, null,
                     user.getAuthorities());
 
-            // SecurityContextHolder.getContext().setAuthentication(token);
             SecurityContext context = SecurityContextHolder.createEmptyContext();
             context.setAuthentication(token);
             SecurityContextHolder.setContext(context);
