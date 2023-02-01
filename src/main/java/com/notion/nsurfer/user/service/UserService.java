@@ -9,6 +9,7 @@ import com.notion.nsurfer.user.entity.User;
 import com.notion.nsurfer.user.exception.EmailNotFoundException;
 import com.notion.nsurfer.user.mapper.UserMapper;
 import com.notion.nsurfer.user.repository.UserRepository;
+import com.notion.nsurfer.user.repository.UserRepositoryCustom;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -18,6 +19,7 @@ import org.springframework.stereotype.Service;
 public class UserService {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
+    private final UserRepositoryCustom userRepositoryCustom;
 
     @Transactional
     public ResponseDto<Object> signUp(SignUpDto.Request request) {
@@ -47,11 +49,11 @@ public class UserService {
     }
 
     public ResponseDto<GetUserProfileDto.Response> getUserProfile(User user) {
-        User findUser = userRepository.findByEmail(user.getEmail())
-                .orElseThrow(EmailNotFoundException::new);
+        final String email = user.getEmail();
+        User findUser = userRepositoryCustom.findByEmail(email);
         return ResponseDto.<GetUserProfileDto.Response>builder()
                 .responseCode(ResponseCode.GET_USER_PROFILE)
-                .data(userMapper.getUserProfileToResponse(findUser))
+                .data(userMapper.getUserProfileToResponse(userRepositoryCustom.findByEmail(email)))
                 .build();
     }
 }
