@@ -58,7 +58,11 @@ dependencies {
     implementation 'org.springframework.security:spring-security-oauth2-client:5.7.3'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
 
+    // MacOS
     implementation 'io.netty:netty-resolver-dns-native-macos:4.1.86.Final:osx-aarch_64'
+
+    // cloudinary
+    implementation 'com.cloudinary:cloudinary-http44:1.31.0'
 }
 
 tasks.named('test') {

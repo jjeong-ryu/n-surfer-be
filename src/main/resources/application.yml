@@ -32,3 +32,8 @@ jwt:
   token-validity-in-seconds: 999999
 server:
   port: 8082
+
+cloudinary:
+  cloud-name: n-surfer
+  api-key: 769632388419152
+  api-secret: zGQT2Zs22gJzDsOHYfvsFW6b-I4
