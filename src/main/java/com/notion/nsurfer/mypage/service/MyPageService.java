@@ -2,11 +2,14 @@ package com.notion.nsurfer.mypage.service;
 
 import com.notion.nsurfer.common.ResponseCode;
 import com.notion.nsurfer.common.ResponseDto;
+import com.notion.nsurfer.mypage.dto.UpdateUserProfileDto;
+import com.notion.nsurfer.mypage.exception.UserNotFoundException;
 import com.notion.nsurfer.user.dto.GetUserProfileDto;
 import com.notion.nsurfer.user.entity.User;
 import com.notion.nsurfer.user.mapper.UserMapper;
 import com.notion.nsurfer.user.repository.UserRepository;
 import com.notion.nsurfer.user.repository.UserRepositoryCustom;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -29,8 +32,14 @@ public class MyPageService {
         return null;
     }
 
-    public Object updateUserProfile(User user){
-        return null;
+    @Transactional
+    public ResponseDto<Object> updateUserProfile(UpdateUserProfileDto.Request dto){
+        User user = userRepository.findById(dto.getId())
+                .orElseThrow(UserNotFoundException::new);
+        user.update(dto);
+        return ResponseDto.builder()
+                .responseCode(ResponseCode.UPDATE_USER_PROFILE)
+                .data(null).build();
     }
 
     public Object deleteUserProfile(User user){
