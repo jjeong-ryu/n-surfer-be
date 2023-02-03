@@ -1,7 +1,11 @@
 package com.notion.nsurfer.mypage.service;
 
+import com.cloudinary.Cloudinary;
+import com.cloudinary.utils.ObjectUtils;
+import com.cloudinary.utils.StringUtils;
 import com.notion.nsurfer.common.ResponseCode;
 import com.notion.nsurfer.common.ResponseDto;
+import com.notion.nsurfer.common.config.CloudinaryConfig;
 import com.notion.nsurfer.mypage.dto.UpdateUserProfileDto;
 import com.notion.nsurfer.mypage.exception.UserNotFoundException;
 import com.notion.nsurfer.user.dto.GetUserProfileDto;
@@ -12,6 +16,12 @@ import com.notion.nsurfer.user.repository.UserRepositoryCustom;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -19,6 +29,7 @@ public class MyPageService {
     private final UserRepository userRepository;
     private final UserRepositoryCustom userRepositoryCustom;
     private final UserMapper userMapper;
+    private final Cloudinary cloudinary;
 
     public ResponseDto<GetUserProfileDto.Response> getUserProfile(User user) {
         final String email = user.getEmail();
@@ -28,15 +39,17 @@ public class MyPageService {
                 .build();
     }
 
-    public Object postUserProfile(User user){
-        return null;
-    }
-
     @Transactional
-    public ResponseDto<Object> updateUserProfile(UpdateUserProfileDto.Request dto){
-        User user = userRepository.findById(dto.getId())
+    public ResponseDto<Object> updateUserProfile(UpdateUserProfileDto.Request dto) throws IOException {
+        User user = userRepository.findById(dto.getUserInfo().getId())
                 .orElseThrow(UserNotFoundException::new);
         user.update(dto);
+        MultipartFile uploadedImage = dto.getImage();
+        if(uploadedImage != null){
+            String imageName = StringUtils.join(List.of(dto.getUserInfo().getEmail(), dto.getUserInfo().getProvider()), "_");
+            Map uploadResponse = cloudinary.uploader().upload(uploadedImage, ObjectUtils.asMap("public_id", imageName));
+            user.updateImage(uploadResponse.get("url").toString());
+        }
         return ResponseDto.builder()
                 .responseCode(ResponseCode.UPDATE_USER_PROFILE)
                 .data(null).build();

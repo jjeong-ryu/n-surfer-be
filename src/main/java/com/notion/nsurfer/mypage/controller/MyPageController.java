@@ -10,6 +10,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
+
 import static org.springframework.http.HttpStatus.*;
 
 @RestController
@@ -22,14 +24,9 @@ public class MyPageController {
         return new ResponseEntity<>(myPageService.getUserProfile(user), OK);
     }
 
-    @PostMapping("/profile")
-    public ResponseEntity<Object> postUserProfile(@AuthenticationPrincipal User user){
-        return new ResponseEntity<>(myPageService.postUserProfile(user), OK);
-    }
-
-    @PatchMapping("/profile")
+    @PutMapping("/profile")
     public ResponseEntity<Object> updateUserProfile(
-            @RequestBody UpdateUserProfileDto.Request dto){
+            @RequestPart UpdateUserProfileDto.Request dto) throws IOException {
         return new ResponseEntity<>(myPageService.updateUserProfile(dto), OK);
     }
 }
