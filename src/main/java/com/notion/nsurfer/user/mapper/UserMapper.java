@@ -2,6 +2,7 @@ package com.notion.nsurfer.user.mapper;
 
 import com.notion.nsurfer.auth.dto.AuthKakaoLoginProfileDto;
 import com.notion.nsurfer.common.CommonMapperConfig;
+import com.notion.nsurfer.user.dto.DeleteUserDto;
 import com.notion.nsurfer.user.dto.GetUserProfileDto;
 import com.notion.nsurfer.user.dto.SignUpDto;
 import com.notion.nsurfer.user.entity.User;
@@ -56,4 +57,6 @@ public interface UserMapper {
         return waveList;
     }
     GetUserProfileDto.Response.Wave getUserProfileToWave(LocalDate date, Integer count);
+    @Mapping(target = "userId", source = "user.id")
+    DeleteUserDto.Response deleteUserToResponse(User user);
 }
