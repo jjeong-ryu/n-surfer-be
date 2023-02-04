@@ -35,10 +35,16 @@ public class User implements UserDetails {
     private String password;
 
     private String thumbnailImageUrl;
+
+    @Builder.Default
+    private Boolean isDeleted = false;
     @Enumerated(value = EnumType.STRING)
     @Builder.Default
     private Authority authority = Authority.USER;
 
+    public void delete(){
+        this.isDeleted = true;
+    }
     @OneToMany(mappedBy = "user")
     private List<Wave> waves;
 

@@ -3,7 +3,7 @@ package com.notion.nsurfer.user.service;
 import com.notion.nsurfer.common.ResponseCode;
 import com.notion.nsurfer.common.ResponseDto;
 import com.notion.nsurfer.security.util.JwtUtil;
-import com.notion.nsurfer.user.dto.GetUserProfileDto;
+import com.notion.nsurfer.user.dto.DeleteUserDto;
 import com.notion.nsurfer.user.dto.SignUpDto;
 import com.notion.nsurfer.user.entity.User;
 import com.notion.nsurfer.user.exception.EmailNotFoundException;
@@ -21,16 +21,6 @@ public class UserService {
     private final UserMapper userMapper;
     private final UserRepositoryCustom userRepositoryCustom;
 
-    @Transactional
-    public ResponseDto<Object> signUp(SignUpDto.Request request) {
-        signUpValidation(request);
-        User user = userMapper.signUpToUser(request);
-        userRepository.save(user);
-        return ResponseDto.builder()
-                .responseCode(ResponseCode.SIGN_UP)
-                .data(null)
-                .build();
-    }
 
     @Transactional
     public SignUpDto.Response signUpWithKakao(SignUpDto.Request request) {
@@ -44,6 +34,18 @@ public class UserService {
                 .email(request.getEmail())
                 .nickname(request.getNickname()).build();
     }
+
     public void signUpValidation(SignUpDto.Request request){
+    }
+
+    @Transactional
+    public ResponseDto<DeleteUserDto.Response> deleteUser(User user) {
+        User findUser = userRepository.findByEmail(user.getEmail())
+                .orElseThrow(EmailNotFoundException::new);
+        findUser.delete();
+        return ResponseDto.<DeleteUserDto.Response>builder()
+                .responseCode(ResponseCode.DELETE_USER)
+                .data(userMapper.deleteUserToResponse(findUser))
+                .build();
     }
 }

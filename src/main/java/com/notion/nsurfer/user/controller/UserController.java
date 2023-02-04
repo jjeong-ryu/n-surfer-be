@@ -1,8 +1,7 @@
 package com.notion.nsurfer.user.controller;
 
 import com.notion.nsurfer.common.ResponseDto;
-import com.notion.nsurfer.user.dto.GetUserProfileDto;
-import com.notion.nsurfer.user.dto.SignUpDto;
+import com.notion.nsurfer.user.dto.DeleteUserDto;
 import com.notion.nsurfer.user.entity.User;
 import com.notion.nsurfer.user.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -18,9 +17,9 @@ import static org.springframework.http.HttpStatus.*;
 public class UserController {
     private final UserService userService;
 
-    @PostMapping("/sign-up")
-    public ResponseEntity<Object> signUp(SignUpDto.Request request){
-        return new ResponseEntity(userService.signUp(request), OK);
+    @DeleteMapping
+    public ResponseEntity<ResponseDto<DeleteUserDto>> DeleteUser(@AuthenticationPrincipal User user){
+        return new ResponseEntity(userService.deleteUser(user), OK);
     }
 
 }
