@@ -40,7 +40,7 @@ public class UserService {
 
     @Transactional
     public ResponseDto<DeleteUserDto.Response> deleteUser(User user) {
-        User findUser = userRepository.findByEmail(user.getEmail())
+        User findUser = userRepository.findByEmailAndProvider(user.getEmail(), user.getProvider())
                 .orElseThrow(EmailNotFoundException::new);
         findUser.delete();
         return ResponseDto.<DeleteUserDto.Response>builder()
