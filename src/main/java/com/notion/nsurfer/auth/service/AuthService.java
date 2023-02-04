@@ -33,7 +33,7 @@ public class AuthService {
     private final UserMapper userMapper;
     private final UserRepository userRepository;
     public ResponseDto<AuthKakaoLoginDto.Response> kakaoLogin(final String code, final String redirectUrl) {
-        String kakaoAccessToken = getKakaoAccessToken(code, redirectUrl, KAKAO);
+        final String kakaoAccessToken = getKakaoAccessToken(code, redirectUrl, KAKAO);
         AuthKakaoLoginProfileDto.Response userprofile = getKaKaoUserprofile(kakaoAccessToken);
         User user = userRepository.findByEmailAndProvider(userprofile.getKakaoAccount().getEmail(),
                 KAKAO).orElse(null);
