@@ -22,7 +22,7 @@ public class JwtRefreshTokenFilter extends AbstractAuthenticationProcessingFilte
     public JwtRefreshTokenFilter(AuthenticationManager authenticationManager,
                                  UserDetailsService userDetailsService,
                                  UserLoginInfoRepository userLoginInfoRepository){
-        super(new AntPathRequestMatcher("/v1/auth/reissue", "POST"), authenticationManager);
+        super(new AntPathRequestMatcher("/auth/reissue", "POST"), authenticationManager);
         this.userDetailsService = userDetailsService;
         this.userLoginInfoRepository = userLoginInfoRepository;
     }
