@@ -38,6 +38,7 @@ public class User implements UserDetails {
 
     @Builder.Default
     private Boolean isDeleted = false;
+
     @Enumerated(value = EnumType.STRING)
     @Builder.Default
     private Authority authority = Authority.USER;

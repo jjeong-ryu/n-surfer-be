@@ -1,6 +1,7 @@
 package com.notion.nsurfer.user.entity;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -16,8 +17,13 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Entity
 public class UserLoginInfo {
-    @Id
+    @Id @GeneratedValue
+    private Long id;
+
     private String email;
+
+    private String provider;
+
     private String accessToken;
-//    private String refreshToken;
+    private String refreshToken;
 }
