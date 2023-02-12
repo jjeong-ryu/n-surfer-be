@@ -19,6 +19,7 @@ public interface UserMapper {
     @Mapping(target = "birthday", ignore = true)
     @Mapping(target = "password", ignore = true)
     @Mapping(target = "waves", ignore = true)
+    @Mapping(target = "isDeleted", ignore = true)
     User signUpToUser(SignUpDto.Request request);
     @Mapping(target = "nickname", source = "response.kakaoAccount.profile.nickname")
     @Mapping(target = "email", source = "response.kakaoAccount.email")
@@ -26,7 +27,6 @@ public interface UserMapper {
     @Mapping(target = "thumbnailImageUrl", source = "response.kakaoAccount.profile.thumbnailImageUrl")
     @Mapping(target = "authority", ignore = true)
     SignUpDto.Request signUpKakaoToRequest(AuthKakaoLoginProfileDto.Response response);
-
 
     @Mapping(target = "userId", source = "user.id")
     @Mapping(target = "userEmail", source = "user.email")
