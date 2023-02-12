@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.Setter;
 
 @AllArgsConstructor
 @Getter
@@ -32,11 +33,17 @@ public enum ResponseCode {
     // Error - User
     ERROR_UNAUTHENTICATED("Failure", "EU001", "Authentication fail", "인증 실패"),
     ERROR_USER_NOT_FOUND("Failure", "EU002", "User id not found", "해당 유저가 존재하지 않음"),
+    ERROR_INVALID_ACCESS_TOKEN("Failure", "EU003", "Invalid access token", "액세스 토큰이 유효하지 않음"),
+    ERROR_EXPIRED_ACCESS_TOKEN("Failure", "EU004", "Expired access Token", "액세스 토큰이 만료됨"),
+    ERROR_INVALID_REFRESH_TOKEN("Failure", "EU005", "Invalid access token", "리프레시 토큰이 유효하지 않음"),
+    ERROR_EXPIRED_REFRESH_TOKEN("Failure", "EU006", "Expired refresh Token", "리프레시 토큰이 만료됨"),
+
 
     ERROR_EMAIL_NOT_FOUND("Failure", "EU003", "Email not found", "존재하지 않는 이메일입니다.");
 
     private String status;
     private String code;
+    @Setter
     private String message;
     @JsonIgnore
     private String description;
