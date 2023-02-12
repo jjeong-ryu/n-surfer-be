@@ -1,7 +1,9 @@
 package com.notion.nsurfer.security.util;
 
 import com.notion.nsurfer.security.VerifyResult;
+import com.notion.nsurfer.security.exception.ExpiredJwtTokenException;
 import com.notion.nsurfer.security.exception.InvalidJwtException;
+import com.notion.nsurfer.security.exception.JwtExceptionMessage;
 import com.notion.nsurfer.user.entity.User;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
@@ -16,6 +18,8 @@ import javax.crypto.SecretKey;
 import java.time.Instant;
 import java.util.Base64;
 import java.util.Date;
+
+import static com.notion.nsurfer.security.exception.JwtExceptionMessage.*;
 
 @Component
 public class JwtUtil implements InitializingBean {
@@ -58,7 +62,7 @@ public class JwtUtil implements InitializingBean {
     public static String createRefreshToken(User user) {
         long now = (new Date()).getTime();
         Date validity = new Date(now + JwtUtil.tokenValidityInMilliSeconds);
-        return Jwts.builder().setSubject(user.getUsername())
+        return Jwts.builder().setSubject(user.getUsername() + "_" + user.getProvider())
                 .claim("exp", Instant.now().getEpochSecond() + REFRESH_TIME)
                 .signWith(key, getAlgorithm())
                 .setExpiration(validity)
@@ -79,23 +83,29 @@ public class JwtUtil implements InitializingBean {
         return bearerToken.substring(7);
     }
 
-    public static VerifyResult validateToken(String token) throws InvalidJwtException {
+    public static VerifyResult validateToken(String token){
         Jws<Claims> claimsJws = null;
         try {
             claimsJws = Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
         } catch (io.jsonwebtoken.security.SecurityException | MalformedJwtException e) {
-            logger.info("잘못된 JWT 서명입니다.");
-            throw new InvalidJwtException("잘못된 Jwt 서명입니다");
+            logger.info(MALFORMED_JWT_EXCEPTION);
+            throw new InvalidJwtException(MALFORMED_JWT_EXCEPTION);
         } catch (ExpiredJwtException e) {
-            logger.info("만료된 JWT 토큰입니다.");
-            throw new InvalidJwtException("만료된 JWT 토큰입니다.");
+            logger.info(EXPIRED_JWT_EXCEPTION);
+            throw new ExpiredJwtTokenException(EXPIRED_JWT_EXCEPTION);
         } catch (UnsupportedJwtException e) {
-            logger.info("지원되지 않는 JWT 토큰입니다.");
-            throw new InvalidJwtException("지원되지 않는 JWT 토큰입니다.");
+            logger.info(UNSUPPORTED_JWT_EXCEPTION);
+            throw new InvalidJwtException(UNSUPPORTED_JWT_EXCEPTION);
         } catch (IllegalArgumentException e) {
-            logger.info("JWT 토큰이 잘못되었습니다.");
-            throw new InvalidJwtException("JWT 토큰이 잘못되었습니다.");
+            logger.info(ILLEGAL_ARGUMENT_EXCEPTION);
+            throw new InvalidJwtException(ILLEGAL_ARGUMENT_EXCEPTION);
         }
         return VerifyResult.builder().success(true).emailAndProvider(claimsJws.getBody().getSubject()).build();
+    }
+
+    public static String extractSubjectFromRequest(HttpServletRequest request){
+        String token = resolveToken(request);
+        return Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token)
+                .getBody().getSubject();
     }
 }
