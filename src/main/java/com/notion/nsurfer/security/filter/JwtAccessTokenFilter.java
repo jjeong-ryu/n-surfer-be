@@ -57,19 +57,7 @@ public class JwtAccessTokenFilter extends BasicAuthenticationFilter {
         try {
             verifyAccessTokenResult = verifyAccessToken(request);
         } catch (ExpiredJwtTokenException expiredAccessTokenException) {
-            try {
-                verifyRefreshToken(request);
-                makeExpiredAccessTokenResponse(request, response);
-            } catch (ExpiredJwtTokenException expiredRefreshTokenException) {
-                logger.info(expiredRefreshTokenException.getMessage());
-                makeExpiredRefreshTokenResponse(request, response);
-            } catch (InvalidJwtException invalidRefreshTokenException){
-                logger.info(invalidRefreshTokenException.getMessage());
-                makeInvalidRefreshTokenResponse(response);
-            } finally {
-                return;
-            }
-
+            makeExpiredAccessTokenResponse(request, response);
         } catch (InvalidJwtException invalidAccessTokenException) {
             logger.info(invalidAccessTokenException.getMessage());
             makeInvalidAccessTokenResponse(response);
@@ -96,11 +84,6 @@ public class JwtAccessTokenFilter extends BasicAuthenticationFilter {
         return JwtUtil.validateToken(accessToken);
     }
 
-    private VerifyResult verifyRefreshToken(HttpServletRequest request){
-        String refreshToken = JwtUtil.resolveToken(request);
-        return JwtUtil.validateToken(refreshToken);
-    }
-
     private void makeExpiredAccessTokenResponse(HttpServletRequest request, HttpServletResponse response) throws IOException {
         String newAccessToken = makeNewAccessToken(request);
         // 새로운 토큰으로 최신화(Mysql, redis)
@@ -115,40 +98,17 @@ public class JwtAccessTokenFilter extends BasicAuthenticationFilter {
 
     private String makeNewAccessToken(HttpServletRequest request){
         String emailAndProvider = JwtUtil.extractSubjectFromRequest(request);
-        String email = emailAndProvider.split("_")[0];
-        String provider = emailAndProvider.split("_")[1];
-        User user = userRepository.findByEmailAndProvider(email, provider)
-                .orElseThrow(UserNotFoundException::new);
-        return JwtUtil.createAccessToken(user);
-    }
-
-    private void makeExpiredRefreshTokenResponse(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        String emailAndProvider = JwtUtil.extractSubjectFromRequest(request);
         String email = getEmailFromEmailAndProvider(emailAndProvider);
         String provider = getProviderFromEmailAndProvider(emailAndProvider);
         User user = userRepository.findByEmailAndProvider(email, provider)
                 .orElseThrow(UserNotFoundException::new);
-        // 새로운 토큰으로 최신화(Mysql, redis)
-        response.setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
-        ResponseDto<Object> responseDto = ResponseDto.builder()
-                .responseCode(ResponseCode.ERROR_EXPIRED_ACCESS_TOKEN)
-                .data(null)
-                .build();
-        response.getOutputStream().write(objectMapper.writeValueAsBytes(responseDto));
+        return JwtUtil.createAccessToken(user);
     }
 
     private void makeInvalidAccessTokenResponse(HttpServletResponse response) throws IOException {
         response.setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
         ResponseDto<Object> responseDto = ResponseDto.builder()
                 .responseCode(ResponseCode.ERROR_INVALID_ACCESS_TOKEN)
-                .data(null)
-                .build();
-        response.getOutputStream().write(objectMapper.writeValueAsBytes(responseDto));
-    }
-    private void makeInvalidRefreshTokenResponse(HttpServletResponse response) throws IOException {
-        response.setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
-        ResponseDto<Object> responseDto = ResponseDto.builder()
-                .responseCode(ResponseCode.ERROR_INVALID_REFRESH_TOKEN)
                 .data(null)
                 .build();
         response.getOutputStream().write(objectMapper.writeValueAsBytes(responseDto));
