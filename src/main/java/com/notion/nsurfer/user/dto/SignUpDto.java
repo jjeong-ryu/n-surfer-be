@@ -24,4 +24,11 @@ public class SignUpDto {
         private String nickname;
         private String thumbnailImageUrl;
     }
+
+    @Getter
+    @Builder
+    public static class TestResponse {
+        private String accessToken;
+        private String refreshToken;
+    }
 }
