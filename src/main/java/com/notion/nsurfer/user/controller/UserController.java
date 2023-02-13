@@ -2,6 +2,8 @@ package com.notion.nsurfer.user.controller;
 
 import com.notion.nsurfer.common.ResponseDto;
 import com.notion.nsurfer.user.dto.DeleteUserDto;
+import com.notion.nsurfer.user.dto.SignInDto;
+import com.notion.nsurfer.user.dto.SignUpDto;
 import com.notion.nsurfer.user.entity.User;
 import com.notion.nsurfer.user.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -22,4 +24,12 @@ public class UserController {
         return new ResponseEntity(userService.deleteUser(user), OK);
     }
 
+    @PostMapping
+    public String localSignUpForTest(@RequestBody SignUpDto.Request request){
+        return userService.localSignUpForTest(request);
+    }
+    @PostMapping("/login")
+    public SignUpDto.TestResponse loginForTest(@RequestBody SignInDto.Request request){
+        return userService.localSignInForTest(request);
+    }
 }

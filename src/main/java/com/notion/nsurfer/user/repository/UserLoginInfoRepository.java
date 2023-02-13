@@ -6,6 +6,5 @@ import org.springframework.data.repository.CrudRepository;
 
 import java.util.Optional;
 
-public interface UserLoginInfoRepository extends CrudRepository<UserLoginInfo, Long>, JpaRepository<UserLoginInfo, Long> {
-    Optional<UserLoginInfo> findByEmailAAndProvider(String email);
+public interface UserLoginInfoRepository extends JpaRepository<UserLoginInfo, Long> {
 }

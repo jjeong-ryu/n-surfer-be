@@ -51,7 +51,7 @@ public class JwtUtil implements InitializingBean {
 
     public static String createAccessToken(User user) {
         long now = (new Date()).getTime();
-        Date validity = new Date(now + JwtUtil.tokenValidityInMilliSeconds);
+        Date validity = new Date(now + JwtUtil.tokenValidityInMilliSeconds + AUTH_TIME);
         return Jwts.builder().setSubject(user.getUsername() + "_" + user.getProvider())
                 .claim("exp", Instant.now().getEpochSecond() + AUTH_TIME)
                 .signWith(key, getAlgorithm())
@@ -61,7 +61,7 @@ public class JwtUtil implements InitializingBean {
 
     public static String createRefreshToken(User user) {
         long now = (new Date()).getTime();
-        Date validity = new Date(now + JwtUtil.tokenValidityInMilliSeconds);
+        Date validity = new Date(now + JwtUtil.tokenValidityInMilliSeconds + REFRESH_TIME);
         return Jwts.builder().setSubject(user.getUsername() + "_" + user.getProvider())
                 .claim("exp", Instant.now().getEpochSecond() + REFRESH_TIME)
                 .signWith(key, getAlgorithm())

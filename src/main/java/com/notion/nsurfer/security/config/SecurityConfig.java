@@ -37,6 +37,7 @@ public class SecurityConfig {
     public WebSecurityCustomizer webSecurityCustomizer(){
         return web -> {
             web.ignoring()
+                    .requestMatchers("/user/**")
                     .requestMatchers("/auth/login/**")
                     .requestMatchers("/actuator/**");
         };

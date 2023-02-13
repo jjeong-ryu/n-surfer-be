@@ -36,6 +36,6 @@ public class CustomDsl extends AbstractHttpConfigurer<CustomDsl, HttpSecurity> {
                 userLoginInfoRepository,
                 userRepository);
         http.addFilterAt(jwtAccessTokenFilter, BasicAuthenticationFilter.class);
-        http.addFilterAt(jwtRefreshTokenFilter, AbstractAuthenticationProcessingFilter.class);
+        http.addFilterBefore(jwtRefreshTokenFilter, BasicAuthenticationFilter.class);
     }
 }

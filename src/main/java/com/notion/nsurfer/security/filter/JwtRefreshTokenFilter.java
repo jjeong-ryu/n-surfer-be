@@ -62,31 +62,31 @@ public class JwtRefreshTokenFilter extends AbstractAuthenticationProcessingFilte
      */
     @Override
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication token) throws IOException, ServletException {
-        String[] emailAndProvider = ((String)token.getCredentials()).split("_");
-        String userEmail = null;
-        String userProvider = null;
-        try{
-            userEmail = emailAndProvider[0];
-            userProvider = emailAndProvider[1];
-        } catch (IndexOutOfBoundsException e){
-            logger.error("email과 provider가 정상적으로 파싱되지 않았습니다.");
-            return;
-        }
-        User user = userRepository.findByEmailAndProvider(userEmail, userProvider)
-                .orElse(null);
-        UserLoginInfo userLoginInfo = userLoginInfoRepository.findByEmailAAndProvider((String) token.getPrincipal())
-                .orElse(null);
-        if(user == null|| userLoginInfo == null){
-            return;
-        }
-        //
-        String newRefreshToken = JwtUtil.createRefreshToken(user);
-
-        //
-        SecurityContext context = SecurityContextHolder.createEmptyContext();
-        context.setAuthentication(token);
-        SecurityContextHolder.setContext(context);
-        doFilter(request,response,chain);
+//        String[] emailAndProvider = ((String)token.getCredentials()).split("_");
+//        String userEmail = null;
+//        String userProvider = null;
+//        try{
+//            userEmail = emailAndProvider[0];
+//            userProvider = emailAndProvider[1];
+//        } catch (IndexOutOfBoundsException e){
+//            logger.error("email과 provider가 정상적으로 파싱되지 않았습니다.");
+//            return;
+//        }
+//        User user = userRepository.findByEmailAndProvider(userEmail, userProvider)
+//                .orElse(null);
+//        UserLoginInfo userLoginInfo = userLoginInfoRepository.findByEmailAAndProvider((String) token.getPrincipal())
+//                .orElse(null);
+//        if(user == null|| userLoginInfo == null){
+//            return;
+//        }
+//        //
+//        String newRefreshToken = JwtUtil.createRefreshToken(user);
+//
+//        //
+//        SecurityContext context = SecurityContextHolder.createEmptyContext();
+//        context.setAuthentication(token);
+//        SecurityContextHolder.setContext(context);
+//        doFilter(request,response,chain);
     }
 
     @Override
