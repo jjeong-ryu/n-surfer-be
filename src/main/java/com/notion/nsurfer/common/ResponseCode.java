@@ -13,7 +13,7 @@ public enum ResponseCode {
 
     // Card
     GET_CARD_LIST("Success", "C001", "Get card list", "모든 카드 조회"),
-    POST_CARD("Success", "C002", "Post card list", "카드 작성"),
+    POST_CARD("Success", "C002", "Post card", "카드 작성"),
     GET_CARD("Success", "C003", "Get card detail", "카드 상세 조회"),
     UPDATE_CARD("Success", "C004", "update card", "카드 수정"),
     DELETE_CARD("Success", "C005", "delete card", "카드 삭제"),
@@ -24,13 +24,16 @@ public enum ResponseCode {
     // DbSync
     DB_SYNC("Success", "DS001", "DB sync", "notion DB와 n-surfer의 싱크 맞추기"),
 
+    // Auth
+    MAKE_NEW_ACCESS_TOKEN("Success", "U004", "Make new access token", "새로운 액세스 토큰 발급" ),
+    MAKE_NEW_ACCESS_AND_REFRESH_TOKEN("Success", "U005", "Make new access token and refresh token", "새로운 액세스 토큰 및 리프레시 발급" ),
+
+
     // User
     SIGN_UP("Success", "U001", "User sign up", "유저 회원가입"),
     GET_USER_PROFILE("Success", "U002", "Get user profile", "유저 프로필 조회"),
     UPDATE_USER_PROFILE("Success", "U003", "Update user profile", "유저 프로필 업데이트"),
     DELETE_USER("Success", "U003", "Delete User", "유저 회원탈퇴"),
-    MAKE_NEW_ACCESS_TOKEN("Success", "U004", "Make new access token", "새로운 액세스 토큰 발급" ),
-    MAKE_NEW_ACCESS_AND_REFRESH_TOKEN("Success", "U005", "Make new access token and refresh token", "새로운 액세스 토큰 및 리프레시 발급" ),
 
     // Error - User
     ERROR_UNAUTHENTICATED("Failure", "EU001", "Authentication fail", "인증 실패"),
