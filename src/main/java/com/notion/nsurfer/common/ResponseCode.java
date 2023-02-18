@@ -29,6 +29,8 @@ public enum ResponseCode {
     GET_USER_PROFILE("Success", "U002", "Get user profile", "유저 프로필 조회"),
     UPDATE_USER_PROFILE("Success", "U003", "Update user profile", "유저 프로필 업데이트"),
     DELETE_USER("Success", "U003", "Delete User", "유저 회원탈퇴"),
+    MAKE_NEW_ACCESS_TOKEN("Success", "U004", "Make new access token", "새로운 액세스 토큰 발급" ),
+    MAKE_NEW_ACCESS_AND_REFRESH_TOKEN("Success", "U005", "Make new access token and refresh token", "새로운 액세스 토큰 및 리프레시 발급" ),
 
     // Error - User
     ERROR_UNAUTHENTICATED("Failure", "EU001", "Authentication fail", "인증 실패"),

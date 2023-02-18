@@ -1,17 +1,19 @@
 package com.notion.nsurfer.auth.service;
 
-import com.notion.nsurfer.auth.common.AuthUtil;
-import com.notion.nsurfer.auth.dto.AuthKakaoLoginDto;
-import com.notion.nsurfer.auth.dto.AuthKakaoLoginProfileDto;
-import com.notion.nsurfer.auth.dto.AuthKakaoLoginTokenDto;
+import com.notion.nsurfer.auth.dto.*;
 import com.notion.nsurfer.common.ResponseCode;
 import com.notion.nsurfer.common.ResponseDto;
+import com.notion.nsurfer.mypage.exception.UserNotFoundException;
+import com.notion.nsurfer.security.VerifyResult;
 import com.notion.nsurfer.security.util.JwtUtil;
 import com.notion.nsurfer.user.dto.SignUpDto;
 import com.notion.nsurfer.user.entity.User;
+import com.notion.nsurfer.user.entity.UserLoginInfo;
 import com.notion.nsurfer.user.mapper.UserMapper;
+import com.notion.nsurfer.user.repository.UserLoginInfoRepository;
 import com.notion.nsurfer.user.repository.UserRepository;
 import com.notion.nsurfer.user.service.UserService;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
@@ -32,6 +34,7 @@ public class AuthService {
     private final UserService userService;
     private final UserMapper userMapper;
     private final UserRepository userRepository;
+    private final UserLoginInfoRepository userLoginInfoRepository;
     public ResponseDto<AuthKakaoLoginDto.Response> kakaoLogin(final String code, final String redirectUrl) {
         final String kakaoAccessToken = getKakaoAccessToken(code, redirectUrl, KAKAO);
         AuthKakaoLoginProfileDto.Response userprofile = getKaKaoUserprofile(kakaoAccessToken);
@@ -106,4 +109,65 @@ public class AuthService {
 //    private void signUpWithGoogle(AuthKakaoLoginProfileDto.Response userprofile){
 //        userService.signUp(userMapper.signUpKakaoToRequest(userprofile));
 //    }
+    @Transactional
+    public ResponseDto<ReissueAccessTokenDto.Response> reissueAccessToken(
+            ReissueAccessTokenDto.Request dto
+    ){
+        VerifyResult verifyResult = JwtUtil.validateToken(dto.getRefreshToken());
+        String newAccessToken = makeNewAccessToken(verifyResult.getEmailAndProvider());
+        User user = getUserFromEmailAndProvider(verifyResult.getEmailAndProvider());
+        UserLoginInfo userLoginInfo = getUserInfoFromUser(user);
+        userLoginInfo.updateAccessToken(newAccessToken);
+        return ResponseDto.<ReissueAccessTokenDto.Response>builder()
+                .responseCode(ResponseCode.MAKE_NEW_ACCESS_TOKEN)
+                .data(ReissueAccessTokenDto.Response.builder()
+                        .accessToken(newAccessToken).build())
+                .build();
+    }
+
+    @Transactional
+    public ResponseDto<ReissueAccessAndRefreshTokenDto.Response> reissueAccessAndRefreshToken(
+            ReissueAccessAndRefreshTokenDto.Request dto
+    ){
+        VerifyResult verifyResult = JwtUtil.validateToken(dto.getRefreshToken());
+        String emailAndProvider = verifyResult.getEmailAndProvider();
+        String newAccessToken = makeNewAccessToken(emailAndProvider);
+        String newRefreshToken = makeNewRefreshToken(emailAndProvider);
+        return ResponseDto.<ReissueAccessAndRefreshTokenDto.Response>builder()
+                .responseCode(ResponseCode.MAKE_NEW_ACCESS_AND_REFRESH_TOKEN)
+                .data(ReissueAccessAndRefreshTokenDto.Response.builder()
+                        .accessToken(newAccessToken)
+                        .refreshToken(newRefreshToken)
+                        .build())
+                .build();
+    }
+
+    private String makeNewAccessToken(String emailAndProvider){
+        User user = getUserFromEmailAndProvider(emailAndProvider);
+        String accessToken = JwtUtil.createAccessToken(user);
+        UserLoginInfo userLoginInfo = userLoginInfoRepository.findByUser(user)
+                .orElseThrow(UserNotFoundException::new);
+        userLoginInfo.updateAccessToken(accessToken);
+        return accessToken;
+    }
+
+    private String makeNewRefreshToken(String emailAndProvider){
+        User user = getUserFromEmailAndProvider(emailAndProvider);
+        String refreshToken = JwtUtil.createRefreshToken(user);
+        UserLoginInfo userLoginInfo = userLoginInfoRepository.findByUser(user)
+                .orElseThrow(UserNotFoundException::new);
+        userLoginInfo.updateRefreshToken(refreshToken);
+        return refreshToken;
+    }
+    private User getUserFromEmailAndProvider(String emailAndProvider){
+        String email = emailAndProvider.split("_")[0];
+        String provider = emailAndProvider.split("_")[1];
+        return userRepository.findByEmailAndProvider(email, provider)
+                .orElseThrow(UserNotFoundException::new);
+    }
+
+    private UserLoginInfo getUserInfoFromUser(User user){
+        return userLoginInfoRepository.findByUser(user)
+                .orElseThrow(UserNotFoundException::new);
+    }
 }

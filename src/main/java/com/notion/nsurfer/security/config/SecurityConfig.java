@@ -37,6 +37,8 @@ public class SecurityConfig {
     public WebSecurityCustomizer webSecurityCustomizer(){
         return web -> {
             web.ignoring()
+                    .requestMatchers("/auth/reissue/access-token")
+                    .requestMatchers("/auth/reissue/access-refresh-token")
                     .requestMatchers("/user/**")
                     .requestMatchers("/auth/login/**")
                     .requestMatchers("/actuator/**");
