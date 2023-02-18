@@ -115,6 +115,9 @@ public class AuthService {
     ){
         VerifyResult verifyResult = JwtUtil.validateToken(dto.getRefreshToken());
         String newAccessToken = makeNewAccessToken(verifyResult.getEmailAndProvider());
+        User user = getUserFromEmailAndProvider(verifyResult.getEmailAndProvider());
+        UserLoginInfo userLoginInfo = getUserInfoFromUser(user);
+        userLoginInfo.updateAccessToken(newAccessToken);
         return ResponseDto.<ReissueAccessTokenDto.Response>builder()
                 .responseCode(ResponseCode.MAKE_NEW_ACCESS_TOKEN)
                 .data(ReissueAccessTokenDto.Response.builder()
@@ -160,6 +163,11 @@ public class AuthService {
         String email = emailAndProvider.split("_")[0];
         String provider = emailAndProvider.split("_")[1];
         return userRepository.findByEmailAndProvider(email, provider)
+                .orElseThrow(UserNotFoundException::new);
+    }
+
+    private UserLoginInfo getUserInfoFromUser(User user){
+        return userLoginInfoRepository.findByUser(user)
                 .orElseThrow(UserNotFoundException::new);
     }
 }

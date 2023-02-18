@@ -7,8 +7,10 @@ import com.notion.nsurfer.user.dto.DeleteUserDto;
 import com.notion.nsurfer.user.dto.SignInDto;
 import com.notion.nsurfer.user.dto.SignUpDto;
 import com.notion.nsurfer.user.entity.User;
+import com.notion.nsurfer.user.entity.UserLoginInfo;
 import com.notion.nsurfer.user.exception.EmailNotFoundException;
 import com.notion.nsurfer.user.mapper.UserMapper;
+import com.notion.nsurfer.user.repository.UserLoginInfoRepository;
 import com.notion.nsurfer.user.repository.UserRepository;
 import com.notion.nsurfer.user.repository.UserRepositoryCustom;
 import jakarta.transaction.Transactional;
@@ -23,6 +25,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
     private final UserRepositoryCustom userRepositoryCustom;
+    private final UserLoginInfoRepository userLoginInfoRepository;
 
 
     @Transactional
@@ -68,6 +71,11 @@ public class UserService {
         User user = userRepository.findByEmailAndPassword(request.getEmail(), request.getPassword()).get();
         String accessToken = JwtUtil.createAccessToken(user);
         String refreshToken = JwtUtil.createRefreshToken(user);
+        UserLoginInfo userLoginInfo = UserLoginInfo.builder()
+                .accessToken(accessToken)
+                .refreshToken(refreshToken)
+                .user(user).build();
+        userLoginInfoRepository.save(userLoginInfo);
         return SignUpDto.TestResponse.builder()
                 .accessToken(accessToken)
                 .refreshToken(refreshToken).build();

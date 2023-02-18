@@ -5,17 +5,12 @@ import com.notion.nsurfer.common.ResponseCode;
 import com.notion.nsurfer.common.ResponseDto;
 import com.notion.nsurfer.mypage.exception.UserNotFoundException;
 import com.notion.nsurfer.security.VerifyResult;
-import com.notion.nsurfer.security.dto.ExpiredAccessTokenDto;
 import com.notion.nsurfer.security.exception.ExpiredJwtTokenException;
 import com.notion.nsurfer.security.exception.InvalidJwtException;
-import com.notion.nsurfer.security.exception.JwtExceptionMessage;
 import com.notion.nsurfer.security.util.JwtUtil;
 import com.notion.nsurfer.user.entity.User;
 import com.notion.nsurfer.user.repository.UserLoginInfoRepository;
 import com.notion.nsurfer.user.repository.UserRepository;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jws;
-import io.jsonwebtoken.Jwts;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -24,7 +19,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -57,7 +51,8 @@ public class JwtAccessTokenFilter extends BasicAuthenticationFilter {
         try {
             verifyAccessTokenResult = verifyAccessToken(request);
         } catch (ExpiredJwtTokenException expiredAccessTokenException) {
-            makeExpiredAccessTokenResponse(request, response);
+            makeExpiredAccessTokenResponse(response);
+            return;
         } catch (InvalidJwtException invalidAccessTokenException) {
             logger.info(invalidAccessTokenException.getMessage());
             makeInvalidAccessTokenResponse(response);
@@ -84,14 +79,11 @@ public class JwtAccessTokenFilter extends BasicAuthenticationFilter {
         return JwtUtil.validateToken(accessToken);
     }
 
-    private void makeExpiredAccessTokenResponse(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        String newAccessToken = makeNewAccessToken(request);
-        // 새로운 토큰으로 최신화(Mysql, redis)
+    private void makeExpiredAccessTokenResponse(HttpServletResponse response) throws IOException {
         response.setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
-        ResponseDto<ExpiredAccessTokenDto.Response> responseDto = ResponseDto.<ExpiredAccessTokenDto.Response>builder()
+        ResponseDto<Object> responseDto = ResponseDto.builder()
                 .responseCode(ResponseCode.ERROR_EXPIRED_ACCESS_TOKEN)
-                .data(ExpiredAccessTokenDto.Response.builder()
-                        .newAccessToken(newAccessToken).build())
+                .data(null)
                 .build();
         response.getOutputStream().write(objectMapper.writeValueAsBytes(responseDto));
     }
