@@ -1,6 +1,7 @@
 package com.notion.nsurfer.card.entity;
 
 import com.notion.nsurfer.user.entity.User;
+import com.notion.nsurfer.user.entity.Wave;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -36,6 +37,8 @@ public class Card {
     @OneToMany(mappedBy = "card")
     private List<CardLabel> cardLabels;
 
+    @OneToMany(mappedBy = "card")
+    private List<Wave> waves;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
