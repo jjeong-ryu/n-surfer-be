@@ -1,6 +1,7 @@
 package com.notion.nsurfer.user.entity;
 
 
+import com.notion.nsurfer.card.entity.Card;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -21,6 +22,6 @@ public class Wave {
     private LocalDate date;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
-    private User user;
+    @JoinColumn(name = "card_id")
+    private Card card;
 }

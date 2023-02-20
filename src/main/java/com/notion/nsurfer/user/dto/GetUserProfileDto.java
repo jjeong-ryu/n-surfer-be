@@ -18,12 +18,12 @@ public class GetUserProfileDto {
         private String userBirth;
         private Authority userType;
         private String imgUrl;
-        private List<Wave> waves;
-
-        @Builder
-        public static class Wave {
-            private LocalDate date;
-            private Integer count;
-        }
+//        private List<Wave> waves;
+//
+//        @Builder
+//        public static class Wave {
+//            private LocalDate date;
+//            private Integer count;
+//        }
     }
 }
