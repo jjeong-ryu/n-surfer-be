@@ -3,9 +3,12 @@ package com.notion.nsurfer.mypage.service;
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
 import com.cloudinary.utils.StringUtils;
+import com.notion.nsurfer.card.entity.Card;
+import com.notion.nsurfer.card.repository.CardRepository;
 import com.notion.nsurfer.common.ResponseCode;
 import com.notion.nsurfer.common.ResponseDto;
 import com.notion.nsurfer.common.config.CloudinaryConfig;
+import com.notion.nsurfer.mypage.dto.GetWaveDto;
 import com.notion.nsurfer.mypage.dto.UpdateUserProfileDto;
 import com.notion.nsurfer.mypage.exception.UserNotFoundException;
 import com.notion.nsurfer.user.dto.GetUserProfileDto;
@@ -30,6 +33,7 @@ public class MyPageService {
     private final UserRepositoryCustom userRepositoryCustom;
     private final UserMapper userMapper;
     private final Cloudinary cloudinary;
+    private final CardRepository cardRepository;
 
     public ResponseDto<GetUserProfileDto.Response> getUserProfile(User user) {
         final String email = user.getEmail();
@@ -55,8 +59,9 @@ public class MyPageService {
                 .data(null).build();
     }
 
-    public Object deleteUserProfile(User user){
-        userRepository.delete(user);
-        return null;
+    public ResponseDto<GetWaveDto.Response> getWave(User user){
+        List<Card> cards = cardRepository.findCardsWithWaveByUserId(user.getId());
+        return ResponseDto.<GetWaveDto.Response>builder()
+                .build();
     }
 }

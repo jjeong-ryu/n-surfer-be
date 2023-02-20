@@ -1,6 +1,7 @@
 package com.notion.nsurfer.mypage.controller;
 
 import com.notion.nsurfer.common.ResponseDto;
+import com.notion.nsurfer.mypage.dto.GetWaveDto;
 import com.notion.nsurfer.mypage.dto.UpdateUserProfileDto;
 import com.notion.nsurfer.mypage.service.MyPageService;
 import com.notion.nsurfer.user.dto.GetUserProfileDto;
@@ -28,5 +29,11 @@ public class MyPageController {
     public ResponseEntity<Object> updateUserProfile(
             @RequestPart UpdateUserProfileDto.Request dto) throws IOException {
         return new ResponseEntity<>(myPageService.updateUserProfile(dto), OK);
+    }
+
+    @GetMapping("/wave")
+    public ResponseEntity<ResponseDto<GetWaveDto.Response>> getSurfingRecord(@AuthenticationPrincipal User user){
+        return new ResponseEntity<>(myPageService.getWave(user), OK);
+
     }
 }
