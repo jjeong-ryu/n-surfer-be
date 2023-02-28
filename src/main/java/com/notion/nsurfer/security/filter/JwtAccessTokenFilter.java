@@ -66,10 +66,6 @@ public class JwtAccessTokenFilter extends BasicAuthenticationFilter {
         SecurityContext context = SecurityContextHolder.createEmptyContext();
         context.setAuthentication(token);
         SecurityContextHolder.setContext(context);
-//        } catch (AuthenticationException e){
-//            SecurityContextHolder.clearContext();
-//            return;
-//        }
 
         chain.doFilter(request, response);
     }
