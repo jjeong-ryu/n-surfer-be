@@ -31,6 +31,7 @@ public enum ResponseCode {
 
     // User
     SIGN_UP("Success", "U001", "User sign up", "유저 회원가입"),
+    SIGN_IN("Success", "U002", "User sign in", "유저 로그인"),
     GET_USER_PROFILE("Success", "U002", "Get user profile", "유저 프로필 조회"),
     UPDATE_USER_PROFILE("Success", "U003", "Update user profile", "유저 프로필 업데이트"),
     DELETE_USER("Success", "U003", "Delete User", "유저 회원탈퇴"),
