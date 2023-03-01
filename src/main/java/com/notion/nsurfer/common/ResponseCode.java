@@ -28,13 +28,12 @@ public enum ResponseCode {
     MAKE_NEW_ACCESS_TOKEN("Success", "U004", "Make new access token", "새로운 액세스 토큰 발급" ),
     MAKE_NEW_ACCESS_AND_REFRESH_TOKEN("Success", "U005", "Make new access token and refresh token", "새로운 액세스 토큰 및 리프레시 발급" ),
 
-
     // User
     SIGN_UP("Success", "U001", "User sign up", "유저 회원가입"),
     SIGN_IN("Success", "U002", "User sign in", "유저 로그인"),
-    GET_USER_PROFILE("Success", "U002", "Get user profile", "유저 프로필 조회"),
-    UPDATE_USER_PROFILE("Success", "U003", "Update user profile", "유저 프로필 업데이트"),
-    DELETE_USER("Success", "U003", "Delete User", "유저 회원탈퇴"),
+    GET_USER_PROFILE("Success", "U003", "Get user profile", "유저 프로필 조회"),
+    UPDATE_USER_PROFILE("Success", "U004", "Update user profile", "유저 프로필 업데이트"),
+    DELETE_USER("Success", "U005", "Delete User", "유저 회원탈퇴"),
 
     // Error - User
     ERROR_UNAUTHENTICATED("Failure", "EU001", "Authentication fail", "인증 실패"),
@@ -43,12 +42,13 @@ public enum ResponseCode {
     ERROR_EXPIRED_ACCESS_TOKEN("Failure", "EU004", "Expired access Token", "액세스 토큰이 만료됨"),
     ERROR_INVALID_REFRESH_TOKEN("Failure", "EU005", "Invalid access token", "리프레시 토큰이 유효하지 않음"),
     ERROR_EXPIRED_REFRESH_TOKEN("Failure", "EU006", "Expired refresh Token", "리프레시 토큰이 만료됨"),
+    ERROR_EMAIL_NOT_FOUND("Failure", "EU007", "Email not found", "존재하지 않는 이메일입니다."),
 
+    // My-page
+    GET_MY_PAGE_PROFILE("Success", "MP001", "Get my-page profile", "마이페이지 프로필 조회"),
+    GET_WAVES("Success", "MP002", "Get waves", "유저 잔디 정보 조회");
 
-    //My-page
-
-    GET_WAVES("Success", "MP001", "Get waves", "유저 잔디 정보 조회"),
-    ERROR_EMAIL_NOT_FOUND("Failure", "EU003", "Email not found", "존재하지 않는 이메일입니다.");
+    // Error - My-page
 
     private String status;
     private String code;

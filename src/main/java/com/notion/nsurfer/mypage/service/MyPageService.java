@@ -3,13 +3,9 @@ package com.notion.nsurfer.mypage.service;
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
 import com.cloudinary.utils.StringUtils;
-import com.notion.nsurfer.auth.utils.AuthRedisKeyUtils;
-import com.notion.nsurfer.card.entity.Card;
-import com.notion.nsurfer.card.repository.CardRepository;
 import com.notion.nsurfer.common.ResponseCode;
 import com.notion.nsurfer.common.ResponseDto;
-import com.notion.nsurfer.common.config.CloudinaryConfig;
-import com.notion.nsurfer.mypage.dto.GetWaveDto;
+import com.notion.nsurfer.mypage.dto.GetWavesDto;
 import com.notion.nsurfer.mypage.dto.UpdateUserProfileDto;
 import com.notion.nsurfer.mypage.exception.UserNotFoundException;
 import com.notion.nsurfer.mypage.utils.MyPageRedisKeyUtils;
@@ -25,9 +21,7 @@ import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
 import java.io.IOException;
-import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -44,7 +38,7 @@ public class MyPageService {
     public ResponseDto<GetUserProfileDto.Response> getUserProfile(User user) {
         final String email = user.getEmail();
         return ResponseDto.<GetUserProfileDto.Response>builder()
-                .responseCode(ResponseCode.GET_USER_PROFILE)
+                .responseCode(ResponseCode.GET_MY_PAGE_PROFILE)
                 .data(userMapper.getUserProfileToResponse(userRepositoryCustom.findByEmail(email)))
                 .build();
     }
@@ -65,13 +59,13 @@ public class MyPageService {
                 .data(null).build();
     }
 
-    public ResponseDto<GetWaveDto.Response> getWaves(User user, Integer month){
+    public ResponseDto<GetWavesDto.Response> getWaves(User user, Integer month){
         Calendar startDate = getStartDateCal(month);
         Calendar endDate = getEndDateCal();
         Map<String, Integer>  waves = getWavesWithDate(startDate, endDate, user);
-        return ResponseDto.<GetWaveDto.Response>builder()
+        return ResponseDto.<GetWavesDto.Response>builder()
                 .responseCode(ResponseCode.GET_WAVES)
-                .data(GetWaveDto.Response.builder()
+                .data(GetWavesDto.Response.builder()
                      .waves(waves).build())
                 .build();
     }

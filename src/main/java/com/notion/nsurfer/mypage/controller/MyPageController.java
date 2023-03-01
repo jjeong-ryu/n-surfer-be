@@ -1,7 +1,7 @@
 package com.notion.nsurfer.mypage.controller;
 
 import com.notion.nsurfer.common.ResponseDto;
-import com.notion.nsurfer.mypage.dto.GetWaveDto;
+import com.notion.nsurfer.mypage.dto.GetWavesDto;
 import com.notion.nsurfer.mypage.dto.UpdateUserProfileDto;
 import com.notion.nsurfer.mypage.service.MyPageService;
 import com.notion.nsurfer.user.dto.GetUserProfileDto;
@@ -32,7 +32,7 @@ public class MyPageController {
     }
 
     @GetMapping("/wave")
-    public ResponseEntity<ResponseDto<GetWaveDto.Response>> getSurfingRecord(
+    public ResponseEntity<ResponseDto<GetWavesDto.Response>> getSurfingRecord(
             @AuthenticationPrincipal User user,
             @RequestParam Integer month
     ){
