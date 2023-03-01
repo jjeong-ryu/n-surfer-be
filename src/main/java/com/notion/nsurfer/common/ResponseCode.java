@@ -45,6 +45,9 @@ public enum ResponseCode {
     ERROR_EXPIRED_REFRESH_TOKEN("Failure", "EU006", "Expired refresh Token", "리프레시 토큰이 만료됨"),
 
 
+    //My-page
+
+    GET_WAVES("Success", "MP001", "Get waves", "유저 잔디 정보 조회"),
     ERROR_EMAIL_NOT_FOUND("Failure", "EU003", "Email not found", "존재하지 않는 이메일입니다.");
 
     private String status;

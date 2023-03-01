@@ -32,8 +32,11 @@ public class MyPageController {
     }
 
     @GetMapping("/wave")
-    public ResponseEntity<ResponseDto<GetWaveDto.Response>> getSurfingRecord(@AuthenticationPrincipal User user){
-        return new ResponseEntity<>(myPageService.getWave(user), OK);
+    public ResponseEntity<ResponseDto<GetWaveDto.Response>> getSurfingRecord(
+            @AuthenticationPrincipal User user,
+            @RequestParam Integer month
+    ){
+        return new ResponseEntity<>(myPageService.getWaves(user, month), OK);
 
     }
 }
