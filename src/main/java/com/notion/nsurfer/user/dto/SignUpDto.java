@@ -20,6 +20,7 @@ public class SignUpDto {
     @Builder
     public static class Response {
         private String accessToken;
+//        private String refershToken;
         private String email;
         private String nickname;
         private String thumbnailImageUrl;

@@ -1,6 +1,7 @@
 package com.notion.nsurfer.auth.service;
 
 import com.notion.nsurfer.auth.dto.*;
+import com.notion.nsurfer.auth.utils.AuthRedisKeyUtils;
 import com.notion.nsurfer.common.ResponseCode;
 import com.notion.nsurfer.common.ResponseDto;
 import com.notion.nsurfer.mypage.exception.UserNotFoundException;
@@ -16,12 +17,15 @@ import com.notion.nsurfer.user.service.UserService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.reactive.function.client.WebClient;
+
+import java.time.Duration;
 
 import static com.notion.nsurfer.auth.common.AuthUtil.*;
 import static com.notion.nsurfer.auth.common.AuthUtil.KAKAO_ACCESS_TOKEN_REQUEST_URL;
@@ -35,6 +39,7 @@ public class AuthService {
     private final UserMapper userMapper;
     private final UserRepository userRepository;
     private final UserLoginInfoRepository userLoginInfoRepository;
+    private final RedisTemplate<String, String> redisTemplate;
     public ResponseDto<AuthKakaoLoginDto.Response> kakaoLogin(final String code, final String redirectUrl) {
         final String kakaoAccessToken = getKakaoAccessToken(code, redirectUrl, KAKAO);
         AuthKakaoLoginProfileDto.Response userprofile = getKaKaoUserprofile(kakaoAccessToken);
@@ -48,10 +53,14 @@ public class AuthService {
 
     private ResponseDto<AuthKakaoLoginDto.Response> loginWithoutSignUp(User user, AuthKakaoLoginProfileDto.Response userprofile) {
         String accessToken = JwtUtil.createAccessToken(user);
+//        String refreshToken = JwtUtil.createRefreshToken(user);
+        saveAccessTokenToRedis(user, accessToken);
+//        saveRefreshTokenToRedis(user, refreshToken);
         return ResponseDto.<AuthKakaoLoginDto.Response>builder()
                 .responseCode(ResponseCode.SIGN_IN)
                 .data(AuthKakaoLoginDto.Response.builder()
                         .accessToken(accessToken)
+//                        .refreshToken(refreshToken)
                         .thumbnailImageUrl(userprofile.getKakaoAccount().getProfile().getThumbnailImageUrl())
                         .email(userprofile.getKakaoAccount().getEmail())
                         .nickname(userprofile.getKakaoAccount().getProfile().getNickname()).build())
@@ -66,8 +75,8 @@ public class AuthService {
                 .data(AuthKakaoLoginDto.Response.builder()
                         .accessToken(response.getAccessToken())
                         .thumbnailImageUrl(response.getThumbnailImageUrl())
-            .email(response.getEmail())
-            .nickname(response.getNickname()).build())
+                        .email(response.getEmail())
+                        .nickname(response.getNickname()).build())
             .build();
     }
     private String getKakaoAccessToken(final String code, final String redirectUrl, final String provider) {
@@ -171,5 +180,15 @@ public class AuthService {
     private UserLoginInfo getUserInfoFromUser(User user){
         return userLoginInfoRepository.findByUser(user)
                 .orElseThrow(UserNotFoundException::new);
+    }
+
+    // 추후 accessToken의 갯수를 늘리는 경우, key - List 형식으로 변경 필요성 있음(opsForValue)
+    private void saveAccessTokenToRedis(User user, String accessToken) {
+        redisTemplate.opsForValue().set(AuthRedisKeyUtils.makeRedisAccessTokenKey(user), accessToken);
+    }
+
+    // 추후 refreshToken의 갯수를 늘리는 경우, key - List 형식으로 변경 필요성 있음(opsForValue)
+    private void saveRefreshTokenToRedis(User user, String refreshToken) {
+        redisTemplate.opsForValue().set(AuthRedisKeyUtils.makeRedisRefreshToken(user), refreshToken);
     }
 }
