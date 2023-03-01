@@ -15,6 +15,7 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -33,17 +34,20 @@ public class JwtAccessTokenFilter extends BasicAuthenticationFilter {
     private final UserRepository userRepository;
     private final UserLoginInfoRepository userLoginInfoRepository;
     private final ObjectMapper objectMapper = new ObjectMapper();
+    private final RedisTemplate<String, String> redisTemplate;
     public JwtAccessTokenFilter(AuthenticationManager authenticationManager,
                                 UserDetailsService userDetailsService,
                                 AuthenticationEntryPoint authenticationEntryPoint,
                                 UserRepository userRepository,
-                                UserLoginInfoRepository userLoginInfoRepository
+                                UserLoginInfoRepository userLoginInfoRepository,
+                                RedisTemplate<String, String> redisTemplate
     ){
         super(authenticationManager);
         this.userDetailsService = userDetailsService;
         this.authenticationEntryPoint = authenticationEntryPoint;
         this.userRepository = userRepository;
         this.userLoginInfoRepository = userLoginInfoRepository;
+        this.redisTemplate = redisTemplate;
     }
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws IOException, ServletException {
@@ -72,6 +76,7 @@ public class JwtAccessTokenFilter extends BasicAuthenticationFilter {
 
     private VerifyResult verifyAccessToken(HttpServletRequest request){
         String accessToken = JwtUtil.resolveToken(request);
+//        return JwtUtil.validateTokenWithRedis(accessToken);
         return JwtUtil.validateToken(accessToken);
     }
 

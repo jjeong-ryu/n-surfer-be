@@ -5,8 +5,8 @@ import com.notion.nsurfer.user.entity.User;
 public class AuthRedisKeyUtils {
     public static final String DIVIDER = ":";
     public static String makeRedisAccessTokenKey(User user){
-        return "email" + DIVIDER + user.getEmail() +
-                "provider" + DIVIDER + user.getProvider() +
+        return "email" + DIVIDER + user.getEmail() + DIVIDER +
+                "provider" + DIVIDER + user.getProvider() + DIVIDER +
                 "accessToken";
     }
 

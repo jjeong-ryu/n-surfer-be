@@ -82,7 +82,6 @@ public class JwtUtil implements InitializingBean {
 
         return bearerToken.substring(7);
     }
-
     public static VerifyResult validateToken(String token){
         String subject = extractSubjectFromToken(token);
         return VerifyResult.builder().success(true).emailAndProvider(subject).build();
@@ -94,7 +93,7 @@ public class JwtUtil implements InitializingBean {
     }
 
     public static String extractSubjectFromToken(String token){
-        Jws<Claims> claimsJws = null;
+        Jws<Claims> claimsJws;
         try {
             claimsJws = Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
         } catch (io.jsonwebtoken.security.SecurityException | MalformedJwtException e) {
@@ -110,7 +109,6 @@ public class JwtUtil implements InitializingBean {
             logger.info(ILLEGAL_ARGUMENT_EXCEPTION);
             throw new InvalidJwtException(ILLEGAL_ARGUMENT_EXCEPTION);
         }
-        return Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token)
-                .getBody().getSubject();
+        return claimsJws.getBody().getSubject();
     }
 }

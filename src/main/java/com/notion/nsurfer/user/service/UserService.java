@@ -1,5 +1,6 @@
 package com.notion.nsurfer.user.service;
 
+import com.notion.nsurfer.auth.utils.AuthRedisKeyUtils;
 import com.notion.nsurfer.common.ResponseCode;
 import com.notion.nsurfer.common.ResponseDto;
 import com.notion.nsurfer.security.util.JwtUtil;
@@ -79,6 +80,8 @@ public class UserService {
         User user = userRepository.findByEmailAndPassword(request.getEmail(), request.getPassword()).get();
         String accessToken = JwtUtil.createAccessToken(user);
         String refreshToken = JwtUtil.createRefreshToken(user);
+        saveAccessTokenToRedis(user, accessToken);
+        saveRefreshTokenToRedis(user, refreshToken);
         UserLoginInfo userLoginInfo = UserLoginInfo.builder()
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
@@ -87,5 +90,15 @@ public class UserService {
         return SignUpDto.TestResponse.builder()
                 .accessToken(accessToken)
                 .refreshToken(refreshToken).build();
+    }
+
+    // 추후 accessToken의 갯수를 늘리는 경우, key - List 형식으로 변경 필요성 있음(opsForValue)
+    private void saveAccessTokenToRedis(User user, String accessToken) {
+        redisTemplate.opsForValue().set(AuthRedisKeyUtils.makeRedisAccessTokenKey(user), accessToken);
+    }
+
+    // 추후 refreshToken의 갯수를 늘리는 경우, key - List 형식으로 변경 필요성 있음(opsForValue)
+    private void saveRefreshTokenToRedis(User user, String refreshToken) {
+        redisTemplate.opsForValue().set(AuthRedisKeyUtils.makeRedisRefreshToken(user), refreshToken);
     }
 }

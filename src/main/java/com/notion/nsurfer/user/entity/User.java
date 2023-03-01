@@ -20,6 +20,7 @@ import java.util.List;
 @NoArgsConstructor
 @Getter
 @Builder
+@Table(name = "users")
 public class User implements UserDetails {
     @Id @GeneratedValue
     private Long id;
