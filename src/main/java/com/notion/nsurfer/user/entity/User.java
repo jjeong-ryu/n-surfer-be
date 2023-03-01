@@ -1,5 +1,6 @@
 package com.notion.nsurfer.user.entity;
 
+import com.notion.nsurfer.card.entity.Card;
 import com.notion.nsurfer.common.config.Authority;
 import com.notion.nsurfer.mypage.dto.UpdateUserProfileDto;
 import jakarta.persistence.*;
@@ -47,7 +48,7 @@ public class User implements UserDetails {
         this.isDeleted = true;
     }
     @OneToMany(mappedBy = "user")
-    private List<Wave> waves;
+    private List<Card> cards;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

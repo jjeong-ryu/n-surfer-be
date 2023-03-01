@@ -137,6 +137,10 @@ public class AuthService {
         String emailAndProvider = verifyResult.getEmailAndProvider();
         String newAccessToken = makeNewAccessToken(emailAndProvider);
         String newRefreshToken = makeNewRefreshToken(emailAndProvider);
+        User user = getUserFromEmailAndProvider(verifyResult.getEmailAndProvider());
+        UserLoginInfo userLoginInfo = getUserInfoFromUser(user);
+        userLoginInfo.updateAccessToken(newAccessToken);
+        userLoginInfo.updateRefreshToken(newRefreshToken);
         return ResponseDto.<ReissueAccessAndRefreshTokenDto.Response>builder()
                 .responseCode(ResponseCode.MAKE_NEW_ACCESS_AND_REFRESH_TOKEN)
                 .data(ReissueAccessAndRefreshTokenDto.Response.builder()
@@ -146,21 +150,15 @@ public class AuthService {
                 .build();
     }
 
-    private String makeNewAccessToken(String emailAndProvider){
+    private String makeNewAccessToken(final String emailAndProvider){
         User user = getUserFromEmailAndProvider(emailAndProvider);
         String accessToken = JwtUtil.createAccessToken(user);
-        UserLoginInfo userLoginInfo = userLoginInfoRepository.findByUser(user)
-                .orElseThrow(UserNotFoundException::new);
-        userLoginInfo.updateAccessToken(accessToken);
         return accessToken;
     }
 
     private String makeNewRefreshToken(String emailAndProvider){
         User user = getUserFromEmailAndProvider(emailAndProvider);
         String refreshToken = JwtUtil.createRefreshToken(user);
-        UserLoginInfo userLoginInfo = userLoginInfoRepository.findByUser(user)
-                .orElseThrow(UserNotFoundException::new);
-        userLoginInfo.updateRefreshToken(refreshToken);
         return refreshToken;
     }
     private User getUserFromEmailAndProvider(String emailAndProvider){
