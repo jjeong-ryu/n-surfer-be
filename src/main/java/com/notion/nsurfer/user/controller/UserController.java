@@ -2,6 +2,7 @@ package com.notion.nsurfer.user.controller;
 
 import com.notion.nsurfer.common.ResponseDto;
 import com.notion.nsurfer.user.dto.DeleteUserDto;
+import com.notion.nsurfer.user.dto.GetUserProfileDto;
 import com.notion.nsurfer.user.dto.SignInDto;
 import com.notion.nsurfer.user.dto.SignUpDto;
 import com.notion.nsurfer.user.entity.User;
@@ -31,5 +32,12 @@ public class UserController {
     @PostMapping("/login")
     public SignUpDto.TestResponse loginForTest(@RequestBody SignInDto.Request request){
         return userService.localSignInForTest(request);
+    }
+
+    @GetMapping("/profile")
+    public ResponseEntity<ResponseDto<GetUserProfileDto.Response>> getUserProfile(
+            @RequestPart String nickname
+    ){
+        return new ResponseEntity<>(userService.getUserProfile(nickname), OK);
     }
 }

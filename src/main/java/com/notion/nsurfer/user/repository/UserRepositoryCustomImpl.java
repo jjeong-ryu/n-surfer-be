@@ -9,6 +9,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.StringUtils;
 
+import java.util.Optional;
+
 import static com.notion.nsurfer.user.entity.QUser.*;
 
 @Repository
@@ -25,7 +27,20 @@ public class UserRepositoryCustomImpl implements UserRepositoryCustom{
                 .fetchOne();
     }
 
+    @Override
+    public Optional<User> findByNickname(String nickname) {
+        return Optional.ofNullable(
+                queryFactory
+                    .selectFrom(user)
+                    .where(nicknameEq(nickname))
+                    .fetchOne());
+    }
+
     public BooleanExpression userEmailEq(String email){
         return !StringUtils.hasText(email) ? null : user.email.eq(email);
+    }
+
+    public BooleanExpression nicknameEq(String nickname){
+        return StringUtils.hasText(nickname) ? user.nickname.eq(nickname) : null;
     }
 }
