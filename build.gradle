@@ -23,6 +23,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-security'
     implementation 'org.springframework.boot:spring-boot-starter-webflux'
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
     annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
     // For lombok
     // lombok이 mapstruct보다 위에 위치해야 함

@@ -27,6 +27,14 @@ public class SecurityConfig {
                 .csrf().disable()
                 .sessionManagement(sessionManagement -> sessionManagement
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+//                .authorizeHttpRequests().and()
+//                .requestMatchers(
+//                        "/auth/reissue/access-token",
+//                        "/auth/reissue/access-refresh-token",
+//                        "/user/**",
+//                        "/auth/login/**",
+//                        "/actuator/**")
+//                .permitAll().and()
                 .cors().and()
                 .apply(customDsl)
                 .and()

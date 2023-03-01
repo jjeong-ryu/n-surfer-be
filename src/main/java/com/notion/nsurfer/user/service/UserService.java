@@ -15,7 +15,11 @@ import com.notion.nsurfer.user.repository.UserRepository;
 import com.notion.nsurfer.user.repository.UserRepositoryCustom;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Service;
+
+import java.time.Duration;
 
 import static com.notion.nsurfer.auth.common.AuthUtil.KAKAO;
 
@@ -26,7 +30,7 @@ public class UserService {
     private final UserMapper userMapper;
     private final UserRepositoryCustom userRepositoryCustom;
     private final UserLoginInfoRepository userLoginInfoRepository;
-
+    private final RedisTemplate<String, String> redisTemplate;
 
     @Transactional
     public SignUpDto.Response signUpWithKakao(SignUpDto.Request request) {
@@ -57,6 +61,8 @@ public class UserService {
 
     @Transactional
     public String localSignUpForTest(SignUpDto.Request request){
+        ValueOperations<String, String> ops = redisTemplate.opsForValue();
+        ops.set("test", "1", Duration.ofHours(12));
         User user = User.builder()
                 .nickname(request.getNickname())
                 .email(request.getEmail())

@@ -49,7 +49,7 @@ public class AuthService {
     private ResponseDto<AuthKakaoLoginDto.Response> loginWithoutSignUp(User user, AuthKakaoLoginProfileDto.Response userprofile) {
         String accessToken = JwtUtil.createAccessToken(user);
         return ResponseDto.<AuthKakaoLoginDto.Response>builder()
-                .responseCode(ResponseCode.SIGN_UP)
+                .responseCode(ResponseCode.SIGN_IN)
                 .data(AuthKakaoLoginDto.Response.builder()
                         .accessToken(accessToken)
                         .thumbnailImageUrl(userprofile.getKakaoAccount().getProfile().getThumbnailImageUrl())
@@ -62,7 +62,7 @@ public class AuthService {
         SignUpDto.Response response = signUpWithKakao(userprofile);
     // 처음 회원가입 하는 경우
         return ResponseDto.<AuthKakaoLoginDto.Response>builder()
-                .responseCode(ResponseCode.SIGN_UP)
+                .responseCode(ResponseCode.SIGN_IN)
                 .data(AuthKakaoLoginDto.Response.builder()
                         .accessToken(response.getAccessToken())
                         .thumbnailImageUrl(response.getThumbnailImageUrl())
@@ -101,14 +101,18 @@ public class AuthService {
                 .bodyToMono(AuthKakaoLoginProfileDto.Response.class)
                 .block();
     }
-    private SignUpDto.Response signUpWithKakao(AuthKakaoLoginProfileDto.Response userprofile){
+    private SignUpDto.Response signUpWithKakao(AuthKakaoLoginProfileDto.Response userprofile
+    ){
         SignUpDto.Request signUpRequest = userMapper.signUpKakaoToRequest(userprofile);
         return userService.signUpWithKakao(signUpRequest);
-        //
     }
+
+
 //    private void signUpWithGoogle(AuthKakaoLoginProfileDto.Response userprofile){
 //        userService.signUp(userMapper.signUpKakaoToRequest(userprofile));
 //    }
+
+
     @Transactional
     public ResponseDto<ReissueAccessTokenDto.Response> reissueAccessToken(
             ReissueAccessTokenDto.Request dto

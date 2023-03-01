@@ -18,6 +18,10 @@ spring:
     hibernate:
       ddl-auto: update
     defer-datasource-initialization: true
+  data:
+    redis:
+      host: localhost
+      port: 6379
 
 notion:
   database: c1b4b8a152e94d90909717d92be2c116
@@ -31,7 +35,7 @@ jwt:
   secret: Z3VuLWpvby1haG4tand0LXNlY3JldC1ndW4tam9vLWFobi1qd3Qtc2VjcmV0LWd1bi1qb28tYWhuLWp3dC1zZWNyZXQtZ3VuLWpvby1haG4tand0LXNlY3JldC1oZWxsbw
   token-validity-in-seconds: 1
 server:
-  port: 8082
+  port: 8090
 
 cloudinary:
   cloud-name: n-surfer
