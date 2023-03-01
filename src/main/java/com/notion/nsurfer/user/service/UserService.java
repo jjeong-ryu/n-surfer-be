@@ -32,7 +32,6 @@ import static com.notion.nsurfer.auth.common.AuthUtil.KAKAO;
 public class UserService {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
-    private final UserRepositoryCustom userRepositoryCustom;
     private final UserLoginInfoRepository userLoginInfoRepository;
     private final RedisTemplate<String, String> redisTemplate;
 

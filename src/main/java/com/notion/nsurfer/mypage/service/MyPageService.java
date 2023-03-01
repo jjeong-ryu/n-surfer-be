@@ -13,7 +13,6 @@ import com.notion.nsurfer.user.dto.GetUserProfileDto;
 import com.notion.nsurfer.user.entity.User;
 import com.notion.nsurfer.user.mapper.UserMapper;
 import com.notion.nsurfer.user.repository.UserRepository;
-import com.notion.nsurfer.user.repository.UserRepositoryCustom;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -29,7 +28,6 @@ import java.util.*;
 @RequiredArgsConstructor
 public class MyPageService {
     private final UserRepository userRepository;
-    private final UserRepositoryCustom userRepositoryCustom;
     private final UserMapper userMapper;
     private final Cloudinary cloudinary;
     private final RedisTemplate<String, String> redisTemplate;
@@ -39,7 +37,7 @@ public class MyPageService {
         final String email = user.getEmail();
         return ResponseDto.<GetUserProfileDto.Response>builder()
                 .responseCode(ResponseCode.GET_MY_PAGE_PROFILE)
-                .data(userMapper.getUserProfileToResponse(userRepositoryCustom.findByEmail(email)))
+                .data(userMapper.getUserProfileToResponse(userRepository.findByEmail(email)))
                 .build();
     }
 
@@ -62,7 +60,7 @@ public class MyPageService {
     public ResponseDto<GetWavesDto.Response> getWaves(User user, Integer month){
         Calendar startDate = getStartDateCal(month);
         Calendar endDate = getEndDateCal();
-        Map<String, Integer>  waves = getWavesWithDate(startDate, endDate, user);
+        List<GetWavesDto.Response.Wave> waves = getWavesWithDate(startDate, endDate, user);
         return ResponseDto.<GetWavesDto.Response>builder()
                 .responseCode(ResponseCode.GET_WAVES)
                 .data(GetWavesDto.Response.builder()
@@ -84,16 +82,19 @@ public class MyPageService {
         return cal;
     }
 
-    private Map<String, Integer> getWavesWithDate(Calendar startDateCal, Calendar endDateCal, User user){
+    private List<GetWavesDto.Response.Wave> getWavesWithDate(Calendar startDateCal, Calendar endDateCal, User user){
         ValueOperations<String, String> ops = redisTemplate.opsForValue();
-        Map<String, Integer> waves = new HashMap<>();
+        List<GetWavesDto.Response.Wave> waves = new ArrayList<>();
         while(startDateCal.before(endDateCal)){
-            System.out.println(startDateCal.getTime());
             String redisWaveTimeFormat = waveDateFormat.format(startDateCal.getTime());
             String redisKey = MyPageRedisKeyUtils.makeRedisWaveTimeKey(user, redisWaveTimeFormat);
             String redisValue = ops.get(redisKey);
             if(redisValue != null){
-                waves.put(redisWaveTimeFormat, Integer.valueOf(redisValue));
+                GetWavesDto.Response.Wave wave = GetWavesDto.Response.Wave.builder()
+                        .date(redisWaveTimeFormat)
+                        .count(Integer.valueOf(redisValue))
+                        .build();
+                waves.add(wave);
             }
             startDateCal.add(Calendar.DATE, 1);
         }
