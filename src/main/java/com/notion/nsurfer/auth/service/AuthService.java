@@ -42,19 +42,23 @@ public class AuthService {
     private final RedisTemplate<String, String> redisTemplate;
     public ResponseDto<AuthKakaoLoginDto.Response> kakaoLogin(final String code, final String redirectUrl) {
         final String kakaoAccessToken = getKakaoAccessToken(code, redirectUrl, KAKAO);
-        AuthKakaoLoginProfileDto.Response userprofile = getKaKaoUserprofile(kakaoAccessToken);
-        User user = userRepository.findByEmailAndProvider(userprofile.getKakaoAccount().getEmail(),
-                KAKAO).orElse(null);
+        AuthKakaoLoginProfileDto.Response userProfile = getKaKaoUserprofile(kakaoAccessToken);
+        User user = findUserByEmailAndProvider(userProfile, KAKAO);
         if(user != null) {
-            return this.loginWithoutSignUp(user, userprofile);
+            return this.kakaoLoginWithoutSignUp(user, userProfile);
         }
-        return this.loginWithSignUp(userprofile);
+        return this.kakaoLoginWithSignUp(userProfile);
     }
 
-    private ResponseDto<AuthKakaoLoginDto.Response> loginWithoutSignUp(User user, AuthKakaoLoginProfileDto.Response userprofile) {
+    private User findUserByEmailAndProvider(AuthKakaoLoginProfileDto.Response userProfile, final String kakao) {
+        return userRepository.findByEmailAndProvider(userProfile.getKakaoAccount().getEmail(),
+                kakao).orElse(null);
+    }
+
+    private ResponseDto<AuthKakaoLoginDto.Response> kakaoLoginWithoutSignUp(User user, AuthKakaoLoginProfileDto.Response userprofile) {
         String accessToken = JwtUtil.createAccessToken(user);
-//        String refreshToken = JwtUtil.createRefreshToken(user);
         saveAccessTokenToRedis(user, accessToken);
+//        String refreshToken = JwtUtil.createRefreshToken(user);
 //        saveRefreshTokenToRedis(user, refreshToken);
         return ResponseDto.<AuthKakaoLoginDto.Response>builder()
                 .responseCode(ResponseCode.SIGN_IN)
@@ -67,8 +71,13 @@ public class AuthService {
                 .build();
     }
 
-    private ResponseDto<AuthKakaoLoginDto.Response> loginWithSignUp(AuthKakaoLoginProfileDto.Response userprofile) {
+    private ResponseDto<AuthKakaoLoginDto.Response> kakaoLoginWithSignUp(AuthKakaoLoginProfileDto.Response userprofile) {
         SignUpDto.Response response = signUpWithKakao(userprofile);
+        User user = findUserByEmailAndProvider(userprofile, KAKAO);
+        String accessToken = JwtUtil.createAccessToken(user);
+        saveAccessTokenToRedis(user, accessToken);
+//        String refreshToken = JwtUtil.createRefreshToken(user);
+//        saveRefreshTokenToRedis(user, refreshToken);
     // 처음 회원가입 하는 경우
         return ResponseDto.<AuthKakaoLoginDto.Response>builder()
                 .responseCode(ResponseCode.SIGN_IN)
@@ -85,12 +94,7 @@ public class AuthService {
                 .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED_VALUE)
                 .build();
 
-        MultiValueMap<String, String> profileRequest = new LinkedMultiValueMap<>();
-        profileRequest.add("grant_type", "authorization_code");
-        profileRequest.add("code", code);
-        profileRequest.add("redirect_url", redirectUrl);
-        profileRequest.add("client_id", getClientId(provider));
-
+        MultiValueMap<String, String> profileRequest = makeProfileRequest(code, redirectUrl, provider);
         AuthKakaoLoginTokenDto.Response profileResponse = webClient
                 .post()
                 .bodyValue(profileRequest)
@@ -99,6 +103,16 @@ public class AuthService {
                 .block();
         return profileResponse.getAccessToken();
     }
+
+    private MultiValueMap<String, String> makeProfileRequest(String code, String redirectUrl, String provider) {
+        MultiValueMap<String, String> profileRequest = new LinkedMultiValueMap<>();
+        profileRequest.add("grant_type", "authorization_code");
+        profileRequest.add("code", code);
+        profileRequest.add("redirect_url", redirectUrl);
+        profileRequest.add("client_id", getClientId(provider));
+        return profileRequest;
+    }
+
     private AuthKakaoLoginProfileDto.Response getKaKaoUserprofile(final String kakaoAccessToken){
         WebClient webClient = WebClient.builder()
                 .baseUrl(KAKAO_PROFILE_REQUEST_URL)
