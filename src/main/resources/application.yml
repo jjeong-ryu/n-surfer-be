@@ -22,6 +22,11 @@ spring:
     redis:
       host: localhost
       port: 6379
+  sql:
+    init:
+      data-locations: classpath:develop_sql/*
+      mode: always
+
 
 notion:
   database: c1b4b8a152e94d90909717d92be2c116
