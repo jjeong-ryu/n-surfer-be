@@ -17,12 +17,6 @@ public class GetUserProfileDto {
         private String userName;
         private String userBirth;
         private String imgUrl;
-//        private List<Wave> waves;
-//
-//        @Builder
-//        public static class Wave {
-//            private LocalDate date;
-//            private Integer count;
-//        }
+        private Boolean isOwner;
     }
 }

@@ -28,39 +28,13 @@ import java.util.*;
 @RequiredArgsConstructor
 public class MyPageService {
     private final UserRepository userRepository;
-    private final UserMapper userMapper;
-    private final Cloudinary cloudinary;
     private final RedisTemplate<String, String> redisTemplate;
     private final SimpleDateFormat waveDateFormat = new SimpleDateFormat("yyyyMMdd");
 
-    public ResponseDto<GetUserProfileDto.Response> getUserProfile(User user) {
-        final String email = user.getEmail();
-        return ResponseDto.<GetUserProfileDto.Response>builder()
-                .responseCode(ResponseCode.GET_MY_PAGE_PROFILE)
-                .data(userMapper.getUserProfileToResponse(userRepository.findByEmail(email)))
-                .build();
-    }
-
-    @Transactional
-    public ResponseDto<Object> updateUserProfile(UpdateUserProfileDto.Request dto) throws IOException {
-        User user = userRepository.findById(dto.getUserInfo().getId())
-                .orElseThrow(UserNotFoundException::new);
-        user.update(dto);
-        MultipartFile uploadedImage = dto.getImage();
-        if(uploadedImage != null){
-            String imageName = StringUtils.join(List.of(dto.getUserInfo().getEmail(), dto.getUserInfo().getProvider()), "_");
-            Map uploadResponse = cloudinary.uploader().upload(uploadedImage, ObjectUtils.asMap("public_id", imageName));
-            user.updateImage(uploadResponse.get("url").toString());
-        }
-        return ResponseDto.builder()
-                .responseCode(ResponseCode.UPDATE_USER_PROFILE)
-                .data(null).build();
-    }
-
-    public ResponseDto<GetWavesDto.Response> getWaves(User user, Integer month){
+    public ResponseDto<GetWavesDto.Response> getWaves(String nickname, Integer month){
         Calendar startDate = getStartDateCal(month);
         Calendar endDate = getEndDateCal();
-        List<GetWavesDto.Response.Wave> waves = getWavesWithDate(startDate, endDate, user);
+        List<GetWavesDto.Response.Wave> waves = getWavesWithDate(startDate, endDate, nickname);
         return ResponseDto.<GetWavesDto.Response>builder()
                 .responseCode(ResponseCode.GET_WAVES)
                 .data(GetWavesDto.Response.builder()
@@ -82,9 +56,12 @@ public class MyPageService {
         return cal;
     }
 
-    private List<GetWavesDto.Response.Wave> getWavesWithDate(Calendar startDateCal, Calendar endDateCal, User user){
+    private List<GetWavesDto.Response.Wave> getWavesWithDate(Calendar startDateCal, Calendar endDateCal, String nickname){
         ValueOperations<String, String> ops = redisTemplate.opsForValue();
         List<GetWavesDto.Response.Wave> waves = new ArrayList<>();
+        User user = userRepository.findByNickname(nickname)
+                .orElseThrow(UserNotFoundException::new);
+
         while(startDateCal.before(endDateCal)){
             String redisWaveTimeFormat = waveDateFormat.format(startDateCal.getTime());
             String redisKey = MyPageRedisKeyUtils.makeRedisWaveTimeKey(user, redisWaveTimeFormat);

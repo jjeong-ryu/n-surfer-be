@@ -12,6 +12,8 @@ public class GetCardListDto {
     @Builder
     public static class Response {
         private List<Card> cardList;
+        @Getter
+        @Builder
         public static class Card {
             private Long cardId;
             private Long userId;

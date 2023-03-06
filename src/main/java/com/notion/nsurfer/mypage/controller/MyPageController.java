@@ -20,23 +20,13 @@ import static org.springframework.http.HttpStatus.*;
 @RequiredArgsConstructor
 public class MyPageController {
     private final MyPageService myPageService;
-    @GetMapping("/profile")
-    public ResponseEntity<ResponseDto<GetUserProfileDto.Response>> getUserProfile(@AuthenticationPrincipal User user){
-        return new ResponseEntity<>(myPageService.getUserProfile(user), OK);
-    }
-
-    @PutMapping("/profile")
-    public ResponseEntity<Object> updateUserProfile(
-            @RequestPart UpdateUserProfileDto.Request dto) throws IOException {
-        return new ResponseEntity<>(myPageService.updateUserProfile(dto), OK);
-    }
 
     @GetMapping("/wave")
     public ResponseEntity<ResponseDto<GetWavesDto.Response>> getSurfingRecord(
-            @AuthenticationPrincipal User user,
+            @RequestParam String nickname,
             @RequestParam Integer month
     ){
-        return new ResponseEntity<>(myPageService.getWaves(user, month), OK);
+        return new ResponseEntity<>(myPageService.getWaves(nickname, month), OK);
 
     }
 }

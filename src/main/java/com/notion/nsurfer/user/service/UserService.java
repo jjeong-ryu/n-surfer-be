@@ -1,8 +1,12 @@
 package com.notion.nsurfer.user.service;
 
+import com.cloudinary.Cloudinary;
+import com.cloudinary.utils.ObjectUtils;
+import com.cloudinary.utils.StringUtils;
 import com.notion.nsurfer.auth.utils.AuthRedisKeyUtils;
 import com.notion.nsurfer.common.ResponseCode;
 import com.notion.nsurfer.common.ResponseDto;
+import com.notion.nsurfer.mypage.dto.UpdateUserProfileDto;
 import com.notion.nsurfer.mypage.exception.UserNotFoundException;
 import com.notion.nsurfer.security.util.JwtUtil;
 import com.notion.nsurfer.user.dto.DeleteUserDto;
@@ -21,8 +25,12 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.time.Duration;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import static com.notion.nsurfer.auth.common.AuthUtil.KAKAO;
@@ -34,6 +42,7 @@ public class UserService {
     private final UserMapper userMapper;
     private final UserLoginInfoRepository userLoginInfoRepository;
     private final RedisTemplate<String, String> redisTemplate;
+    private final Cloudinary cloudinary;
 
     @Transactional
     public SignUpDto.Response signUpWithKakao(SignUpDto.Request request) {
@@ -52,7 +61,21 @@ public class UserService {
 
     public void signUpValidation(SignUpDto.Request request){
     }
-
+    @Transactional
+    public ResponseDto<Object> updateUserProfile(UpdateUserProfileDto.Request dto) throws IOException {
+        User user = userRepository.findById(dto.getUserInfo().getId())
+                .orElseThrow(UserNotFoundException::new);
+        user.update(dto);
+        MultipartFile uploadedImage = dto.getImage();
+        if(uploadedImage != null){
+            String imageName = StringUtils.join(List.of(dto.getUserInfo().getEmail(), dto.getUserInfo().getProvider()), "_");
+            Map uploadResponse = cloudinary.uploader().upload(uploadedImage, ObjectUtils.asMap("public_id", imageName));
+            user.updateImage(uploadResponse.get("url").toString());
+        }
+        return ResponseDto.builder()
+                .responseCode(ResponseCode.UPDATE_USER_PROFILE)
+                .data(null).build();
+    }
     @Transactional
     public ResponseDto<DeleteUserDto.Response> deleteUser(User user) {
         User findUser = userRepository.findByEmailAndProvider(user.getEmail(), user.getProvider())

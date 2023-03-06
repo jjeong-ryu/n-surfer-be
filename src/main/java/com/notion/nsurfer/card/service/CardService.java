@@ -40,8 +40,8 @@ public class CardService {
 
     @Transactional
     public ResponseDto<Object> postCard(PostCardDto.Request dto, List<MultipartFile> files){
-        // 먼저 노션에 card post 요청 보냄
-        // 이 후, 해당 id를 받아 백엔드 DB에 저장
+        // card post
+        // wave 추가
         return ResponseDto.builder()
                 .responseCode(ResponseCode.POST_CARD)
                 .data(null).build();

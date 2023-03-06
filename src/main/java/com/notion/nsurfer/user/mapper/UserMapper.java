@@ -35,8 +35,6 @@ public interface UserMapper {
     @Mapping(target = "userBirth", source = "user.birthday")
     @Mapping(target = "imgUrl", source = "user.thumbnailImageUrl")
     GetUserProfileDto.Response getUserProfileToResponse(User user);
-//    @Mapping(target = "nickname", ignore = true)
-//    SignUpDto.Request signUpGoogleToRequest(AuthKakaoLoginProfileDto.Response response);
 
     @Mapping(target = "userId", source = "user.id")
     DeleteUserDto.Response deleteUserToResponse(User user);
