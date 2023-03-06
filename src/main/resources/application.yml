@@ -31,6 +31,7 @@ spring:
 notion:
   database: c1b4b8a152e94d90909717d92be2c116
   token: secret_LSshj9zJf38xrnerHSLW0fZLLxYmFtPkx1nNCeqEAUX
+  dbId: 05e61a0a-a980-4d4d-b5a4-4f73a197ea7d
 
 auth:
   kakao:

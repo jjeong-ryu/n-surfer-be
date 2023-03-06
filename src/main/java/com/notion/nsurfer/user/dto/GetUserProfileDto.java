@@ -17,6 +17,6 @@ public class GetUserProfileDto {
         private String userName;
         private String userBirth;
         private String imgUrl;
-        private Boolean isOwner;
+        private Boolean isOwned;
     }
 }

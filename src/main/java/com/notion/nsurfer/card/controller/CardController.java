@@ -18,8 +18,10 @@ public class CardController {
     private final CardService cardService;
 
     @PostMapping
-    public ResponseDto<Object> postCard(@RequestPart("postCard") PostCardDto.Request dto,
-                                        @RequestPart("file") List<MultipartFile> files){
+    public ResponseDto<Object> postCard(
+            @RequestPart("postCard") PostCardDto.Request dto,
+            @RequestPart("file") List<MultipartFile> files
+    ){
         return cardService.postCard(dto,files);
     }
 

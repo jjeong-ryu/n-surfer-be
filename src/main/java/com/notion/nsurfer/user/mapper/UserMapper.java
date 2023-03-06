@@ -34,6 +34,7 @@ public interface UserMapper {
     @Mapping(target = "userName", source = "user.nickname")
     @Mapping(target = "userBirth", source = "user.birthday")
     @Mapping(target = "imgUrl", source = "user.thumbnailImageUrl")
+    @Mapping(target = "isOwned", ignore = true)
     GetUserProfileDto.Response getUserProfileToResponse(User user);
 
     @Mapping(target = "userId", source = "user.id")
