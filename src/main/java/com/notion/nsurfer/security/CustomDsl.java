@@ -5,6 +5,7 @@ import com.notion.nsurfer.security.filter.JwtRefreshTokenFilter;
 import com.notion.nsurfer.user.repository.UserLoginInfoRepository;
 import com.notion.nsurfer.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -20,6 +21,7 @@ public class CustomDsl extends AbstractHttpConfigurer<CustomDsl, HttpSecurity> {
     private final AuthenticationEntryPoint authenticationEntryPoint;
     private final UserLoginInfoRepository userLoginInfoRepository;
     private final UserRepository userRepository;
+    private final RedisTemplate<String, String> redisTemplate;
     @Override
     public void configure(HttpSecurity http) throws Exception {
         AuthenticationManager authenticationManager = http.getSharedObject(AuthenticationManager.class);
@@ -28,7 +30,8 @@ public class CustomDsl extends AbstractHttpConfigurer<CustomDsl, HttpSecurity> {
                 userDetailsService,
                 authenticationEntryPoint,
                 userRepository,
-                userLoginInfoRepository);
+                userLoginInfoRepository,
+                redisTemplate);
         JwtRefreshTokenFilter jwtRefreshTokenFilter = new JwtRefreshTokenFilter(
                 authenticationManager,
                 userDetailsService,

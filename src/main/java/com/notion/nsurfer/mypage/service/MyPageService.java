@@ -3,43 +3,41 @@ package com.notion.nsurfer.mypage.service;
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
 import com.cloudinary.utils.StringUtils;
-import com.notion.nsurfer.card.entity.Card;
-import com.notion.nsurfer.card.repository.CardRepository;
 import com.notion.nsurfer.common.ResponseCode;
 import com.notion.nsurfer.common.ResponseDto;
-import com.notion.nsurfer.common.config.CloudinaryConfig;
-import com.notion.nsurfer.mypage.dto.GetWaveDto;
+import com.notion.nsurfer.mypage.dto.GetWavesDto;
 import com.notion.nsurfer.mypage.dto.UpdateUserProfileDto;
 import com.notion.nsurfer.mypage.exception.UserNotFoundException;
+import com.notion.nsurfer.mypage.utils.MyPageRedisKeyUtils;
 import com.notion.nsurfer.user.dto.GetUserProfileDto;
 import com.notion.nsurfer.user.entity.User;
 import com.notion.nsurfer.user.mapper.UserMapper;
 import com.notion.nsurfer.user.repository.UserRepository;
-import com.notion.nsurfer.user.repository.UserRepositoryCustom;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
 import java.io.IOException;
-import java.util.List;
-import java.util.Map;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
 public class MyPageService {
     private final UserRepository userRepository;
-    private final UserRepositoryCustom userRepositoryCustom;
     private final UserMapper userMapper;
     private final Cloudinary cloudinary;
-    private final CardRepository cardRepository;
+    private final RedisTemplate<String, String> redisTemplate;
+    private final SimpleDateFormat waveDateFormat = new SimpleDateFormat("yyyyMMdd");
 
     public ResponseDto<GetUserProfileDto.Response> getUserProfile(User user) {
         final String email = user.getEmail();
         return ResponseDto.<GetUserProfileDto.Response>builder()
-                .responseCode(ResponseCode.GET_USER_PROFILE)
-                .data(userMapper.getUserProfileToResponse(userRepositoryCustom.findByEmail(email)))
+                .responseCode(ResponseCode.GET_MY_PAGE_PROFILE)
+                .data(userMapper.getUserProfileToResponse(userRepository.findByEmail(email)))
                 .build();
     }
 
@@ -59,9 +57,47 @@ public class MyPageService {
                 .data(null).build();
     }
 
-    public ResponseDto<GetWaveDto.Response> getWave(User user){
-        List<Card> cards = cardRepository.findCardsWithWaveByUserId(user.getId());
-        return ResponseDto.<GetWaveDto.Response>builder()
+    public ResponseDto<GetWavesDto.Response> getWaves(User user, Integer month){
+        Calendar startDate = getStartDateCal(month);
+        Calendar endDate = getEndDateCal();
+        List<GetWavesDto.Response.Wave> waves = getWavesWithDate(startDate, endDate, user);
+        return ResponseDto.<GetWavesDto.Response>builder()
+                .responseCode(ResponseCode.GET_WAVES)
+                .data(GetWavesDto.Response.builder()
+                     .waves(waves).build())
                 .build();
+    }
+
+    private Calendar getStartDateCal(Integer month){
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(new Date());
+        cal.add(Calendar.MONTH, -month);
+        return cal;
+    }
+
+    private Calendar getEndDateCal(){
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(new Date());
+        cal.add(Calendar.DATE,1);
+        return cal;
+    }
+
+    private List<GetWavesDto.Response.Wave> getWavesWithDate(Calendar startDateCal, Calendar endDateCal, User user){
+        ValueOperations<String, String> ops = redisTemplate.opsForValue();
+        List<GetWavesDto.Response.Wave> waves = new ArrayList<>();
+        while(startDateCal.before(endDateCal)){
+            String redisWaveTimeFormat = waveDateFormat.format(startDateCal.getTime());
+            String redisKey = MyPageRedisKeyUtils.makeRedisWaveTimeKey(user, redisWaveTimeFormat);
+            String redisValue = ops.get(redisKey);
+            if(redisValue != null){
+                GetWavesDto.Response.Wave wave = GetWavesDto.Response.Wave.builder()
+                        .date(redisWaveTimeFormat)
+                        .count(Integer.valueOf(redisValue))
+                        .build();
+                waves.add(wave);
+            }
+            startDateCal.add(Calendar.DATE, 1);
+        }
+        return waves;
     }
 }

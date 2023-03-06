@@ -16,12 +16,17 @@ spring:
     database-platform: org.hibernate.dialect.MySQLDialect
 #    database-platform: org.hibernate.spatial.dialect.mysql.MySQL56InnoDBSpatialDialect
     hibernate:
-      ddl-auto: update
+      ddl-auto: create
     defer-datasource-initialization: true
   data:
     redis:
       host: localhost
       port: 6379
+  sql:
+    init:
+      data-locations: classpath:develop_sql/*
+      mode: always
+
 
 notion:
   database: c1b4b8a152e94d90909717d92be2c116
@@ -33,7 +38,7 @@ auth:
 
 jwt:
   secret: Z3VuLWpvby1haG4tand0LXNlY3JldC1ndW4tam9vLWFobi1qd3Qtc2VjcmV0LWd1bi1qb28tYWhuLWp3dC1zZWNyZXQtZ3VuLWpvby1haG4tand0LXNlY3JldC1oZWxsbw
-  token-validity-in-seconds: 1
+  token-validity-in-seconds: 100000
 server:
   port: 8090
 

@@ -16,7 +16,6 @@ public class GetUserProfileDto {
         private String provider;
         private String userName;
         private String userBirth;
-        private Authority userType;
         private String imgUrl;
 //        private List<Wave> waves;
 //

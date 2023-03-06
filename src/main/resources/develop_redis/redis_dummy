@@ -1,0 +1,21 @@
+append email:1@1.1:provider:KAKAO:wave:date:20230204 1
+append email:1@1.1:provider:KAKAO:wave:date:20230205 2
+append email:1@1.1:provider:KAKAO:wave:date:20230206 12
+append email:1@1.1:provider:KAKAO:wave:date:20230222 15
+append email:1@1.1:provider:KAKAO:wave:date:20230301 3
+append email:1@1.1:provider:KAKAO:wave:date:20230203 1
+append email:1@1.1:provider:KAKAO:wave:date:20230202 2
+append email:1@1.1:provider:KAKAO:wave:date:20230201 12
+append email:1@1.1:provider:KAKAO:wave:date:20230224 15
+append email:1@1.1:provider:KAKAO:wave:date:20230302 3
+append email:1@1.1:provider:KAKAO:wave:date:20230206 1
+append email:1@1.1:provider:KAKAO:wave:date:20230207 2
+append email:1@1.1:provider:KAKAO:wave:date:20230208 12
+append email:1@1.1:provider:KAKAO:wave:date:20230228 15
+append email:1@1.1:provider:KAKAO:wave:date:20230301 3
+append email:1@1.1:provider:KAKAO:wave:date:20230211 1
+append email:1@1.1:provider:KAKAO:wave:date:20230212 2
+append email:1@1.1:provider:KAKAO:wave:date:20230213 12
+append email:1@1.1:provider:KAKAO:wave:date:20230214 15
+append email:1@1.1:provider:KAKAO:wave:date:20230217 3
+

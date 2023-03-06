@@ -1,9 +1,12 @@
 package com.notion.nsurfer.user.service;
 
+import com.notion.nsurfer.auth.utils.AuthRedisKeyUtils;
 import com.notion.nsurfer.common.ResponseCode;
 import com.notion.nsurfer.common.ResponseDto;
+import com.notion.nsurfer.mypage.exception.UserNotFoundException;
 import com.notion.nsurfer.security.util.JwtUtil;
 import com.notion.nsurfer.user.dto.DeleteUserDto;
+import com.notion.nsurfer.user.dto.GetUserProfileDto;
 import com.notion.nsurfer.user.dto.SignInDto;
 import com.notion.nsurfer.user.dto.SignUpDto;
 import com.notion.nsurfer.user.entity.User;
@@ -20,6 +23,7 @@ import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
+import java.util.Optional;
 
 import static com.notion.nsurfer.auth.common.AuthUtil.KAKAO;
 
@@ -28,7 +32,6 @@ import static com.notion.nsurfer.auth.common.AuthUtil.KAKAO;
 public class UserService {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
-    private final UserRepositoryCustom userRepositoryCustom;
     private final UserLoginInfoRepository userLoginInfoRepository;
     private final RedisTemplate<String, String> redisTemplate;
 
@@ -38,8 +41,10 @@ public class UserService {
         User user = userMapper.signUpToUser(request);
         userRepository.save(user);
         String accessToken = JwtUtil.createAccessToken(user);
+//        String refreshToken = JwtUtil.createRefreshToken(user);
         return SignUpDto.Response.builder()
                 .accessToken(accessToken)
+//                .refreshToken(refreshToken)
                 .thumbnailImageUrl(request.getThumbnailImageUrl())
                 .email(request.getEmail())
                 .nickname(request.getNickname()).build();
@@ -77,6 +82,8 @@ public class UserService {
         User user = userRepository.findByEmailAndPassword(request.getEmail(), request.getPassword()).get();
         String accessToken = JwtUtil.createAccessToken(user);
         String refreshToken = JwtUtil.createRefreshToken(user);
+        saveAccessTokenToRedis(user, accessToken);
+        saveRefreshTokenToRedis(user, refreshToken);
         UserLoginInfo userLoginInfo = UserLoginInfo.builder()
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
@@ -85,5 +92,24 @@ public class UserService {
         return SignUpDto.TestResponse.builder()
                 .accessToken(accessToken)
                 .refreshToken(refreshToken).build();
+    }
+
+    public ResponseDto<GetUserProfileDto.Response> getUserProfile(String nickname){
+        User user = userRepository.findByNickname(nickname)
+                .orElseThrow(UserNotFoundException::new);
+        return ResponseDto.<GetUserProfileDto.Response>builder()
+                .responseCode(ResponseCode.GET_USER_PROFILE)
+                .data(userMapper.getUserProfileToResponse(user))
+                .build();
+    }
+
+    // 추후 accessToken의 갯수를 늘리는 경우, key - List 형식으로 변경 필요성 있음(opsForValue)
+    private void saveAccessTokenToRedis(User user, String accessToken) {
+        redisTemplate.opsForValue().set(AuthRedisKeyUtils.makeRedisAccessTokenKey(user), accessToken);
+    }
+
+    // 추후 refreshToken의 갯수를 늘리는 경우, key - List 형식으로 변경 필요성 있음(opsForValue)
+    private void saveRefreshTokenToRedis(User user, String refreshToken) {
+        redisTemplate.opsForValue().set(AuthRedisKeyUtils.makeRedisRefreshToken(user), refreshToken);
     }
 }

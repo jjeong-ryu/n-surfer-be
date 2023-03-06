@@ -33,7 +33,6 @@ public interface UserMapper {
     @Mapping(target = "provider", source = "user.provider")
     @Mapping(target = "userName", source = "user.nickname")
     @Mapping(target = "userBirth", source = "user.birthday")
-    @Mapping(target = "userType", source = "user.authority")
     @Mapping(target = "imgUrl", source = "user.thumbnailImageUrl")
     GetUserProfileDto.Response getUserProfileToResponse(User user);
 //    @Mapping(target = "nickname", ignore = true)
