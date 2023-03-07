@@ -28,6 +28,7 @@ import java.util.*;
 @RequiredArgsConstructor
 public class MyPageService {
     private final UserRepository userRepository;
+    private final UserMapper userMapper;
     private final RedisTemplate<String, String> redisTemplate;
     private final SimpleDateFormat waveDateFormat = new SimpleDateFormat("yyyyMMdd");
 
@@ -42,6 +43,12 @@ public class MyPageService {
                 .build();
     }
 
+    public ResponseDto<GetUserProfileDto.Response> getUserProfile(User user){
+        return ResponseDto.<GetUserProfileDto.Response>builder()
+                .responseCode(ResponseCode.GET_USER_PROFILE_USING_ACCESS_TOKEN)
+                .data(userMapper.getUserProfileToResponse(user))
+                .build();
+    }
     private Calendar getStartDateCal(Integer month){
         Calendar cal = Calendar.getInstance();
         cal.setTime(new Date());

@@ -25,8 +25,8 @@ public enum ResponseCode {
     DB_SYNC("Success", "DS001", "DB sync", "notion DB와 n-surfer의 싱크 맞추기"),
 
     // Auth
-    MAKE_NEW_ACCESS_TOKEN("Success", "U004", "Make new access token", "새로운 액세스 토큰 발급" ),
-    MAKE_NEW_ACCESS_AND_REFRESH_TOKEN("Success", "U005", "Make new access token and refresh token", "새로운 액세스 토큰 및 리프레시 발급" ),
+    MAKE_NEW_ACCESS_TOKEN("Success", "A001", "Make new access token", "새로운 액세스 토큰 발급" ),
+    MAKE_NEW_ACCESS_AND_REFRESH_TOKEN("Success", "A002", "Make new access token and refresh token", "새로운 액세스 토큰 및 리프레시 발급" ),
 
     // User
     SIGN_UP("Success", "U001", "User sign up", "유저 회원가입"),
@@ -45,7 +45,7 @@ public enum ResponseCode {
     ERROR_EMAIL_NOT_FOUND("Failure", "EU007", "Email not found", "존재하지 않는 이메일입니다."),
 
     // My-page
-    GET_MY_PAGE_PROFILE("Success", "MP001", "Get my-page profile", "마이페이지 프로필 조회"),
+    GET_USER_PROFILE_USING_ACCESS_TOKEN("Success", "MP001", "Get user profile using accessToken", "액세스 토큰 활용한 유저 프로필 조회"),
     GET_WAVES("Success", "MP002", "Get waves", "유저 잔디 정보 조회");
 
     // Error - My-page

@@ -29,4 +29,11 @@ public class MyPageController {
         return new ResponseEntity<>(myPageService.getWaves(nickname, month), OK);
 
     }
+
+    @GetMapping("/profile")
+    public ResponseEntity<ResponseDto<GetUserProfileDto.Response>> getUserProfile(
+            @AuthenticationPrincipal User user
+    ){
+        return new ResponseEntity<>(myPageService.getUserProfile(user), OK);
+    }
 }
