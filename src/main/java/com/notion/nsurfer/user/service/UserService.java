@@ -49,11 +49,7 @@ public class UserService {
         signUpValidation(request);
         User user = userMapper.signUpToUser(request);
         userRepository.save(user);
-        String accessToken = JwtUtil.createAccessToken(user);
-//        String refreshToken = JwtUtil.createRefreshToken(user);
         return SignUpDto.Response.builder()
-                .accessToken(accessToken)
-//                .refreshToken(refreshToken)
                 .thumbnailImageUrl(request.getThumbnailImageUrl())
                 .email(request.getEmail())
                 .nickname(request.getNickname()).build();

@@ -45,7 +45,7 @@ public class AuthService {
         AuthKakaoLoginProfileDto.Response userProfile = getKaKaoUserprofile(kakaoAccessToken);
         User user = findUserByEmailAndProvider(userProfile, KAKAO);
         if(user != null) {
-            return this.kakaoLoginWithoutSignUp(user, userProfile);
+            return this.kakaoLoginWithoutSignUp(user);
         }
         return this.kakaoLoginWithSignUp(userProfile);
     }
@@ -55,39 +55,33 @@ public class AuthService {
                 kakao).orElse(null);
     }
 
-    private ResponseDto<AuthKakaoLoginDto.Response> kakaoLoginWithoutSignUp(User user, AuthKakaoLoginProfileDto.Response userprofile) {
+    private ResponseDto<AuthKakaoLoginDto.Response> kakaoLoginWithoutSignUp(User user) {
         String accessToken = JwtUtil.createAccessToken(user);
-        saveAccessTokenToRedis(user, accessToken);
-//        String refreshToken = JwtUtil.createRefreshToken(user);
-//        saveRefreshTokenToRedis(user, refreshToken);
+        String refreshToken = JwtUtil.createRefreshToken(user);
+        return getKaKaoLoginResponse(user, accessToken, refreshToken);
+    }
+
+    private ResponseDto<AuthKakaoLoginDto.Response> kakaoLoginWithSignUp(AuthKakaoLoginProfileDto.Response userprofile) {
+        signUpWithKakao(userprofile);
+        User user = findUserByEmailAndProvider(userprofile, KAKAO);
+        String accessToken = JwtUtil.createAccessToken(user);
+        String refreshToken = JwtUtil.createRefreshToken(user);
+    // 처음 회원가입 하는 경우
+        return getKaKaoLoginResponse(user, accessToken, refreshToken);
+    }
+
+    private static ResponseDto<AuthKakaoLoginDto.Response> getKaKaoLoginResponse(User user, String accessToken, String refreshToken) {
         return ResponseDto.<AuthKakaoLoginDto.Response>builder()
                 .responseCode(ResponseCode.SIGN_IN)
                 .data(AuthKakaoLoginDto.Response.builder()
                         .accessToken(accessToken)
-//                        .refreshToken(refreshToken)
-                        .thumbnailImageUrl(userprofile.getKakaoAccount().getProfile().getThumbnailImageUrl())
-                        .email(userprofile.getKakaoAccount().getEmail())
-                        .nickname(userprofile.getKakaoAccount().getProfile().getNickname()).build())
+                        .refreshToken(refreshToken)
+                        .thumbnailImageUrl(user.getThumbnailImageUrl())
+                        .email(user.getEmail())
+                        .nickname(user.getNickname()).build())
                 .build();
     }
 
-    private ResponseDto<AuthKakaoLoginDto.Response> kakaoLoginWithSignUp(AuthKakaoLoginProfileDto.Response userprofile) {
-        SignUpDto.Response response = signUpWithKakao(userprofile);
-        User user = findUserByEmailAndProvider(userprofile, KAKAO);
-        String accessToken = JwtUtil.createAccessToken(user);
-        saveAccessTokenToRedis(user, accessToken);
-//        String refreshToken = JwtUtil.createRefreshToken(user);
-//        saveRefreshTokenToRedis(user, refreshToken);
-    // 처음 회원가입 하는 경우
-        return ResponseDto.<AuthKakaoLoginDto.Response>builder()
-                .responseCode(ResponseCode.SIGN_IN)
-                .data(AuthKakaoLoginDto.Response.builder()
-                        .accessToken(response.getAccessToken())
-                        .thumbnailImageUrl(response.getThumbnailImageUrl())
-                        .email(response.getEmail())
-                        .nickname(response.getNickname()).build())
-            .build();
-    }
     private String getKakaoAccessToken(final String code, final String redirectUrl, final String provider) {
         WebClient webClient = WebClient.builder()
                 .baseUrl(KAKAO_ACCESS_TOKEN_REQUEST_URL)
