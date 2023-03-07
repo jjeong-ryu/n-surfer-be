@@ -20,7 +20,7 @@ public interface UserMapper {
     @Mapping(target = "password", ignore = true)
     @Mapping(target = "isDeleted", ignore = true)
     @Mapping(target = "cards", ignore = true)
-    User signUpToUser(SignUpDto.Request request);
+    User signUpToUser(SignUpDto.Request request, String nickname);
     @Mapping(target = "nickname", source = "response.kakaoAccount.profile.nickname")
     @Mapping(target = "email", source = "response.kakaoAccount.email")
     @Mapping(target = "provider", defaultValue = "KAKAO")

@@ -32,6 +32,7 @@ import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 
 import static com.notion.nsurfer.auth.common.AuthUtil.KAKAO;
 
@@ -47,7 +48,8 @@ public class UserService {
     @Transactional
     public SignUpDto.Response signUpWithKakao(SignUpDto.Request request) {
         signUpValidation(request);
-        User user = userMapper.signUpToUser(request);
+        String randomNickname = UUID.randomUUID().toString().replace("-", "");
+        User user = userMapper.signUpToUser(request, randomNickname);
         userRepository.save(user);
         return SignUpDto.Response.builder()
                 .thumbnailImageUrl(request.getThumbnailImageUrl())
