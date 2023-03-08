@@ -18,6 +18,7 @@ import javax.crypto.SecretKey;
 import java.time.Instant;
 import java.util.Base64;
 import java.util.Date;
+import java.util.concurrent.TimeUnit;
 
 import static com.notion.nsurfer.security.exception.JwtExceptionMessage.*;
 
@@ -25,7 +26,7 @@ import static com.notion.nsurfer.security.exception.JwtExceptionMessage.*;
 public class JwtUtil implements InitializingBean {
     private static final Logger logger = LoggerFactory.getLogger(JwtUtil.class);
     private static final long AUTH_TIME = 10;
-    private static final long REFRESH_TIME = 60 * 60 * 24 * 7;
+    private static final long REFRESH_TIME = 60 * 60 * 24 * 7 * 1000000;
     private static final String AUTHORIZATION_HEADER = "Authorization";
 
     private static SecretKey key;
@@ -50,8 +51,8 @@ public class JwtUtil implements InitializingBean {
     }
 
     public static String createAccessToken(User user) {
-        long now = (new Date()).getTime();
-        Date validity = new Date(now + JwtUtil.tokenValidityInMilliSeconds + AUTH_TIME);
+        long plusTime = TimeUnit.SECONDS.toMillis(10);
+        Date validity = new Date(System.currentTimeMillis() + plusTime);
         return Jwts.builder().setSubject(user.getUsername() + "_" + user.getProvider())
                 .claim("exp", Instant.now().getEpochSecond() + AUTH_TIME)
                 .signWith(key, getAlgorithm())
@@ -60,8 +61,8 @@ public class JwtUtil implements InitializingBean {
     }
 
     public static String createRefreshToken(User user) {
-        long now = (new Date()).getTime();
-        Date validity = new Date(now + JwtUtil.tokenValidityInMilliSeconds + REFRESH_TIME);
+        long plusTime = TimeUnit.SECONDS.toMillis(20);
+        Date validity = new Date(System.currentTimeMillis() + plusTime);
         return Jwts.builder().setSubject(user.getUsername() + "_" + user.getProvider())
                 .claim("exp", Instant.now().getEpochSecond() + REFRESH_TIME)
                 .signWith(key, getAlgorithm())
