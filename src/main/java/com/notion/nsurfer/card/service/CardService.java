@@ -2,6 +2,7 @@ package com.notion.nsurfer.card.service;
 
 import com.notion.nsurfer.card.dto.GetCardDto;
 import com.notion.nsurfer.card.dto.GetCardListDto;
+import com.notion.nsurfer.card.dto.NotionGetSyncDbDto;
 import com.notion.nsurfer.card.dto.PostCardDto;
 import com.notion.nsurfer.card.entity.Card;
 import com.notion.nsurfer.card.exception.CardNotFoundException;
@@ -9,9 +10,14 @@ import com.notion.nsurfer.card.repository.CardRepository;
 import com.notion.nsurfer.common.ResponseCode;
 import com.notion.nsurfer.common.ResponseDto;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.reactive.function.client.WebClient;
 
 import java.util.List;
 
@@ -19,6 +25,14 @@ import java.util.List;
 @RequiredArgsConstructor
 public class CardService {
     private final CardRepository cardRepository;
+    private final RedisTemplate<String, String> redisTemplate;
+    private final String NOTION_URL = "https://api.notion.com/v1/databases/";
+
+    @Value("${notion.token}")
+    private String apiKey;
+    @Value("${notion.dbId}")
+    private String dbId;
+    private final String VERSION = "2022-06-28";
     public ResponseDto<GetCardDto.Response> getCard(Long cardId){
         // id를 받아 그에 매핑되는 notion card id를 기반으로 request
         Card card = cardRepository.findById(cardId).orElseThrow(CardNotFoundException::new);
@@ -40,8 +54,20 @@ public class CardService {
 
     @Transactional
     public ResponseDto<Object> postCard(PostCardDto.Request dto, List<MultipartFile> files){
-        // 먼저 노션에 card post 요청 보냄
-        // 이 후, 해당 id를 받아 백엔드 DB에 저장
+        // card post
+        WebClient webClient = WebClient.builder()
+                .baseUrl(NOTION_URL + dbId + "/query")
+                .defaultHeader("Notion-Version", VERSION)
+                .defaultHeader("Authorization", "Bearer " + apiKey)
+                .build();
+        NotionGetSyncDbDto.Response result = webClient.post()
+                .accept(MediaType.APPLICATION_JSON)
+                .retrieve()
+                .bodyToMono(NotionGetSyncDbDto.Response.class)
+                .block();
+        // wave 추가
+        ValueOperations<String, String> ops = redisTemplate.opsForValue();
+//        ops.
         return ResponseDto.builder()
                 .responseCode(ResponseCode.POST_CARD)
                 .data(null).build();

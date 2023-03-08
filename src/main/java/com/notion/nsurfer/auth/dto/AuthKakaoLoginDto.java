@@ -13,6 +13,7 @@ public class AuthKakaoLoginDto {
     @Builder
     public static class Response {
         private String accessToken;
+        private String refreshToken;
         private String email;
         private String nickname;
         private String thumbnailImageUrl;

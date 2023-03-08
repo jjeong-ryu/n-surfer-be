@@ -16,6 +16,7 @@ public class GetCardDto {
         private Date createDate;
         private Date lastEditDate;
         private Label label;
+        private Boolean isOwned;
         @Getter
         @Builder
         public static class Label {

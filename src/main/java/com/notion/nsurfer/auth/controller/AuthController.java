@@ -5,9 +5,12 @@ import com.notion.nsurfer.auth.dto.ReissueAccessAndRefreshTokenDto;
 import com.notion.nsurfer.auth.service.AuthService;
 import com.notion.nsurfer.auth.dto.AuthKakaoLoginDto;
 import com.notion.nsurfer.common.ResponseDto;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.io.IOException;
 
 import static org.springframework.http.HttpStatus.*;
 
@@ -17,19 +20,20 @@ import static org.springframework.http.HttpStatus.*;
 public class AuthController {
     private final AuthService authService;
 
-    @PostMapping("/reissue/access-token")
+    @GetMapping("/reissue/access-token")
     public ResponseEntity<ResponseDto<ReissueAccessTokenDto.Response>> reissueAccessToken(
-            @RequestBody ReissueAccessTokenDto.Request dto
-    ){
-        return new ResponseEntity(authService.reissueAccessToken(dto), OK);
+            HttpServletRequest request
+    ) throws IOException {
+        System.out.println(request.getHeader("Authorization"));
+        return new ResponseEntity(authService.reissueAccessToken(request), OK);
     }
 
-    @PostMapping("/reissue/access-refresh-token")
-    public ResponseEntity<ResponseDto<ReissueAccessAndRefreshTokenDto.Response>> reissueAccessAndRefreshToken(
-            @RequestBody ReissueAccessAndRefreshTokenDto.Request dto
-    ){
-        return new ResponseEntity(authService.reissueAccessAndRefreshToken(dto), OK);
-    }
+//    @GetMapping("/reissue/access-refresh-token")
+//    public ResponseEntity<ResponseDto<ReissueAccessAndRefreshTokenDto.Response>> reissueAccessAndRefreshToken(
+//            HttpServletRequest request
+//    ){
+//        return new ResponseEntity(authService.reissueAccessAndRefreshToken(request), OK);
+//    }
     @GetMapping("/login/kakao")
     public ResponseEntity<ResponseDto<AuthKakaoLoginDto.Response>> kakaoLogin(@RequestParam String code,
                                                                               @RequestParam String redirectUrl){

@@ -1,6 +1,7 @@
 package com.notion.nsurfer.user.controller;
 
 import com.notion.nsurfer.common.ResponseDto;
+import com.notion.nsurfer.mypage.dto.UpdateUserProfileDto;
 import com.notion.nsurfer.user.dto.DeleteUserDto;
 import com.notion.nsurfer.user.dto.GetUserProfileDto;
 import com.notion.nsurfer.user.dto.SignInDto;
@@ -11,6 +12,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+
+import java.io.IOException;
 
 import static org.springframework.http.HttpStatus.*;
 
@@ -32,6 +35,11 @@ public class UserController {
     @PostMapping("/login")
     public SignUpDto.TestResponse loginForTest(@RequestBody SignInDto.Request request){
         return userService.localSignInForTest(request);
+    }
+    @PatchMapping("/profile")
+    public ResponseEntity<Object> updateUserProfile(
+            @RequestPart UpdateUserProfileDto.Request dto) throws IOException {
+        return new ResponseEntity<>(userService.updateUserProfile(dto), OK);
     }
 
     @GetMapping("/profile")
