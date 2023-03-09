@@ -21,5 +21,6 @@ public class ReissueAccessTokenDto {
     @NoArgsConstructor
     public static class Response {
         private String accessToken;
+        private String refreshToken;
     }
 }
