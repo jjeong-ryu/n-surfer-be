@@ -17,11 +17,11 @@ import com.notion.nsurfer.user.repository.UserLoginInfoRepository;
 import com.notion.nsurfer.user.repository.UserRepository;
 import com.notion.nsurfer.user.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
@@ -70,6 +70,8 @@ public class AuthService {
         User user = findUserByEmailAndProvider(userprofile, KAKAO);
         String accessToken = JwtUtil.createAccessToken(user);
         String refreshToken = JwtUtil.createRefreshToken(user);
+        ValueOperations<String, String> ops = redisTemplate.opsForValue();
+        ops.set(refreshToken, String.valueOf(user.getId()));
     // 처음 회원가입 하는 경우
         return getKaKaoLoginResponse(user, accessToken, refreshToken);
     }
@@ -128,42 +130,59 @@ public class AuthService {
         return userService.signUpWithKakao(signUpRequest);
     }
 
-
-//    private void signUpWithGoogle(AuthKakaoLoginProfileDto.Response userprofile){
-//        userService.signUp(userMapper.signUpKakaoToRequest(userprofile));
-//    }
-
-
     @Transactional
     public ResponseDto<ReissueAccessTokenDto.Response> reissueAccessToken(
             HttpServletRequest request
     ) throws IOException {
         VerifyResult verifyResult;
+        String refreshToken = request.getHeader("Authorization").substring(7);
         try {
             verifyResult = verifyToken(request);
-        } catch (ExpiredJwtTokenException expiredRefreshTokenException) {
-            return makeExpiredRefreshTokenResponse();
-        } catch (InvalidJwtException invalidAccessTokenException) {
+            return makeNewAccessTokenResponse(verifyResult);
+        } catch (ExpiredJwtTokenException e){
+            // refresh 토큰 기반으로 유저 정보 찾고, refreshToken, accessToken 만들어 return
+            ValueOperations<String, String> ops = redisTemplate.opsForValue();
+            String userId = ops.get(refreshToken);
+            return makeExpiredRefreshTokenResponse(Long.parseLong(userId));
+        } catch (InvalidJwtException e) {
             return makeInvalidRefreshTokenResponse();
         }
+    }
+
+    private ResponseDto<ReissueAccessTokenDto.Response> makeNewAccessTokenResponse(
+            VerifyResult verifyResult
+    ){
         String newAccessToken = makeNewAccessToken(verifyResult.getEmailAndProvider());
         return ResponseDto.<ReissueAccessTokenDto.Response>builder()
                 .responseCode(ResponseCode.MAKE_NEW_ACCESS_TOKEN)
                 .data(ReissueAccessTokenDto.Response.builder()
-                        .accessToken(newAccessToken).build())
+                        .accessToken(newAccessToken)
+                        .refreshToken(null).build())
                 .build();
     }
+
     private ResponseDto<ReissueAccessTokenDto.Response> makeInvalidRefreshTokenResponse() throws IOException {
         return ResponseDto.<ReissueAccessTokenDto.Response>builder()
-            .responseCode(ResponseCode.ERROR_INVALID_REFRESH_TOKEN)
-            .data(null).build();
-
-    }
-    private ResponseDto<ReissueAccessTokenDto.Response> makeExpiredRefreshTokenResponse() throws IOException {
-        return ResponseDto.<ReissueAccessTokenDto.Response>builder()
-                .responseCode(ResponseCode.ERROR_EXPIRED_REFRESH_TOKEN)
+                .responseCode(ResponseCode.ERROR_INVALID_REFRESH_TOKEN)
                 .data(null).build();
 
+    }
+    private ResponseDto<ReissueAccessTokenDto.Response> makeExpiredRefreshTokenResponse(
+            Long userId
+    ){
+        User user = userRepository.findById(userId)
+                .orElseThrow(UserNotFoundException::new);
+        String newAccessToken = JwtUtil.createAccessToken(user);
+        String newRefreshToken = JwtUtil.createRefreshToken(user);
+        ValueOperations<String, String> ops = redisTemplate.opsForValue();
+        ops.set(newRefreshToken, String.valueOf(userId));
+        return ResponseDto.<ReissueAccessTokenDto.Response>builder()
+                .responseCode(ResponseCode.ERROR_EXPIRED_REFRESH_TOKEN)
+                .data(ReissueAccessTokenDto.Response.builder()
+                                .accessToken(newAccessToken)
+                                .refreshToken(newRefreshToken)
+                        .build())
+                .build();
     }
 //    @Transactional
 //    public ResponseDto<ReissueAccessAndRefreshTokenDto.Response> reissueAccessAndRefreshToken(
@@ -222,7 +241,6 @@ public class AuthService {
 
     private VerifyResult verifyToken(HttpServletRequest request){
         String token = JwtUtil.resolveToken(request);
-//        return JwtUtil.validateTokenWithRedis(accessToken);
         return JwtUtil.validateToken(token);
     }
 }
