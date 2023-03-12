@@ -3,6 +3,7 @@ package com.notion.nsurfer.auth.controller;
 import com.notion.nsurfer.auth.dto.ReissueAccessTokenDto;
 import com.notion.nsurfer.auth.service.AuthService;
 import com.notion.nsurfer.auth.dto.AuthKakaoLoginDto;
+import com.notion.nsurfer.card.exception.CardNotFoundException;
 import com.notion.nsurfer.common.ResponseDto;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -30,5 +31,9 @@ public class AuthController {
     public ResponseEntity<ResponseDto<AuthKakaoLoginDto.Response>> kakaoLogin(@RequestParam String code,
                                                                               @RequestParam String redirectUrl){
         return new ResponseEntity(authService.kakaoLogin(code, redirectUrl), OK);
+    }
+    @GetMapping("/test")
+    public void test(){
+        throw new CardNotFoundException();
     }
 }
