@@ -22,7 +22,6 @@ public class GetCardListDto {
             private String content;
             private Date createDate;
             private Date lastEditDate;
-            private Date prevEditDate;
         }
     }
 }

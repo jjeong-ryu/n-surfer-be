@@ -1,6 +1,6 @@
 package com.notion.nsurfer.card.service;
 
-import com.notion.nsurfer.card.dto.NotionGetSyncDbDto;
+import com.notion.nsurfer.card.dto.PostCardToNotionDto;
 import com.notion.nsurfer.card.repository.CardRepository;
 import com.notion.nsurfer.common.ResponseCode;
 import com.notion.nsurfer.common.ResponseDto;
@@ -26,10 +26,10 @@ public class NotionCardService {
                 .defaultHeader("Notion-Version", "2022-06-28")
                 .defaultHeader("Authorization", "Bearer " + apiKey)
                 .build();
-        NotionGetSyncDbDto.Response result = webClient.post()
+        PostCardToNotionDto.Response result = webClient.post()
                 .accept(MediaType.APPLICATION_JSON)
                 .retrieve()
-                .bodyToMono(NotionGetSyncDbDto.Response.class)
+                .bodyToMono(PostCardToNotionDto.Response.class)
                 .block();
         // 해당 정보를 우리의 DB에 저장
         return ResponseDto.builder()

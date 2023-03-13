@@ -2,8 +2,8 @@ package com.notion.nsurfer.card.service;
 
 import com.notion.nsurfer.card.dto.GetCardDto;
 import com.notion.nsurfer.card.dto.GetCardListDto;
-import com.notion.nsurfer.card.dto.NotionGetSyncDbDto;
 import com.notion.nsurfer.card.dto.PostCardDto;
+import com.notion.nsurfer.card.dto.PostCardToNotionDto;
 import com.notion.nsurfer.card.entity.Card;
 import com.notion.nsurfer.card.exception.CardNotFoundException;
 import com.notion.nsurfer.card.repository.CardRepository;
@@ -34,8 +34,7 @@ public class CardService {
     private String dbId;
     private final String VERSION = "2022-06-28";
     public ResponseDto<GetCardDto.Response> getCard(Long cardId){
-        // id를 받아 그에 매핑되는 notion card id를 기반으로 request
-        Card card = cardRepository.findById(cardId).orElseThrow(CardNotFoundException::new);
+
         // 해당 정보를 받아 최종적으로 프론트로 전달
         return ResponseDto.<GetCardDto.Response>builder()
                 .responseCode(ResponseCode.GET_CARD_LIST)
@@ -55,15 +54,11 @@ public class CardService {
     @Transactional
     public ResponseDto<Object> postCard(PostCardDto.Request dto, List<MultipartFile> files){
         // card post
-        WebClient webClient = WebClient.builder()
-                .baseUrl(NOTION_URL)
-                .defaultHeader("Notion-Version", VERSION)
-                .defaultHeader("Authorization", "Bearer " + apiKey)
-                .build();
-        NotionGetSyncDbDto.Response result = webClient.post()
+        WebClient webClient = webclientBuilder("");
+        PostCardToNotionDto.Response result = webClient.post()
                 .accept(MediaType.APPLICATION_JSON)
                 .retrieve()
-                .bodyToMono(NotionGetSyncDbDto.Response.class)
+                .bodyToMono(PostCardToNotionDto.Response.class)
                 .block();
         // wave 추가
         ValueOperations<String, String> ops = redisTemplate.opsForValue();
@@ -84,10 +79,22 @@ public class CardService {
 
     @Transactional
     public ResponseDto<Object> deleteCard(Long cardId){
-        Card card = cardRepository.findById(cardId).orElseThrow(CardNotFoundException::new);
-        cardRepository.delete(card);
+        WebClient webClient = webclientBuilder("");
+        PostCardToNotionDto.Response result = webClient.post()
+                .accept(MediaType.APPLICATION_JSON)
+                .retrieve()
+                .bodyToMono(PostCardToNotionDto.Response.class)
+                .block();
         return ResponseDto.builder()
                 .responseCode(ResponseCode.DELETE_CARD)
                 .data(null).build();
+    }
+
+    public WebClient webclientBuilder(String url){
+        return WebClient.builder()
+                .baseUrl(NOTION_URL + url)
+                .defaultHeader("Notion-Version", VERSION)
+                .defaultHeader("Authorization", "Bearer " + apiKey)
+                .build();
     }
 }

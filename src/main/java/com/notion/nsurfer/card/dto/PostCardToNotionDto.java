@@ -57,6 +57,7 @@ public class PostCardToNotionDto {
             @Getter
             @Builder
             public static class Label {
+                @Builder.Default
                 private String type = "multi_select";
                 @JsonProperty("multi_select")
                 private List<MultiSelect> multiSelect;
@@ -75,6 +76,7 @@ public class PostCardToNotionDto {
             @Getter
             @Builder
             public static class Content {
+                @Builder.Default
                 private String type = "rich_text";
                 @JsonProperty("rich_text")
                 private List<RichText> richTexts;
@@ -82,6 +84,7 @@ public class PostCardToNotionDto {
                 @Getter
                 @Builder
                 public static class RichText {
+                    @Builder.Default
                     private String type = "text";
                     private Text text;
 
@@ -110,6 +113,7 @@ public class PostCardToNotionDto {
                 @AllArgsConstructor
                 @NoArgsConstructor
                 public static class Creator {
+                    @Builder.Default
                     private String type = "rich_text";
                     @JsonProperty("rich_text")
                     private List<RichText> richTexts;
@@ -117,6 +121,7 @@ public class PostCardToNotionDto {
                     @Getter
                     @Builder
                     public static class RichText {
+                        @Builder.Default
                         private String type = "text";
                         private Text text;
 
@@ -141,5 +146,10 @@ public class PostCardToNotionDto {
                 }
             }
         }
+    }
+
+    @Builder
+    public static class Response {
+
     }
 }
