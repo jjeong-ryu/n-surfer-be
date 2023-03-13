@@ -26,7 +26,7 @@ import java.util.List;
 public class CardService {
     private final CardRepository cardRepository;
     private final RedisTemplate<String, String> redisTemplate;
-    private final String NOTION_URL = "https://api.notion.com/v1/databases/";
+    private final String NOTION_URL = "https://api.notion.com/v1/pages/";
 
     @Value("${notion.token}")
     private String apiKey;
@@ -56,7 +56,7 @@ public class CardService {
     public ResponseDto<Object> postCard(PostCardDto.Request dto, List<MultipartFile> files){
         // card post
         WebClient webClient = WebClient.builder()
-                .baseUrl(NOTION_URL + dbId + "/query")
+                .baseUrl(NOTION_URL)
                 .defaultHeader("Notion-Version", VERSION)
                 .defaultHeader("Authorization", "Bearer " + apiKey)
                 .build();
