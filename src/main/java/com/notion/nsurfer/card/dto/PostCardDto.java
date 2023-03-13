@@ -12,6 +12,7 @@ public class PostCardDto {
         private String name;
         private String content;
         private List<Label> label;
+        @Getter
         public static class Label {
             private String name;
             private String color;

@@ -5,7 +5,9 @@ import com.notion.nsurfer.card.dto.GetCardListDto;
 import com.notion.nsurfer.card.dto.PostCardDto;
 import com.notion.nsurfer.card.service.CardService;
 import com.notion.nsurfer.common.ResponseDto;
+import com.notion.nsurfer.user.entity.User;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -20,9 +22,10 @@ public class CardController {
     @PostMapping
     public ResponseDto<Object> postCard(
             @RequestPart("postCard") PostCardDto.Request dto,
-            @RequestPart("file") List<MultipartFile> files
-    ){
-        return cardService.postCard(dto,files);
+            @RequestPart("file") List<MultipartFile> files,
+            @AuthenticationPrincipal User user
+            ){
+        return cardService.postCard(dto, files, user);
     }
 
     @GetMapping("/list")

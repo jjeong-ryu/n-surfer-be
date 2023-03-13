@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class PostCardToNotionDto {
@@ -104,46 +105,46 @@ public class PostCardToNotionDto {
                         }
                     }
                 }
+            }
 
-                @JsonProperty("Creator")
-                private Creator creator;
+            @JsonProperty("Creator")
+            private Creator creator;
+
+            @Getter
+            @Builder
+            @AllArgsConstructor
+            @NoArgsConstructor
+            public static class Creator {
+                @Builder.Default
+                private String type = "rich_text";
+                @JsonProperty("rich_text")
+                private List<RichText> richTexts;
 
                 @Getter
                 @Builder
-                @AllArgsConstructor
-                @NoArgsConstructor
-                public static class Creator {
+                public static class RichText {
                     @Builder.Default
-                    private String type = "rich_text";
-                    @JsonProperty("rich_text")
-                    private List<RichText> richTexts;
+                    private String type = "text";
+                    private Text text;
 
                     @Getter
                     @Builder
-                    public static class RichText {
-                        @Builder.Default
-                        private String type = "text";
-                        private Text text;
+
+                    public static class Text {
+                        private String content;
+                        private Link link;
 
                         @Getter
                         @Builder
+                        @AllArgsConstructor
+                        @NoArgsConstructor
 
-                        public static class Text {
-                            private String content;
-                            private Link link;
-
-                            @Getter
-                            @Builder
-                            @AllArgsConstructor
-                            @NoArgsConstructor
-
-                            public static class Link {
-                                private String url;
-                            }
+                        public static class Link {
+                            private String url;
                         }
                     }
-
                 }
+
             }
         }
     }
