@@ -88,7 +88,6 @@ public class UserService {
     @Transactional
     public String localSignUpForTest(SignUpDto.Request request){
         ValueOperations<String, String> ops = redisTemplate.opsForValue();
-        ops.set("test", "1", Duration.ofHours(12));
         User user = User.builder()
                 .nickname(request.getNickname())
                 .email(request.getEmail())

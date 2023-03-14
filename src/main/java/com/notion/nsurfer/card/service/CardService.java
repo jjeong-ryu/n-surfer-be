@@ -1,5 +1,8 @@
 package com.notion.nsurfer.card.service;
 
+import com.cloudinary.Cloudinary;
+import com.cloudinary.utils.ObjectUtils;
+import com.cloudinary.utils.StringUtils;
 import com.notion.nsurfer.card.dto.GetCardDto;
 import com.notion.nsurfer.card.dto.GetCardListDto;
 import com.notion.nsurfer.card.dto.PostCardDto;
@@ -21,8 +24,10 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.reactive.function.client.WebClient;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -31,6 +36,7 @@ public class CardService {
     private final RedisTemplate<String, String> redisTemplate;
     private final String NOTION_URL = "https://api.notion.com/v1/pages/";
     private final CardMapper cardMapper;
+    private final Cloudinary cloudinary;
 
     @Value("${notion.token}")
     private String apiKey;
@@ -56,7 +62,7 @@ public class CardService {
     }
 
     @Transactional
-    public ResponseDto<Object> postCard(PostCardDto.Request dto, List<MultipartFile> files, User user){
+    public ResponseDto<Object> postCard(PostCardDto.Request dto, List<MultipartFile> files, User user) throws IOException {
         // card(page)를 노션에 저장하고, 해당 id를 db에 저장
         WebClient webClient = webclientBuilder("");
         PostCardToNotionDto.Response result = webClient.post()
@@ -66,9 +72,16 @@ public class CardService {
                 .bodyToMono(PostCardToNotionDto.Response.class)
                 .block();
         // 동시에 이미지를 테이블에 cloudinary에 저장
-
+        if(files != null){
+            for (int idx = 0; idx < files.size(); idx++) {
+                MultipartFile image = files.get(idx);
+                String imageName = StringUtils.join(List.of(result.getCardId(), String.valueOf(idx)), "_");
+                Map uploadResponse = cloudinary.uploader().upload(image, ObjectUtils.asMap("public_id", imageName));
+            }
+        }
         // wave 추가
         ValueOperations<String, String> ops = redisTemplate.opsForValue();
+        ops.set();
         return ResponseDto.builder()
                 .responseCode(ResponseCode.POST_CARD)
                 .data(null).build();

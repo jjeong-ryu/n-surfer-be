@@ -17,9 +17,7 @@ public class NotionCardService {
     private final String NOTION_URL = "https://api.notion.com/v1/databases/";
     private final String VERSION = "2022-06-28";
     public ResponseDto<Object> syncWithNotionDB(User user){
-//        String apiKey = user.getNotionApiKey();
         String apiKey = "secret_bGUWaYI7PCpufgCmO7vX4pFD3Qt1kT2qiCv1aAJhcxR";
-//        String dbId = user.getNotionDbId();
         String dbId = "05e61a0a-a980-4d4d-b5a4-4f73a197ea7d";
         WebClient webClient = WebClient.builder()
                 .baseUrl(NOTION_URL + dbId + "/query")

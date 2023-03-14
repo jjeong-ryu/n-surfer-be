@@ -149,8 +149,9 @@ public class PostCardToNotionDto {
         }
     }
 
+    @Getter
     @Builder
     public static class Response {
-
+        private String cardId;
     }
 }
