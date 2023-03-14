@@ -1,5 +1,6 @@
 package com.notion.nsurfer.auth.controller;
 
+import com.cloudinary.Cloudinary;
 import com.notion.nsurfer.auth.dto.ReissueAccessTokenDto;
 import com.notion.nsurfer.auth.service.AuthService;
 import com.notion.nsurfer.auth.dto.AuthKakaoLoginDto;
@@ -16,6 +17,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.springframework.http.HttpStatus.*;
 
@@ -38,7 +41,6 @@ public class AuthController {
         return new ResponseEntity(authService.kakaoLogin(code, redirectUrl), OK);
     }
     @GetMapping("/test")
-    public void test(){
-        throw new CardNotFoundException();
+    public void test() throws Exception {
     }
 }

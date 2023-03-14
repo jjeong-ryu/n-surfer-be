@@ -4,6 +4,7 @@ import com.notion.nsurfer.card.dto.PostCardDto;
 import com.notion.nsurfer.card.dto.PostCardToNotionDto;
 import com.notion.nsurfer.common.CommonMapperConfig;
 import org.mapstruct.Mapper;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,7 +14,8 @@ public interface CardMapper {
     default PostCardToNotionDto.Request postCardToRequest(
             PostCardDto.Request dto,
             Long userId,
-            String dbId
+            String dbId,
+            List<MultipartFile> files
     ){
         List<PostCardToNotionDto.Request.Properties.Name.Title> titles = new ArrayList<>();
         List<PostCardToNotionDto.Request.Properties.Content.RichText> contentRichTexts = new ArrayList<>();
@@ -40,7 +42,7 @@ public interface CardMapper {
         titles.add(title);
         contentRichTexts.add(contentRichText);
         creatorRichTexts.add(creatorRichText);
-        multiSelects = postCardToLabelMultiSelects(dto.getLabel());
+        multiSelects = postCardToLabelMultiSelects(dto.getLabels());
         return PostCardToNotionDto.Request.builder()
                 .parent(
                     PostCardToNotionDto.Request.Parent.builder()

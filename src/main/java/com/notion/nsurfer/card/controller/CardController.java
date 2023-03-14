@@ -24,7 +24,7 @@ public class CardController {
     @PostMapping
     public ResponseDto<Object> postCard(
             @RequestPart("postCard") PostCardDto.Request dto,
-            @RequestPart("file") List<MultipartFile> files,
+            @RequestPart("files") List<MultipartFile> files,
             @AuthenticationPrincipal User user
             ) throws IOException {
         return cardService.postCard(dto, files, user);
@@ -44,7 +44,7 @@ public class CardController {
                                           @RequestPart UpdateCardDto.Request request,
                                           @RequestPart List<MultipartFile> files,
                                           @AuthenticationPrincipal User user
-    ){
+    ) throws Exception {
         return cardService.updateCard(cardId, request, files, user);
     }
     @DeleteMapping("/{cardId}")

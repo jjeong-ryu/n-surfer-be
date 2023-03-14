@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class PostCardToNotionDto {
+    @Getter
     @Builder
     public static class Request {
         private Parent parent;
@@ -151,7 +152,10 @@ public class PostCardToNotionDto {
 
     @Getter
     @Builder
+    @AllArgsConstructor
+    @NoArgsConstructor
     public static class Response {
+        @JsonProperty("id")
         private String cardId;
     }
 }

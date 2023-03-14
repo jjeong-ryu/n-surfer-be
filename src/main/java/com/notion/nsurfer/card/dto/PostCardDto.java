@@ -11,7 +11,7 @@ public class PostCardDto {
     public static class Request {
         private String name;
         private String content;
-        private List<Label> label;
+        private List<Label> labels;
         @Getter
         public static class Label {
             private String name;

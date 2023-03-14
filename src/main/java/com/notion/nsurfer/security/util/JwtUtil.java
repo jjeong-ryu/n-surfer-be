@@ -51,7 +51,7 @@ public class JwtUtil implements InitializingBean {
     }
 
     public static String createAccessToken(User user) {
-        long plusTime = TimeUnit.SECONDS.toMillis(10);
+        long plusTime = TimeUnit.SECONDS.toMillis(tokenValidityInMilliSeconds);
         Date validity = new Date(System.currentTimeMillis() + plusTime);
         return Jwts.builder().setSubject(user.getUsername() + "_" + user.getProvider())
                 .claim("exp", Instant.now().getEpochSecond() + AUTH_TIME)
