@@ -49,7 +49,8 @@ public class SecurityConfig {
                     .requestMatchers("/auth/reissue/access-refresh-token")
                     .requestMatchers("/user/**")
                     .requestMatchers("/auth/login/**")
-                    .requestMatchers("/actuator/**");
+                    .requestMatchers("/actuator/**")
+                    .requestMatchers("/auth/test");
         };
     }
 }

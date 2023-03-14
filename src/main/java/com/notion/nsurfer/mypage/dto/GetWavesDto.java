@@ -16,7 +16,7 @@ public class GetWavesDto {
         @Builder
         public static class Wave {
             private String date;
-            private Integer count;
+            private Long count;
         }
     }
 }

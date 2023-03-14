@@ -22,7 +22,7 @@ public class CardRepositoryCustomImpl implements CardRepositoryCustom{
     public List<Card> findCardsWithWaveByUserId(Long userId) {
         return queryFactory
                 .selectFrom(card)
-                .leftJoin(card.waves, wave)
+//                .leftJoin(card.waves, wave)
                 .where(userIdEq(userId))
                 .fetch();
     }

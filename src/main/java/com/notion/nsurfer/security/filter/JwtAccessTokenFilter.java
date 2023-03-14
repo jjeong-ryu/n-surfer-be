@@ -17,6 +17,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -82,6 +83,7 @@ public class JwtAccessTokenFilter extends BasicAuthenticationFilter {
 
     private void makeExpiredAccessTokenResponse(HttpServletResponse response) throws IOException {
         response.setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
+        response.setStatus(HttpStatus.UNAUTHORIZED.value());
         ResponseDto<Object> responseDto = ResponseDto.builder()
                 .responseCode(ResponseCode.ERROR_EXPIRED_ACCESS_TOKEN)
                 .data(null)
@@ -100,6 +102,7 @@ public class JwtAccessTokenFilter extends BasicAuthenticationFilter {
 
     private void makeInvalidAccessTokenResponse(HttpServletResponse response) throws IOException {
         response.setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
+        response.setStatus(HttpStatus.UNAUTHORIZED.value());
         ResponseDto<Object> responseDto = ResponseDto.builder()
                 .responseCode(ResponseCode.ERROR_INVALID_ACCESS_TOKEN)
                 .data(null)

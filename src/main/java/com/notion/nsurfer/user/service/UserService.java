@@ -88,7 +88,6 @@ public class UserService {
     @Transactional
     public String localSignUpForTest(SignUpDto.Request request){
         ValueOperations<String, String> ops = redisTemplate.opsForValue();
-        ops.set("test", "1", Duration.ofHours(12));
         User user = User.builder()
                 .nickname(request.getNickname())
                 .email(request.getEmail())
@@ -131,6 +130,6 @@ public class UserService {
 
     // 추후 refreshToken의 갯수를 늘리는 경우, key - List 형식으로 변경 필요성 있음(opsForValue)
     private void saveRefreshTokenToRedis(User user, String refreshToken) {
-        redisTemplate.opsForValue().set(AuthRedisKeyUtils.makeRedisRefreshToken(user), refreshToken);
+        redisTemplate.opsForValue().set(refreshToken, String.valueOf(user.getId()));
     }
 }
