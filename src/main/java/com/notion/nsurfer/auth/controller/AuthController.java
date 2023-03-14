@@ -3,14 +3,19 @@ package com.notion.nsurfer.auth.controller;
 import com.notion.nsurfer.auth.dto.ReissueAccessTokenDto;
 import com.notion.nsurfer.auth.service.AuthService;
 import com.notion.nsurfer.auth.dto.AuthKakaoLoginDto;
+import com.notion.nsurfer.auth.utils.AuthRedisKeyUtils;
 import com.notion.nsurfer.card.exception.CardNotFoundException;
+import com.notion.nsurfer.common.ResponseCode;
 import com.notion.nsurfer.common.ResponseDto;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.redis.core.ListOperations;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
+import java.time.LocalDate;
 
 import static org.springframework.http.HttpStatus.*;
 

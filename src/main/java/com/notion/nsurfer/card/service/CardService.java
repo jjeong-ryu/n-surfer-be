@@ -3,10 +3,8 @@ package com.notion.nsurfer.card.service;
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
 import com.cloudinary.utils.StringUtils;
-import com.notion.nsurfer.card.dto.GetCardDto;
-import com.notion.nsurfer.card.dto.GetCardListDto;
-import com.notion.nsurfer.card.dto.PostCardDto;
-import com.notion.nsurfer.card.dto.PostCardToNotionDto;
+import com.notion.nsurfer.auth.utils.AuthRedisKeyUtils;
+import com.notion.nsurfer.card.dto.*;
 import com.notion.nsurfer.card.entity.Card;
 import com.notion.nsurfer.card.exception.CardNotFoundException;
 import com.notion.nsurfer.card.mapper.CardMapper;
@@ -16,6 +14,7 @@ import com.notion.nsurfer.common.ResponseDto;
 import com.notion.nsurfer.user.entity.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.ListOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.http.MediaType;
@@ -25,6 +24,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import java.io.IOException;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -71,6 +71,10 @@ public class CardService {
                 .retrieve()
                 .bodyToMono(PostCardToNotionDto.Response.class)
                 .block();
+        cardRepository.save(Card.builder()
+                        .notionId(result.getCardId())
+                        .user(user).build());
+
         // 동시에 이미지를 테이블에 cloudinary에 저장
         if(files != null){
             for (int idx = 0; idx < files.size(); idx++) {
@@ -80,17 +84,24 @@ public class CardService {
             }
         }
         // wave 추가
-        ValueOperations<String, String> ops = redisTemplate.opsForValue();
-        ops.set();
+        ListOperations<String, String> ops = redisTemplate.opsForList();
+        String timeKey = "create:" + AuthRedisKeyUtils.makeRedisWaveTimeKey(user, LocalDate.now());
+        ops.rightPush(timeKey, result.getCardId());
         return ResponseDto.builder()
                 .responseCode(ResponseCode.POST_CARD)
                 .data(null).build();
     }
 
     @Transactional
-    public ResponseDto<Object> updateCard(){
-        // 먼저 노션에 card update 요청 보냄
-        // 이 후, 백엔드 DB에 저장
+    public ResponseDto<Object> updateCard(Long userId, UpdateCardDto.Request dto, List<MultipartFile> files, User user){
+        // card
+        WebClient webClient = webclientBuilder("");
+        UpdateCardDto.Response result = webClient.patch()
+                .accept(MediaType.APPLICATION_JSON)
+                .retrieve()
+                .bodyToMono(UpdateCardDto.Response.class)
+                .block();
+
         return ResponseDto.builder()
                 .responseCode(ResponseCode.UPDATE_CARD)
                 .data(null).build();
