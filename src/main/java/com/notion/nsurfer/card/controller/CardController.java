@@ -30,7 +30,7 @@ public class CardController {
         return cardService.postCard(dto, files, user);
     }
 
-    @GetMapping("/list")
+    @GetMapping
     public ResponseDto<GetCardListDto.Response> getCardList(){
         return cardService.getCardList();
     }
