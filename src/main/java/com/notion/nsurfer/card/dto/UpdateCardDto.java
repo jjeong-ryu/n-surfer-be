@@ -1,6 +1,7 @@
 package com.notion.nsurfer.card.dto;
 
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -17,8 +18,11 @@ public class UpdateCardDto {
             private String color;
         }
     }
+    @Getter
     @Builder
     public static class Response {
+        @JsonProperty("id")
+        private String cardId;
 
     }
 }

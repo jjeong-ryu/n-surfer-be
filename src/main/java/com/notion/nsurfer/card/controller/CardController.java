@@ -31,8 +31,8 @@ public class CardController {
     }
 
     @GetMapping("/list")
-    public ResponseDto<GetCardListDto.Response> getCardList(){
-        return cardService.getCardList();
+    public ResponseDto<GetCardListDto.Response> getCards(){
+        return cardService.getCards();
     }
     @GetMapping("/{cardId}")
     public ResponseDto<GetCardDto.Response> getCard(@PathVariable Long cardId){
