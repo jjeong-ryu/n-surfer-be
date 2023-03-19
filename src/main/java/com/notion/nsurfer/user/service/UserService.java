@@ -54,15 +54,11 @@ public class UserService {
                 .nickname(request.getNickname()).build();
     }
 
-    private void usernameValidation(String username){
-        if(userRepository.findByNickname(username).isPresent()){
-            throw new UsernameAlreadyExistException();
-        }
-    }
     @Transactional
     public ResponseDto<Object> updateUserProfile(UpdateUserProfileDto.Request dto) throws IOException {
         User user = userRepository.findById(dto.getId())
                 .orElseThrow(UserNotFoundException::new);
+        usernameValidation(dto.getNickname());
         user.update(dto);
         MultipartFile uploadedImage = dto.getImage();
         if(uploadedImage != null){
@@ -73,6 +69,11 @@ public class UserService {
         return ResponseDto.builder()
                 .responseCode(ResponseCode.UPDATE_USER_PROFILE)
                 .data(null).build();
+    }
+    private void usernameValidation(String username){
+        if(userRepository.findByNickname(username).isPresent()){
+            throw new UsernameAlreadyExistException();
+        }
     }
     @Transactional
     public ResponseDto<DeleteUserDto.Response> deleteUser(User user) {
