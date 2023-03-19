@@ -87,7 +87,7 @@ public class User implements UserDetails {
     }
 
     public void update(UpdateUserProfileDto.Request dto){
-        this.nickname = dto.getUserInfo().getNickname();
+        this.nickname = dto.getNickname();
     }
 
     public void updateImage(String url){

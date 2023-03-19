@@ -44,6 +44,8 @@ public enum ResponseCode {
     ERROR_EXPIRED_REFRESH_TOKEN("Failure", "EU006", "Expired refresh Token", "리프레시 토큰이 만료됨"),
     ERROR_EMAIL_NOT_FOUND("Failure", "EU007", "Email not found", "존재하지 않는 이메일입니다."),
 
+    ERROR_USER_NAME_ALREADY_EXIST("Failure", "EU008" , "Username already exists", "이미 존재하는 이름입니다."),
+
     // My-page
     GET_USER_PROFILE_USING_ACCESS_TOKEN("Success", "MP001", "Get user profile using accessToken", "액세스 토큰 활용한 유저 프로필 조회"),
     GET_WAVES("Success", "MP002", "Get waves", "유저 잔디 정보 조회");

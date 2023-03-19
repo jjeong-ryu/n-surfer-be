@@ -16,10 +16,10 @@ import com.notion.nsurfer.user.dto.SignUpDto;
 import com.notion.nsurfer.user.entity.User;
 import com.notion.nsurfer.user.entity.UserLoginInfo;
 import com.notion.nsurfer.user.exception.EmailNotFoundException;
+import com.notion.nsurfer.user.exception.UsernameAlreadyExistException;
 import com.notion.nsurfer.user.mapper.UserMapper;
 import com.notion.nsurfer.user.repository.UserLoginInfoRepository;
 import com.notion.nsurfer.user.repository.UserRepository;
-import com.notion.nsurfer.user.repository.UserRepositoryCustom;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -28,10 +28,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.time.Duration;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
 
 import static com.notion.nsurfer.auth.common.AuthUtil.KAKAO;
@@ -47,8 +45,7 @@ public class UserService {
 
     @Transactional
     public SignUpDto.Response signUpWithKakao(SignUpDto.Request request) {
-        signUpValidation(request);
-        String randomNickname = UUID.randomUUID().toString().replace("-", "");
+        String randomNickname = UUID.randomUUID().toString().replace("-", "").substring(8);
         User user = userMapper.signUpToUser(request, randomNickname);
         userRepository.save(user);
         return SignUpDto.Response.builder()
@@ -57,16 +54,19 @@ public class UserService {
                 .nickname(request.getNickname()).build();
     }
 
-    public void signUpValidation(SignUpDto.Request request){
+    private void usernameValidation(String username){
+        if(userRepository.findByNickname(username).isPresent()){
+            throw new UsernameAlreadyExistException();
+        }
     }
     @Transactional
     public ResponseDto<Object> updateUserProfile(UpdateUserProfileDto.Request dto) throws IOException {
-        User user = userRepository.findById(dto.getUserInfo().getId())
+        User user = userRepository.findById(dto.getId())
                 .orElseThrow(UserNotFoundException::new);
         user.update(dto);
         MultipartFile uploadedImage = dto.getImage();
         if(uploadedImage != null){
-            String imageName = StringUtils.join(List.of(dto.getUserInfo().getEmail(), dto.getUserInfo().getProvider()), "_");
+            String imageName = StringUtils.join(List.of(dto.getEmail(), dto.getProvider()), "_");
             Map uploadResponse = cloudinary.uploader().upload(uploadedImage, ObjectUtils.asMap("public_id", imageName));
             user.updateImage(uploadResponse.get("url").toString());
         }

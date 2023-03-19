@@ -7,6 +7,7 @@ import com.notion.nsurfer.auth.utils.AuthRedisKeyUtils;
 import com.notion.nsurfer.card.dto.*;
 import com.notion.nsurfer.card.entity.Card;
 import com.notion.nsurfer.card.entity.CardImage;
+import com.notion.nsurfer.card.exception.CardNotFoundException;
 import com.notion.nsurfer.card.mapper.CardMapper;
 import com.notion.nsurfer.card.repository.CardImageRepository;
 import com.notion.nsurfer.card.repository.CardRepository;
