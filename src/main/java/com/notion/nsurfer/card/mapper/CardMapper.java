@@ -1,8 +1,10 @@
 package com.notion.nsurfer.card.mapper;
 
+import com.notion.nsurfer.card.dto.GetCardsToNotionDto;
 import com.notion.nsurfer.card.dto.PostCardDto;
 import com.notion.nsurfer.card.dto.PostCardToNotionDto;
 import com.notion.nsurfer.common.CommonMapperConfig;
+import org.cloudinary.json.JSONObject;
 import org.mapstruct.Mapper;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -11,6 +13,15 @@ import java.util.List;
 
 @Mapper(config = CommonMapperConfig.class)
 public interface CardMapper {
+    default GetCardsToNotionDto.Request getCardsToNotionRequest(final String username){
+        List<GetCardsToNotionDto.Request.And> ands = new ArrayList<>();
+        ands.add(GetCardsToNotionDto.Request.And.builder()
+                .property("Creator")
+                .contains(username).build());
+        return GetCardsToNotionDto.Request.builder()
+                .ands(ands)
+                .build();
+    }
     default PostCardToNotionDto.Request postCardToRequest(
             PostCardDto.Request dto,
             Long userId,

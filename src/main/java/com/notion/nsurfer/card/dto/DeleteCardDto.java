@@ -1,9 +1,12 @@
 package com.notion.nsurfer.card.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+
+import java.util.List;
 
 public class DeleteCardDto {
     @Getter
@@ -13,5 +16,12 @@ public class DeleteCardDto {
     public static class Request{
         @Builder.Default
         private Boolean archived = true;
+    }
+    @Getter
+    @Builder
+    public static class Response {
+        @JsonProperty("id")
+        private String cardId;
+
     }
 }

@@ -25,4 +25,6 @@ public class Card {
     @JoinColumn(name = "user_id")
     private User user;
 
+    @OneToMany(mappedBy = "card", cascade = CascadeType.PERSIST)
+    private List<CardImage> cardImages;
 }
