@@ -15,7 +15,6 @@ import com.notion.nsurfer.common.ResponseCode;
 import com.notion.nsurfer.common.ResponseDto;
 import com.notion.nsurfer.user.entity.User;
 import lombok.RequiredArgsConstructor;
-import org.cloudinary.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.ListOperations;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -28,7 +27,6 @@ import org.springframework.web.reactive.function.client.WebClient;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -57,7 +55,7 @@ public class CardService {
                 .build();
     }
 
-    public ResponseDto<GetCardListDto.Response> getCards(final String username) {
+    public ResponseDto<GetCardsDto.Response> getCards(final String username) {
         // username이 null이어도 가능
         WebClient webClient = dbWebclientBuilder(username);
 
@@ -69,7 +67,7 @@ public class CardService {
                 .block();
 
         // 현재 DB에 저장된 모든 카드 return
-        return ResponseDto.<GetCardListDto.Response>builder()
+        return ResponseDto.<GetCardsDto.Response>builder()
                 .responseCode(ResponseCode.GET_CARD_LIST)
                 .data(null)
                 .build();

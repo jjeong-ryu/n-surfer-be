@@ -1,7 +1,7 @@
 package com.notion.nsurfer.card.controller;
 
 import com.notion.nsurfer.card.dto.GetCardDto;
-import com.notion.nsurfer.card.dto.GetCardListDto;
+import com.notion.nsurfer.card.dto.GetCardsDto;
 import com.notion.nsurfer.card.dto.PostCardDto;
 import com.notion.nsurfer.card.dto.UpdateCardDto;
 import com.notion.nsurfer.card.service.CardService;
@@ -31,7 +31,7 @@ public class CardController {
     }
 
     @GetMapping
-    public ResponseDto<GetCardListDto.Response> getCards(
+    public ResponseDto<GetCardsDto.Response> getCards(
             @RequestParam String username
     ){
         return cardService.getCards(username);

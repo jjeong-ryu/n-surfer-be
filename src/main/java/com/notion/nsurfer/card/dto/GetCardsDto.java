@@ -6,7 +6,7 @@ import lombok.Getter;
 import java.util.Date;
 import java.util.List;
 
-public class GetCardListDto {
+public class GetCardsDto {
 
     @Getter
     @Builder
