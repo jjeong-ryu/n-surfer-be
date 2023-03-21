@@ -41,7 +41,6 @@ public class UserService {
     private final UserMapper userMapper;
     private final UserLoginInfoRepository userLoginInfoRepository;
     private final RedisTemplate<String, String> redisTemplate;
-    private final Cloudinary cloudinary;
 
     @Transactional
     public SignUpDto.Response signUpWithKakao(SignUpDto.Request request) {
@@ -52,28 +51,6 @@ public class UserService {
                 .thumbnailImageUrl(request.getThumbnailImageUrl())
                 .email(request.getEmail())
                 .nickname(request.getNickname()).build();
-    }
-
-    @Transactional
-    public ResponseDto<Object> updateUserProfile(UpdateUserProfileDto.Request dto) throws IOException {
-        User user = userRepository.findById(dto.getId())
-                .orElseThrow(UserNotFoundException::new);
-        usernameValidation(dto.getNickname());
-        user.update(dto);
-        MultipartFile uploadedImage = dto.getImage();
-        if(uploadedImage != null){
-            String imageName = StringUtils.join(List.of(dto.getEmail(), dto.getProvider()), "_");
-            Map uploadResponse = cloudinary.uploader().upload(uploadedImage, ObjectUtils.asMap("public_id", imageName));
-            user.updateImage(uploadResponse.get("url").toString());
-        }
-        return ResponseDto.builder()
-                .responseCode(ResponseCode.UPDATE_USER_PROFILE)
-                .data(null).build();
-    }
-    private void usernameValidation(String username){
-        if(userRepository.findByNickname(username).isPresent()){
-            throw new UsernameAlreadyExistException();
-        }
     }
     @Transactional
     public ResponseDto<DeleteUserDto.Response> deleteUser(User user) {

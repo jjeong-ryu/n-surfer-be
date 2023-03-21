@@ -12,7 +12,6 @@ import lombok.NoArgsConstructor;
 @Builder
 @Entity
 public class Label {
-
     @Id @GeneratedValue
     private Long id;
 

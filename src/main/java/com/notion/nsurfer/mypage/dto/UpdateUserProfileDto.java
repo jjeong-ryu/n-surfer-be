@@ -11,9 +11,8 @@ public class UpdateUserProfileDto {
     @Getter
     public static class Request {
         private MultipartFile image;
-        private Long id;
-        private String email;
-        private String provider;
         private String nickname;
+
+        private Boolean isBasicImage;
     }
 }
