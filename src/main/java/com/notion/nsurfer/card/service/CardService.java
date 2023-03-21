@@ -29,6 +29,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -75,35 +76,39 @@ public class CardService {
 
     @Transactional
     public ResponseDto<Object> postCard(PostCardDto.Request dto, List<MultipartFile> files, User user) throws IOException {
+        List<String> imageUrls = new ArrayList<>();
+        List<String> imageNames = new ArrayList<>();
+        // 이미지 업로드 및 이미지 url 저장
+        if(files != null){
+            for (int idx = 0; idx < files.size(); idx++) {
+                MultipartFile image = files.get(idx);
+                String imageName = StringUtils.join(List.of(user.getEmail(), user.getProvider(), UUID.randomUUID().toString()), "_");
+                Map uploadResponse = cloudinary.uploader().upload(image.getBytes(), ObjectUtils.asMap("public_id", imageName));
+                String url = uploadResponse.get("url").toString();
+                imageUrls.add(url);
+                imageNames.add(imageName);
+
+            }
+        }
         // card(page)를 노션에 저장하고, 해당 id를 db에 저장
         WebClient webClient = cardWebclientBuilder("");
         PostCardToNotionDto.Response notionResponse = webClient.post()
                 .accept(MediaType.APPLICATION_JSON)
-                .bodyValue(cardMapper.postCardToRequest(dto, user.getId(), dbId, files))
+                .bodyValue(cardMapper.postCardToRequest(dto, user.getId(), dbId, imageUrls, imageNames))
                 .retrieve()
                 .bodyToMono(PostCardToNotionDto.Response.class)
                 .block();
         Card card = cardRepository.save(Card.builder()
                 .notionId(notionResponse.getCardId())
                 .user(user).build());
-
-        // 동시에 이미지를 테이블에 cloudinary에 저장
-        if(files != null){
-            for (int idx = 0; idx < files.size(); idx++) {
-                MultipartFile image = files.get(idx);
-                String imageName = StringUtils.join(List.of(notionResponse.getCardId(), String.valueOf(idx)), "_");
-                Map uploadResponse = cloudinary.uploader().upload(image.getBytes(), ObjectUtils.asMap("public_id", imageName));
-                for (Object o : uploadResponse.keySet()) {
-                    System.out.println(o.toString());
-                }
-                String url = uploadResponse.get("url").toString();
-                CardImage cardImage = CardImage.builder()
-                        .url(url)
-                        .card(card)
-                        .cardName(imageName).build();
-                cardImageRepository.save(cardImage);
-            }
+        for (int idx = 0; idx < imageUrls.size(); idx++) {
+            CardImage cardImage = CardImage.builder()
+                    .url(imageUrls.get(idx))
+                    .card(card)
+                    .cardName(imageNames.get(idx)).build();
+            cardImageRepository.save(cardImage);
         }
+
         // wave 추가
         ListOperations<String, String> ops = redisTemplate.opsForList();
         String timeKey = "create:" + AuthRedisKeyUtils.makeRedisWaveTimeKey(user, LocalDate.now());

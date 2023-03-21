@@ -147,6 +147,33 @@ public class PostCardToNotionDto {
                 }
 
             }
+
+            private File file;
+
+            @Getter
+            @Builder
+            public static class File {
+                @Builder.Default
+                private String type = "files";
+                private List<ImageFile> files;
+
+                @Getter
+                @Builder
+                public static class ImageFile {
+                    private String name;
+                    @Builder.Default
+                    private String type = "external";
+                    private External external;
+
+                    @Getter
+                    @Builder
+                    @AllArgsConstructor
+                    @NoArgsConstructor
+                    public static class External {
+                        private String url;
+                    }
+                }
+            }
         }
     }
 

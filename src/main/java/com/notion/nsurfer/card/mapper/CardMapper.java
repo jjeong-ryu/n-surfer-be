@@ -6,6 +6,7 @@ import com.notion.nsurfer.card.dto.PostCardToNotionDto;
 import com.notion.nsurfer.common.CommonMapperConfig;
 import org.cloudinary.json.JSONObject;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
@@ -26,12 +27,15 @@ public interface CardMapper {
             PostCardDto.Request dto,
             Long userId,
             String dbId,
-            List<MultipartFile> files
+            List<String> imageUrls,
+            List<String> imageNames
     ){
         List<PostCardToNotionDto.Request.Properties.Name.Title> titles = new ArrayList<>();
         List<PostCardToNotionDto.Request.Properties.Content.RichText> contentRichTexts = new ArrayList<>();
         List<PostCardToNotionDto.Request.Properties.Creator.RichText> creatorRichTexts = new ArrayList<>();
         List<PostCardToNotionDto.Request.Properties.Label.MultiSelect> multiSelects;
+        List<PostCardToNotionDto.Request.Properties.File.ImageFile> dtoFiles
+                = postCardToFileImageFiles(imageUrls, imageNames);
 
         PostCardToNotionDto.Request.Properties.Content.RichText contentRichText = PostCardToNotionDto.Request.Properties.Content.RichText.builder()
                 .text(PostCardToNotionDto.Request.Properties.Content.RichText.Text.builder()
@@ -84,6 +88,11 @@ public interface CardMapper {
                                 .richTexts(creatorRichTexts)
                                 .build()
                         )
+                        .file(
+                                PostCardToNotionDto.Request.Properties.File.builder()
+                                        .files(dtoFiles)
+                                        .build()
+                        )
                         .build())
                 .build();
     }
@@ -94,5 +103,22 @@ public interface CardMapper {
     PostCardToNotionDto.Request.Properties.Label.MultiSelect postCardToLabelMultiSelect(
             PostCardDto.Request.Label label
     );
+
+    default List<PostCardToNotionDto.Request.Properties.File.ImageFile> postCardToFileImageFiles(
+            List<String> imageUrls, List<String> imageNames
+    ){
+        List<PostCardToNotionDto.Request.Properties.File.ImageFile> imageFiles = new ArrayList<>();
+        for (int idx = 0; idx < imageUrls.size(); idx++) {
+            PostCardToNotionDto.Request.Properties.File.ImageFile imageFile =
+                    PostCardToNotionDto.Request.Properties.File.ImageFile.builder()
+                            .name(imageNames.get(idx))
+                            .external(PostCardToNotionDto.Request.Properties.File.ImageFile.External.builder()
+                                    .url(imageUrls.get(idx))
+                                    .build())
+                            .build();
+            imageFiles.add(imageFile);
+        }
+        return imageFiles;
+    }
 
 }
