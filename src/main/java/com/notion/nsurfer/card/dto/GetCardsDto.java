@@ -22,10 +22,10 @@ public class GetCardsDto {
             private String cardId;
             private String username;
             private String title;
-            private List<Label> label;
             private String content;
             private LocalDateTime createDate;
-            private Date lastEditDate;
+            private LocalDateTime lastEditDate;
+            private List<Label> labels;
             @Getter
             @Builder
             @AllArgsConstructor
@@ -35,12 +35,12 @@ public class GetCardsDto {
                 private String color;
             }
             @Builder.Default
-            private List<GetCardDto.Response.Image> images = new ArrayList<>();
+            private List<Image> images = new ArrayList<>();
 
             @Getter
             @Builder
             public static class Image {
-                private Long imageId;
+                private String imageId;
                 private String imageUrl;
             }
         }

@@ -14,6 +14,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequiredArgsConstructor
@@ -24,30 +25,30 @@ public class CardController {
     @PostMapping
     public ResponseDto<Object> postCard(
             @RequestPart("postCard") PostCardDto.Request dto,
-            @RequestPart("files") List<MultipartFile> files,
+            @RequestPart("imgFiles") List<MultipartFile> imgFiles,
             @AuthenticationPrincipal User user
             ) throws IOException {
-        return cardService.postCard(dto, files, user);
+        return cardService.postCard(dto, imgFiles, user);
     }
 
     @GetMapping
-    public ResponseDto<GetCardListDto.Response> getCards(
-            @RequestParam(required = false) String username
+    public ResponseDto<GetCardsDto.Response> getCards(
+            @RequestParam(required = false, defaultValue = "") String username
     ){
         return cardService.getCards(username);
     }
     @GetMapping("/{cardId}")
-    public ResponseDto<GetCardDto.Response> getCard(@PathVariable Long cardId){
+    public ResponseDto<GetCardDto.Response> getCard(@PathVariable UUID cardId){
         return cardService.getCard(cardId);
     }
 
     @PatchMapping("/{cardId}")
     public ResponseDto<Object> updateCard(@PathVariable Long cardId,
                                           @RequestPart UpdateCardDto.Request request,
-                                          @RequestPart List<MultipartFile> files,
+                                          @RequestPart List<MultipartFile> addedImages,
                                           @AuthenticationPrincipal User user
     ) throws Exception {
-        return cardService.updateCard(cardId, request, files, user);
+        return cardService.updateCard(cardId, request, addedImages, user);
     }
     @DeleteMapping("/{cardId}")
     public ResponseDto<Object> deleteCard(@PathVariable Long cardId){

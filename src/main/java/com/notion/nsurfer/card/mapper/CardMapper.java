@@ -14,41 +14,67 @@ import java.util.List;
 @Mapper(config = CommonMapperConfig.class)
 public interface CardMapper {
     default GetCardsToNotionDto.Request getCardsToNotionRequest(final String username){
-        List<GetCardsToNotionDto.Request.And> ands = new ArrayList<>();
-        ands.add(GetCardsToNotionDto.Request.And.builder()
-                .property("Creator")
-                .contains(username).build());
         return GetCardsToNotionDto.Request.builder()
-                .ands(ands)
+                .filter(GetCardsToNotionDto.Request.Filter.builder()
+                        .property("Creator")
+                        .richText(GetCardsToNotionDto.Request.Filter.RichText.builder()
+                                .contains(username)
+                                .build())
+                        .build())
                 .build();
     }
 
-    default GetCardListDto.Response getCardsToResponse(GetCardsToNotionDto.Response response){
-        return GetCardListDto.Response.builder()
+    default GetCardsDto.Response getCardsToResponse(GetCardsToNotionDto.Response response){
+        return GetCardsDto.Response.builder()
                 .cardList(getCardsToCardList(response.getResults()))
                 .build();
     }
 
-    default List<GetCardListDto.Response.Card> getCardsToCardList(List<GetCardsToNotionDto.Response.Result> results){
-        List<GetCardListDto.Response.Card> cardList = new ArrayList<>();
+    default List<GetCardsDto.Response.Card> getCardsToCardList(List<GetCardsToNotionDto.Response.Result> results){
+        List<GetCardsDto.Response.Card> cardList = new ArrayList<>();
 
         for (GetCardsToNotionDto.Response.Result result : results) {
-            GetCardListDto.Response.Card card = GetCardListDto.Response.Card.builder()
+            String username = result.getProperties().getCreator().getRichTexts().size() > 0
+                    ? result.getProperties().getCreator().getRichTexts().get(0).getText().getContent()
+                    : "";
+            String content = result.getProperties().getContent().getRichTexts().size() > 0
+                    ? result.getProperties().getContent().getRichTexts().get(0).getText().getContent()
+                    : "";
+            String title = result.getProperties().getName().getTitle().size() > 0
+                    ? result.getProperties().getName().getTitle().get(0).getText().getContent()
+                    : "";
+            List<GetCardsDto.Response.Card.Image> images =
+                    result.getProperties().getFile().getFiles().size() > 0
+                    ? getCardsToCardImages(result.getProperties().getFile().getFiles())
+                    : new ArrayList<>();
+            List<GetCardsDto.Response.Card.Label> labels =
+                    result.getProperties().getLabel().getMultiSelect().size() > 0
+                    ? getCardsToCardLabels(result.getProperties().getLabel().getMultiSelect())
+                    : new ArrayList<>();
+            GetCardsDto.Response.Card card = GetCardsDto.Response.Card.builder()
                                     .cardId(result.getId())
-                                    .username(result.getProperties().getCreator().getRichTexts().get(0).getText().getContent())
-                                    .content(result.getProperties().getContent().getRichTexts().get(0).getText().getContent())
+                                    .username(username)
+                                    .content(content)
                                     .createDate(result.getCreatedTime())
-                                    .title(result.getProperties().getName().getTitle().get(0).getText().getContent())
-                                    .label(getCardsToCardLabels(result.getProperties().getLabel().getMultiSelect()))
+                                    .title(title)
+                                    .labels(labels)
+                                    .images(images)
                                     .build();
 
             cardList.add(card);
         }
         return cardList;
     }
+    List<GetCardsDto.Response.Card.Image> getCardsToCardImages(List<GetCardsToNotionDto.Response.Result.Properties.File.ImageFile> images);
 
-    List<GetCardListDto.Response.Card.Label> getCardsToCardLabels(List<GetCardsToNotionDto.Response.Result.Properties.Label.MultiSelect> multiSelect);
-    GetCardListDto.Response.Card.Label getCardsToCardLabel(GetCardsToNotionDto.Response.Result.Properties.Label.MultiSelect label);
+    default GetCardsDto.Response.Card.Image getCardsToCardImage(GetCardsToNotionDto.Response.Result.Properties.File.ImageFile image){
+        return GetCardsDto.Response.Card.Image.builder()
+                .imageId(String.valueOf(image.getName()))
+                .imageUrl(image.getExternal().getUrl())
+                .build();
+    }
+    List<GetCardsDto.Response.Card.Label> getCardsToCardLabels(List<GetCardsToNotionDto.Response.Result.Properties.Label.MultiSelect> multiSelect);
+    GetCardsDto.Response.Card.Label getCardsToCardLabel(GetCardsToNotionDto.Response.Result.Properties.Label.MultiSelect label);
 
     default PostCardToNotionDto.Request postCardToRequest(
             PostCardDto.Request dto,
@@ -71,7 +97,7 @@ public interface CardMapper {
                 .build();
         PostCardToNotionDto.Request.Properties.Name.Title title = PostCardToNotionDto.Request.Properties.Name.Title.builder()
                 .text(PostCardToNotionDto.Request.Properties.Name.Title.Text.builder()
-                        .content(dto.getName()).build())
+                        .content(dto.getTitle()).build())
                 .build();
         PostCardToNotionDto.Request.Properties.Creator.RichText creatorRichText = PostCardToNotionDto.Request.Properties.Creator.RichText.builder()
                 .text(
@@ -147,5 +173,42 @@ public interface CardMapper {
         }
         return imageFiles;
     }
+    default GetCardDto.Response getCardToResponse(GetCardToNotionDto.Response result){
+        String username = result.getProperties().getCreator().getRichTexts().size() > 0
+                ? result.getProperties().getCreator().getRichTexts().get(0).getText().getContent()
+                : "";
+        String content = result.getProperties().getContent().getRichTexts().size() > 0
+                ? result.getProperties().getContent().getRichTexts().get(0).getText().getContent()
+                : "";
+        String title = result.getProperties().getName().getTitle().size() > 0
+                ? result.getProperties().getName().getTitle().get(0).getText().getContent()
+                : "";
+        List<GetCardDto.Response.Image> images =
+                result.getProperties().getFile().getFiles().size() > 0
+                        ? getCardToCardImages(result.getProperties().getFile().getFiles())
+                        : new ArrayList<>();
+        List<GetCardDto.Response.Label> labels =
+                result.getProperties().getLabel().getMultiSelect().size() > 0
+                        ? getCardToCardLabels(result.getProperties().getLabel().getMultiSelect())
+                        : new ArrayList<>();
+        return GetCardDto.Response.builder()
+                .cardId(result.getId())
+                .username(username)
+                .content(content)
+                .createDate(result.getCreatedTime())
+                .title(title)
+                .labels(labels)
+                .images(images)
+                .build();
+    }
+    List<GetCardDto.Response.Image> getCardToCardImages(List<GetCardToNotionDto.Response.Properties.File.ImageFile> images);
 
+    default GetCardDto.Response.Image getCardToCardImage(GetCardToNotionDto.Response.Properties.File.ImageFile image){
+        return GetCardDto.Response.Image.builder()
+                .imageId(image.getName())
+                .imageUrl(image.getExternal().getUrl())
+                .build();
+    }
+    List<GetCardDto.Response.Label> getCardToCardLabels(List<GetCardToNotionDto.Response.Properties.Label.MultiSelect> multiSelect);
+    GetCardDto.Response.Label getCardToCardLabel(GetCardToNotionDto.Response.Properties.Label.MultiSelect label);
 }

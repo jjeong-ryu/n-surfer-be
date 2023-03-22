@@ -47,26 +47,30 @@ public class CardService {
     @Value("${notion.dbId}")
     private String dbId;
     private final String VERSION = "2022-06-28";
-    public ResponseDto<GetCardDto.Response> getCard(Long cardId){
-
+    public ResponseDto<GetCardDto.Response> getCard(UUID cardId){
+        WebClient webClient = cardWebclientBuilder(cardId.toString());
+        GetCardToNotionDto.Response notionResponse = webClient.get()
+                .accept(MediaType.APPLICATION_JSON)
+                .retrieve()
+                .bodyToMono(GetCardToNotionDto.Response.class)
+                .block();
         // 해당 정보를 받아 최종적으로 프론트로 전달
         return ResponseDto.<GetCardDto.Response>builder()
                 .responseCode(ResponseCode.GET_CARD_LIST)
-                .data(null)
+                .data(cardMapper.getCardToResponse(notionResponse))
                 .build();
     }
 
     public ResponseDto<GetCardsDto.Response> getCards(final String username) {
         // username이 null이어도 가능
-        WebClient webClient = dbQueryWebclientBuilder(username);
-
+        WebClient webClient = dbQueryWebclientBuilder();
         GetCardsToNotionDto.Response notionResponse = webClient.post()
                 .accept(MediaType.APPLICATION_JSON)
                 .bodyValue(cardMapper.getCardsToNotionRequest(username))
                 .retrieve()
                 .bodyToMono(GetCardsToNotionDto.Response.class)
                 .block();
-        GetCardListDto.Response responseData = cardMapper.getCardsToResponse(notionResponse);
+        GetCardsDto.Response responseData = cardMapper.getCardsToResponse(notionResponse);
         // 현재 DB에 저장된 모든 카드 return
         return ResponseDto.<GetCardsDto.Response>builder()
                 .responseCode(ResponseCode.GET_CARD_LIST)
@@ -75,13 +79,13 @@ public class CardService {
     }
 
     @Transactional
-    public ResponseDto<Object> postCard(PostCardDto.Request dto, List<MultipartFile> files, User user) throws IOException {
+    public ResponseDto<Object> postCard(PostCardDto.Request dto, List<MultipartFile> imgFiles, User user) throws IOException {
         List<String> imageUrls = new ArrayList<>();
         List<String> imageNames = new ArrayList<>();
         // 이미지 업로드 및 이미지 url 저장
-        if(files != null){
-            for (int idx = 0; idx < files.size(); idx++) {
-                MultipartFile image = files.get(idx);
+        if(imgFiles != null){
+            for (int idx = 0; idx < imgFiles.size(); idx++) {
+                MultipartFile image = imgFiles.get(idx);
                 String imageName = StringUtils.join(List.of(user.getEmail(), user.getProvider(), UUID.randomUUID().toString()), "_");
                 Map uploadResponse = cloudinary.uploader().upload(image.getBytes(), ObjectUtils.asMap("public_id", imageName));
                 String url = uploadResponse.get("url").toString();
@@ -103,6 +107,7 @@ public class CardService {
                 .user(user).build());
         for (int idx = 0; idx < imageUrls.size(); idx++) {
             CardImage cardImage = CardImage.builder()
+                    .id(UUID.randomUUID())
                     .url(imageUrls.get(idx))
                     .card(card)
                     .cardName(imageNames.get(idx)).build();
@@ -122,17 +127,16 @@ public class CardService {
     public ResponseDto<Object> updateCard(Long cardId, UpdateCardDto.Request dto, List<MultipartFile> files, User user) throws Exception {
         Card card = cardRepository.findByIdWithImages(cardId)
                 .orElseThrow(CardNotFoundException::new);
-        List<String> deletedImages = new ArrayList<>();
+        List<String> deletedImages = dto.getDeletedImages();
         // card 수정 API
         WebClient webClient = cardWebclientBuilder("");
         UpdateCardToNotionDto.Response result = webClient.patch()
                 .accept(MediaType.APPLICATION_JSON)
+//                .bodyValue()
                 .retrieve()
                 .bodyToMono(UpdateCardToNotionDto.Response.class)
                 .block();
         // 이미지 제거 API
-//        deletedImages.add("cld-sample-4");
-//        deletedImages.add("cld-sample-3");
         cloudinary.api().deleteResources(deletedImages, null);
         // wave 추가
         ListOperations<String, String> ops = redisTemplate.opsForList();
@@ -184,10 +188,7 @@ public class CardService {
                 .build();
     }
 
-    private WebClient dbQueryWebclientBuilder(String username){
-        if(username != null){
-
-        }
+    private WebClient dbQueryWebclientBuilder(){
         return WebClient.builder()
                 .baseUrl(NOTION_DB_URL + dbId + "/query")
                 .defaultHeader("Notion-Version", VERSION)
