@@ -61,7 +61,7 @@ public class JwtUtil implements InitializingBean {
     }
 
     public static String createRefreshToken(User user) {
-        long plusTime = TimeUnit.SECONDS.toMillis(20);
+        long plusTime = TimeUnit.SECONDS.toMillis(tokenValidityInMilliSeconds * 24 * 7);
         Date validity = new Date(System.currentTimeMillis() + plusTime);
         return Jwts.builder().setSubject(user.getUsername() + "_" + user.getProvider())
                 .claim("exp", Instant.now().getEpochSecond() + REFRESH_TIME)
