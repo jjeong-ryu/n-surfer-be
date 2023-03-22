@@ -67,11 +67,11 @@ public class CardService {
                 .retrieve()
                 .bodyToMono(GetCardsToNotionDto.Response.class)
                 .block();
-
+        GetCardListDto.Response responseData = cardMapper.getCardsToResponse(notionResponse);
         // 현재 DB에 저장된 모든 카드 return
         return ResponseDto.<GetCardListDto.Response>builder()
                 .responseCode(ResponseCode.GET_CARD_LIST)
-                .data(null)
+                .data(responseData)
                 .build();
     }
 

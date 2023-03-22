@@ -1,9 +1,8 @@
 package com.notion.nsurfer.card.mapper;
 
-import com.notion.nsurfer.card.dto.GetCardsToNotionDto;
-import com.notion.nsurfer.card.dto.PostCardDto;
-import com.notion.nsurfer.card.dto.PostCardToNotionDto;
+import com.notion.nsurfer.card.dto.*;
 import com.notion.nsurfer.common.CommonMapperConfig;
+import com.notion.nsurfer.user.entity.User;
 import org.cloudinary.json.JSONObject;
 import org.mapstruct.Mapper;
 import org.springframework.web.multipart.MultipartFile;
@@ -22,6 +21,34 @@ public interface CardMapper {
                 .ands(ands)
                 .build();
     }
+
+    default GetCardListDto.Response getCardsToResponse(GetCardsToNotionDto.Response response){
+        return GetCardListDto.Response.builder()
+                .cardList(getCardsToCardList(response.getResults()))
+                .build();
+    }
+
+    default List<GetCardListDto.Response.Card> getCardsToCardList(List<GetCardsToNotionDto.Response.Result> results){
+        List<GetCardListDto.Response.Card> cardList = new ArrayList<>();
+
+        for (GetCardsToNotionDto.Response.Result result : results) {
+            GetCardListDto.Response.Card card = GetCardListDto.Response.Card.builder()
+                                    .cardId(result.getId())
+                                    .username(result.getProperties().getCreator().getRichTexts().get(0).getText().getContent())
+                                    .content(result.getProperties().getContent().getRichTexts().get(0).getText().getContent())
+                                    .createDate(result.getCreatedTime())
+                                    .title(result.getProperties().getName().getTitle().get(0).getText().getContent())
+                                    .label(getCardsToCardLabels(result.getProperties().getLabel().getMultiSelect()))
+                                    .build();
+
+            cardList.add(card);
+        }
+        return cardList;
+    }
+
+    List<GetCardListDto.Response.Card.Label> getCardsToCardLabels(List<GetCardsToNotionDto.Response.Result.Properties.Label.MultiSelect> multiSelect);
+    GetCardListDto.Response.Card.Label getCardsToCardLabel(GetCardsToNotionDto.Response.Result.Properties.Label.MultiSelect label);
+
     default PostCardToNotionDto.Request postCardToRequest(
             PostCardDto.Request dto,
             Long userId,

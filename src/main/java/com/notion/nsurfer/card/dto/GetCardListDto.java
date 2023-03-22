@@ -1,8 +1,11 @@
 package com.notion.nsurfer.card.dto;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 
@@ -15,13 +18,22 @@ public class GetCardListDto {
         @Getter
         @Builder
         public static class Card {
-            private Long cardId;
-            private Long userId;
+            private String cardId;
+            private String username;
             private String title;
-            private String label;
+            private List<Label> label;
             private String content;
-            private Date createDate;
+            private LocalDateTime createDate;
             private Date lastEditDate;
+
+            @Getter
+            @Builder
+            @AllArgsConstructor
+            @NoArgsConstructor
+            public static class Label {
+                private String name;
+                private String color;
+            }
         }
     }
 }
