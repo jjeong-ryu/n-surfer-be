@@ -24,6 +24,7 @@ public class GetCardDto {
             private String name;
             private String color;
         }
+
         @Builder.Default
         private List<Image> images = new ArrayList<>();
 

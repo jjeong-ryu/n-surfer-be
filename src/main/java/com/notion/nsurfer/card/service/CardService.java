@@ -59,7 +59,7 @@ public class CardService {
 
     public ResponseDto<GetCardListDto.Response> getCards(final String username) {
         // username이 null이어도 가능
-        WebClient webClient = dbWebclientBuilder(username);
+        WebClient webClient = dbQueryWebclientBuilder(username);
 
         GetCardsToNotionDto.Response notionResponse = webClient.post()
                 .accept(MediaType.APPLICATION_JSON)
@@ -176,6 +176,17 @@ public class CardService {
         }
         return WebClient.builder()
                 .baseUrl(NOTION_DB_URL + dbId)
+                .defaultHeader("Notion-Version", VERSION)
+                .defaultHeader("Authorization", "Bearer " + apiKey)
+                .build();
+    }
+
+    private WebClient dbQueryWebclientBuilder(String username){
+        if(username != null){
+
+        }
+        return WebClient.builder()
+                .baseUrl(NOTION_DB_URL + dbId + "/query")
                 .defaultHeader("Notion-Version", VERSION)
                 .defaultHeader("Authorization", "Bearer " + apiKey)
                 .build();

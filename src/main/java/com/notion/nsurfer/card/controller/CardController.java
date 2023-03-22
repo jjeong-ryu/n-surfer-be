@@ -32,7 +32,7 @@ public class CardController {
 
     @GetMapping
     public ResponseDto<GetCardListDto.Response> getCards(
-            @RequestParam String username
+            @RequestParam(required = false) String username
     ){
         return cardService.getCards(username);
     }

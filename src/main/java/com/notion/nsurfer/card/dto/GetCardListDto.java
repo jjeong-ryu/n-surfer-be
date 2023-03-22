@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -25,7 +26,6 @@ public class GetCardListDto {
             private String content;
             private LocalDateTime createDate;
             private Date lastEditDate;
-
             @Getter
             @Builder
             @AllArgsConstructor
@@ -33,6 +33,15 @@ public class GetCardListDto {
             public static class Label {
                 private String name;
                 private String color;
+            }
+            @Builder.Default
+            private List<GetCardDto.Response.Image> images = new ArrayList<>();
+
+            @Getter
+            @Builder
+            public static class Image {
+                private Long imageId;
+                private String imageUrl;
             }
         }
     }
