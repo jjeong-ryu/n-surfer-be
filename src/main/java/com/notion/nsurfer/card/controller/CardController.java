@@ -31,8 +31,8 @@ public class CardController {
     }
 
     @GetMapping
-    public ResponseDto<GetCardsDto.Response> getCards(
-            @RequestParam String username
+    public ResponseDto<GetCardListDto.Response> getCards(
+            @RequestParam(required = false) String username
     ){
         return cardService.getCards(username);
     }

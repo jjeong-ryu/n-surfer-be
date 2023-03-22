@@ -12,7 +12,7 @@ public class UpdateCardDto {
     public static class Request {
         private String name;
         private String content;
-        private List<PostCardDto.Request.Label> label;
+        private List<Label> label;
         public static class Label {
             private String name;
             private String color;
