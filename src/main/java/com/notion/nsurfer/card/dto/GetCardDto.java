@@ -3,21 +3,23 @@ package com.notion.nsurfer.card.dto;
 import lombok.Builder;
 import lombok.Getter;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 public class GetCardDto {
     @Getter
     @Builder
     public static class Response {
-        private Long cardId;
-        private Long userId;
+        private String cardId;
+        private String username;
         private String title;
         private String content;
-        private Date createDate;
-        private Date lastEditDate;
-        private Label label;
+        private LocalDateTime createDate;
+        private LocalDateTime lastEditDate;
+        private List<Label> labels;
         @Getter
         @Builder
         public static class Label {
@@ -31,7 +33,7 @@ public class GetCardDto {
         @Getter
         @Builder
         public static class Image {
-            private Long imageId;
+            private String imageId;
             private String imageUrl;
         }
     }
