@@ -11,7 +11,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.IOException;
 
 import static org.springframework.http.HttpStatus.*;
 
@@ -27,7 +26,6 @@ public class MyPageController {
             @RequestParam Integer month
     ){
         return new ResponseEntity<>(myPageService.getWaves(nickname, month), OK);
-
     }
 
     @GetMapping("/profile")
@@ -35,5 +33,11 @@ public class MyPageController {
             @AuthenticationPrincipal User user
     ){
         return new ResponseEntity<>(myPageService.getUserProfile(user), OK);
+    }
+    @PatchMapping("/profile")
+    public ResponseEntity<Object> updateUserProfile(
+            @RequestPart UpdateUserProfileDto.Request dto,
+            @AuthenticationPrincipal User user) throws Exception {
+        return new ResponseEntity<>(myPageService.updateUserProfile(dto,user), OK);
     }
 }

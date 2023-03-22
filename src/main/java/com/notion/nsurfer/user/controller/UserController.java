@@ -36,11 +36,6 @@ public class UserController {
     public SignUpDto.TestResponse loginForTest(@RequestBody SignInDto.Request request){
         return userService.localSignInForTest(request);
     }
-    @PatchMapping("/profile")
-    public ResponseEntity<Object> updateUserProfile(
-            @RequestPart UpdateUserProfileDto.Request dto) throws IOException {
-        return new ResponseEntity<>(userService.updateUserProfile(dto), OK);
-    }
 
     @GetMapping("/profile")
     public ResponseEntity<ResponseDto<GetUserProfileDto.Response>> getUserProfile(

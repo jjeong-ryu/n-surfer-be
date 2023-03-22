@@ -6,6 +6,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.UUID;
+
 @Getter
 @Builder
 @AllArgsConstructor
@@ -13,7 +15,7 @@ import lombok.NoArgsConstructor;
 @Entity
 public class CardImage {
     @Id @GeneratedValue
-    private Long id;
+    private UUID id;
 
     private String url;
 

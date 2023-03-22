@@ -10,14 +10,9 @@ import org.springframework.web.multipart.MultipartFile;
 public class UpdateUserProfileDto {
     @Getter
     public static class Request {
-        private UserInfo userInfo;
         private MultipartFile image;
-        @Getter
-        public static class UserInfo {
-            private Long id;
-            private String email;
-            private String provider;
-            private String nickname;
-        }
+        private String nickname;
+
+        private Boolean isBasicImage;
     }
 }

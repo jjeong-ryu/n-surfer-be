@@ -9,7 +9,7 @@ public class PostCardDto {
 
     @Getter
     public static class Request {
-        private String name;
+        private String title;
         private String content;
         private List<Label> labels;
         @Getter

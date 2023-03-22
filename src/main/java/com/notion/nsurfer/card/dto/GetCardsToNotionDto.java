@@ -7,29 +7,46 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 public class GetCardsToNotionDto {
     @Getter
     @Builder
+    @AllArgsConstructor
+    @NoArgsConstructor
     public static class Request {
-        @JsonProperty("and")
-        private List<And> ands;
-
+        private Filter filter;
         @Getter
         @Builder
-        public static class And {
+        @AllArgsConstructor
+        @NoArgsConstructor
+        public static class Filter {
             private String property;
-            private String contains;
+            @JsonProperty("rich_text")
+            private RichText richText;
+
+            @Getter
+            @Builder
+            @AllArgsConstructor
+            @NoArgsConstructor
+            public static class RichText {
+                private String contains;
+            }
         }
     }
     @Getter
     @Builder
+    @AllArgsConstructor
+    @NoArgsConstructor
     public static class Response {
-        private List<Result> results;
+        @Builder.Default
+        private List<Result> results = new ArrayList<>();
 
         @Getter
         @Builder
+        @AllArgsConstructor
+        @NoArgsConstructor
         public static class Result {
             private String id;
             @JsonProperty("created_time")
@@ -45,19 +62,22 @@ public class GetCardsToNotionDto {
             @NoArgsConstructor
             public static class Properties {
                 @JsonProperty("Name")
-                private PostCardToNotionDto.Request.Properties.Name name;
+                private Name name;
 
                 @Getter
                 @Builder
+                @AllArgsConstructor
+                @NoArgsConstructor
                 public static class Name {
-                    private List<PostCardToNotionDto.Request.Properties.Name.Title> title;
+                    @Builder.Default
+                    private List<Title> title = new ArrayList<>();
 
                     @Getter
                     @Builder
                     @AllArgsConstructor
                     @NoArgsConstructor
                     public static class Title {
-                        private PostCardToNotionDto.Request.Properties.Name.Title.Text text;
+                        private Text text;
 
                         @Getter
                         @Builder
@@ -70,18 +90,23 @@ public class GetCardsToNotionDto {
                 }
 
                 @JsonProperty("Label")
-                private PostCardToNotionDto.Request.Properties.Label label;
+                private Label label;
 
                 @Getter
                 @Builder
+                @AllArgsConstructor
+                @NoArgsConstructor
                 public static class Label {
                     @Builder.Default
                     private String type = "multi_select";
                     @JsonProperty("multi_select")
-                    private List<PostCardToNotionDto.Request.Properties.Label.MultiSelect> multiSelect;
+                    @Builder.Default
+                    private List<MultiSelect> multiSelect = new ArrayList<>();
 
                     @Getter
                     @Builder
+                    @AllArgsConstructor
+                    @NoArgsConstructor
                     public static class MultiSelect {
                         private String name;
                         private String color;
@@ -89,28 +114,34 @@ public class GetCardsToNotionDto {
                 }
 
                 @JsonProperty("Content")
-                private PostCardToNotionDto.Request.Properties.Content content;
+                private Content content;
 
                 @Getter
                 @Builder
+                @AllArgsConstructor
+                @NoArgsConstructor
                 public static class Content {
                     @Builder.Default
                     private String type = "rich_text";
                     @JsonProperty("rich_text")
-                    private List<PostCardToNotionDto.Request.Properties.Content.RichText> richTexts;
+                    private List<RichText> richTexts;
 
                     @Getter
                     @Builder
+                    @AllArgsConstructor
+                    @NoArgsConstructor
                     public static class RichText {
                         @Builder.Default
                         private String type = "text";
-                        private PostCardToNotionDto.Request.Properties.Content.RichText.Text text;
+                        private Text text;
 
                         @Getter
                         @Builder
+                        @AllArgsConstructor
+                        @NoArgsConstructor
                         public static class Text {
                             private String content;
-                            private PostCardToNotionDto.Request.Properties.Content.RichText.Text.Link link;
+                            private Link link;
 
                             @Getter
                             @Builder
@@ -125,7 +156,7 @@ public class GetCardsToNotionDto {
                 }
 
                 @JsonProperty("Creator")
-                private PostCardToNotionDto.Request.Properties.Creator creator;
+                private Creator creator;
 
                 @Getter
                 @Builder
@@ -135,30 +166,64 @@ public class GetCardsToNotionDto {
                     @Builder.Default
                     private String type = "rich_text";
                     @JsonProperty("rich_text")
-                    private List<PostCardToNotionDto.Request.Properties.Creator.RichText> richTexts;
+                    @Builder.Default
+                    private List<RichText> richTexts = new ArrayList<>();
 
                     @Getter
                     @Builder
+                    @AllArgsConstructor
+                    @NoArgsConstructor
                     public static class RichText {
                         @Builder.Default
                         private String type = "text";
-                        private PostCardToNotionDto.Request.Properties.Creator.RichText.Text text;
+                        private Text text;
 
                         @Getter
                         @Builder
-
+                        @AllArgsConstructor
+                        @NoArgsConstructor
                         public static class Text {
                             private String content;
-                            private PostCardToNotionDto.Request.Properties.Creator.RichText.Text.Link link;
+                            private Link link;
 
                             @Getter
                             @Builder
                             @AllArgsConstructor
                             @NoArgsConstructor
-
                             public static class Link {
                                 private String url;
                             }
+                        }
+                    }
+                }
+
+                private File file;
+
+                @Getter
+                @Builder
+                @AllArgsConstructor
+                @NoArgsConstructor
+                public static class File {
+                    @Builder.Default
+                    private String type = "files";
+                    private List<ImageFile> files = new ArrayList<>();
+
+                    @Getter
+                    @Builder
+                    @AllArgsConstructor
+                    @NoArgsConstructor
+                    public static class ImageFile {
+                        private String name;
+                        @Builder.Default
+                        private String type = "external";
+                        private External external;
+
+                        @Getter
+                        @Builder
+                        @AllArgsConstructor
+                        @NoArgsConstructor
+                        public static class External {
+                            private String url;
                         }
                     }
                 }

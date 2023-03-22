@@ -7,16 +7,20 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
-public class UpdateCardToNotionDto {
-
+public class GetCardToNotionDto {
     @Getter
     @Builder
-    public static class Request {
-        @Builder.Default
-        private Boolean archived = false;
-
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class Response {
+        private String id;
+        @JsonProperty("created_time")
+        private LocalDateTime createdTime;
+        private Properties properties;
         @Getter
         @Builder
         @AllArgsConstructor
@@ -27,8 +31,11 @@ public class UpdateCardToNotionDto {
 
             @Getter
             @Builder
+            @AllArgsConstructor
+            @NoArgsConstructor
             public static class Name {
-                private List<Title> title;
+                @Builder.Default
+                private List<Title> title = new ArrayList<>();
 
                 @Getter
                 @Builder
@@ -52,14 +59,19 @@ public class UpdateCardToNotionDto {
 
             @Getter
             @Builder
+            @AllArgsConstructor
+            @NoArgsConstructor
             public static class Label {
                 @Builder.Default
                 private String type = "multi_select";
                 @JsonProperty("multi_select")
-                private List<MultiSelect> multiSelect;
+                @Builder.Default
+                private List<MultiSelect> multiSelect = new ArrayList<>();
 
                 @Getter
                 @Builder
+                @AllArgsConstructor
+                @NoArgsConstructor
                 public static class MultiSelect {
                     private String name;
                     private String color;
@@ -71,6 +83,8 @@ public class UpdateCardToNotionDto {
 
             @Getter
             @Builder
+            @AllArgsConstructor
+            @NoArgsConstructor
             public static class Content {
                 @Builder.Default
                 private String type = "rich_text";
@@ -79,6 +93,8 @@ public class UpdateCardToNotionDto {
 
                 @Getter
                 @Builder
+                @AllArgsConstructor
+                @NoArgsConstructor
                 public static class RichText {
                     @Builder.Default
                     private String type = "text";
@@ -86,6 +102,8 @@ public class UpdateCardToNotionDto {
 
                     @Getter
                     @Builder
+                    @AllArgsConstructor
+                    @NoArgsConstructor
                     public static class Text {
                         private String content;
                         private Link link;
@@ -103,7 +121,7 @@ public class UpdateCardToNotionDto {
             }
 
             @JsonProperty("Creator")
-            private PostCardToNotionDto.Request.Properties.Creator creator;
+            private Creator creator;
 
             @Getter
             @Builder
@@ -113,46 +131,52 @@ public class UpdateCardToNotionDto {
                 @Builder.Default
                 private String type = "rich_text";
                 @JsonProperty("rich_text")
-                private List<RichText> richTexts;
+                @Builder.Default
+                private List<GetCardsToNotionDto.Response.Result.Properties.Creator.RichText> richTexts = new ArrayList<>();
 
                 @Getter
                 @Builder
+                @AllArgsConstructor
+                @NoArgsConstructor
                 public static class RichText {
                     @Builder.Default
                     private String type = "text";
-                    private Text text;
+                    private GetCardsToNotionDto.Response.Result.Properties.Creator.RichText.Text text;
 
                     @Getter
                     @Builder
-
+                    @AllArgsConstructor
+                    @NoArgsConstructor
                     public static class Text {
                         private String content;
-                        private Link link;
+                        private GetCardsToNotionDto.Response.Result.Properties.Creator.RichText.Text.Link link;
 
                         @Getter
                         @Builder
                         @AllArgsConstructor
                         @NoArgsConstructor
-
                         public static class Link {
                             private String url;
                         }
                     }
                 }
-
             }
 
-            private PostCardToNotionDto.Request.Properties.File file;
+            private File file;
 
             @Getter
             @Builder
+            @AllArgsConstructor
+            @NoArgsConstructor
             public static class File {
                 @Builder.Default
                 private String type = "files";
-                private List<ImageFile> files;
+                private List<ImageFile> files = new ArrayList<>();
 
                 @Getter
                 @Builder
+                @AllArgsConstructor
+                @NoArgsConstructor
                 public static class ImageFile {
                     private String name;
                     @Builder.Default
@@ -169,11 +193,5 @@ public class UpdateCardToNotionDto {
                 }
             }
         }
-    }
-
-    @Getter
-    @Builder
-    public static class Response {
-        private String cardId;
     }
 }
