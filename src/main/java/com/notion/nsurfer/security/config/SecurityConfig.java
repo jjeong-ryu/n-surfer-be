@@ -4,6 +4,7 @@ import com.notion.nsurfer.security.CustomDsl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
@@ -50,6 +51,8 @@ public class SecurityConfig {
                     .requestMatchers("/user/**")
                     .requestMatchers("/auth/login/**")
                     .requestMatchers("/actuator/**")
+                    .requestMatchers(HttpMethod.GET,"/card")
+                    .requestMatchers(HttpMethod.GET,"/card/**")
                     .requestMatchers("/auth/test");
         };
     }
