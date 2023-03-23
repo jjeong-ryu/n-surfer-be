@@ -14,7 +14,6 @@ public class UpdateCardDto {
     @Getter
     @Builder
     public static class Request {
-        private String cardId;
         private String title;
         private String content;
         private List<Label> labels;
