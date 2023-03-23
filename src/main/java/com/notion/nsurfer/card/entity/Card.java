@@ -8,8 +8,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 @Entity
 @Getter
@@ -18,7 +18,7 @@ import java.util.List;
 @NoArgsConstructor
 public class Card {
     @Id @GeneratedValue
-    private Long id;
+    private UUID id;
 
     private String notionId;
     @ManyToOne(fetch = FetchType.LAZY)
