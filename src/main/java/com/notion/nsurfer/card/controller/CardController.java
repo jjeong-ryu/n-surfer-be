@@ -43,15 +43,16 @@ public class CardController {
     }
 
     @PatchMapping("/{cardId}")
-    public ResponseDto<Object> updateCard(@PathVariable Long cardId,
-                                          @RequestPart UpdateCardDto.Request request,
-                                          @RequestPart List<MultipartFile> addedImages,
+    public ResponseDto<Object> updateCard(@PathVariable UUID cardId,
+                                          @RequestPart("updateCard") UpdateCardDto.Request dto,
+                                          @RequestPart("addImgFiles") List<MultipartFile> addImgFiles,
+                                          @RequestPart("deleteImgFiles") List<String> deleteImgFiles,
                                           @AuthenticationPrincipal User user
     ) throws Exception {
-        return cardService.updateCard(cardId, request, addedImages, user);
+        return cardService.updateCard(cardId, dto, addImgFiles, deleteImgFiles, user);
     }
     @DeleteMapping("/{cardId}")
-    public ResponseDto<Object> deleteCard(@PathVariable Long cardId){
+    public ResponseDto<Object> deleteCard(@PathVariable UUID cardId){
         return cardService.deleteCard(cardId);
     }
 }

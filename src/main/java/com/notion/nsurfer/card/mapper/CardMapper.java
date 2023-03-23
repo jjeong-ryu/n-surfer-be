@@ -173,6 +173,72 @@ public interface CardMapper {
         }
         return imageFiles;
     }
+
+    default UpdateCardToNotionDto.Request updateCardToNotionRequest(
+            UpdateCardDto.Request dto,
+            List<MultipartFile> files,
+            User user
+    ){
+        UpdateCardToNotionDto.Request.Properties properties = UpdateCardToNotionDto.Request.Properties.builder()
+                .name(updateCardToNotionRequestName(dto.getTitle()))
+                .label(updateCardToNotionRequestLabel(dto.getLabels()))
+                .file(updateCardToNotionRequestFile(files))
+                .creator(updateCardToNotionRequestCreator(user))
+                .content(updateCardToNotionRequestContent(dto.getContent())).build();
+        return UpdateCardToNotionDto.Request.builder()
+                .properties(properties)
+                .build();
+    }
+
+    default UpdateCardToNotionDto.Request.Properties.Content updateCardToNotionRequestContent(String content){
+        List<UpdateCardToNotionDto.Request.Properties.Content.RichText> richTexts = new ArrayList<>();
+        UpdateCardToNotionDto.Request.Properties.Content.RichText richText = UpdateCardToNotionDto.Request.Properties.Content.RichText.builder()
+                .text(
+                        UpdateCardToNotionDto.Request.Properties.Content.RichText.Text.builder()
+                                .content(content).build()
+                ).build();
+        richTexts.add(richText);
+        return UpdateCardToNotionDto.Request.Properties.Content.builder()
+                .richTexts(richTexts)
+                .build();
+    }
+
+    default UpdateCardToNotionDto.Request.Properties.Label updateCardToNotionRequestLabel(
+            List<UpdateCardDto.Request.Label> labels){
+        List<UpdateCardToNotionDto.Request.Properties.Label.MultiSelect> multiSelects = new ArrayList<>();
+        for (UpdateCardDto.Request.Label label : labels) {
+            UpdateCardToNotionDto.Request.Properties.Label.MultiSelect multiSelect = UpdateCardToNotionDto.Request.Properties.Label.MultiSelect.builder()
+                    .color(label.getColor())
+                    .name(label.getName()).build();
+            multiSelects.add(multiSelect);
+        }
+        return UpdateCardToNotionDto.Request.Properties.Label.builder()
+                        .multiSelect(multiSelects).build();
+    }
+    default UpdateCardToNotionDto.Request.Properties.File updateCardToNotionRequestFile(List<MultipartFile> files){
+        return null;
+    }
+    default UpdateCardToNotionDto.Request.Properties.Creator updateCardToNotionRequestCreator(User user){
+        List<UpdateCardToNotionDto.Request.Properties.Creator.RichText> richTexts = new ArrayList<>();
+        UpdateCardToNotionDto.Request.Properties.Creator.RichText richText = UpdateCardToNotionDto.Request.Properties.Creator.RichText.builder()
+                .text(UpdateCardToNotionDto.Request.Properties.Creator.RichText.Text.builder()
+                        .content(user.getUsername()).build())
+                .build();
+        richTexts.add(richText);
+        return UpdateCardToNotionDto.Request.Properties.Creator.builder()
+                .richTexts(richTexts).build();
+    }
+    default UpdateCardToNotionDto.Request.Properties.Name updateCardToNotionRequestName(String title){
+        List<UpdateCardToNotionDto.Request.Properties.Name.Title> titles = new ArrayList<>();
+        titles.add(UpdateCardToNotionDto.Request.Properties.Name.Title.builder()
+                .text(
+                        UpdateCardToNotionDto.Request.Properties.Name.Title.Text.builder()
+                                .content(title).build()
+                ).build());
+        return UpdateCardToNotionDto.Request.Properties.Name
+                .builder()
+                .title(titles).build();
+    }
     default GetCardDto.Response getCardToResponse(GetCardToNotionDto.Response result){
         String username = result.getProperties().getCreator().getRichTexts().size() > 0
                 ? result.getProperties().getCreator().getRichTexts().get(0).getText().getContent()

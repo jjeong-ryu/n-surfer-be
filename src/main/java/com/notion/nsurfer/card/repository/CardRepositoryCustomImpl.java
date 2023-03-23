@@ -12,6 +12,7 @@ import org.springframework.util.StringUtils;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 import static com.notion.nsurfer.card.entity.QCard.*;
 import static com.notion.nsurfer.card.entity.QCardImage.*;
@@ -22,7 +23,7 @@ import static com.notion.nsurfer.user.entity.QWave.*;
 public class CardRepositoryCustomImpl implements CardRepositoryCustom{
     private final JPAQueryFactory queryFactory;
     @Override
-    public List<Card> findCardsWithWaveByUserId(Long userId) {
+    public List<Card> findCardsWithWaveByUserId(UUID userId) {
         return queryFactory
                 .selectFrom(card)
 //                .leftJoin(card.waves, wave)
@@ -31,14 +32,15 @@ public class CardRepositoryCustomImpl implements CardRepositoryCustom{
     }
 
     @Override
-    public Optional<Card> findByIdWithImages(Long userId) {
+    public Optional<Card> findByIdWithImages(UUID userId) {
         return Optional.ofNullable(queryFactory
                 .selectFrom(card)
                 .leftJoin(card.cardImages, cardImage)
                 .fetchOne());
     }
 
-    public BooleanExpression userIdEq(Long userId){
-        return userId != null ? card.user.id.eq(userId) : null;
+    public BooleanExpression userIdEq(UUID userId){
+        return null;
+//      return userId != null ? card.user.id.eq(userId) : null;
     }
 }
