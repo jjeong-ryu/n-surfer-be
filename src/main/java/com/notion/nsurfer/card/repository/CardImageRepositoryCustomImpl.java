@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.UUID;
 
 import static com.notion.nsurfer.card.entity.QCardImage.*;
 
@@ -15,14 +16,14 @@ import static com.notion.nsurfer.card.entity.QCardImage.*;
 @RequiredArgsConstructor
 public class CardImageRepositoryCustomImpl implements CardImageRepositoryCustom {
     private final JPAQueryFactory queryFactory;
-    public List<CardImage> findByCardId(Long cardId){
+    public List<CardImage> findByCardId(UUID cardId){
         return queryFactory
                 .selectFrom(cardImage)
                 .where(cardIdEq(cardId))
                 .fetch();
     }
 
-    private BooleanExpression cardIdEq(Long cardId){
+    private BooleanExpression cardIdEq(UUID cardId){
         return cardId != null ? cardImage.card.id.eq(cardId) : null;
     }
 }

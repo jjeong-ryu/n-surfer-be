@@ -7,6 +7,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class UpdateCardToNotionDto {
@@ -16,6 +17,7 @@ public class UpdateCardToNotionDto {
     public static class Request {
         @Builder.Default
         private Boolean archived = false;
+        private Properties properties;
 
         @Getter
         @Builder
@@ -27,8 +29,10 @@ public class UpdateCardToNotionDto {
 
             @Getter
             @Builder
+            @AllArgsConstructor
+            @NoArgsConstructor
             public static class Name {
-                private List<Title> title;
+                private List<Title> title = new ArrayList<>();
 
                 @Getter
                 @Builder
@@ -103,7 +107,7 @@ public class UpdateCardToNotionDto {
             }
 
             @JsonProperty("Creator")
-            private PostCardToNotionDto.Request.Properties.Creator creator;
+            private Creator creator;
 
             @Getter
             @Builder
@@ -124,7 +128,6 @@ public class UpdateCardToNotionDto {
 
                     @Getter
                     @Builder
-
                     public static class Text {
                         private String content;
                         private Link link;
@@ -133,7 +136,6 @@ public class UpdateCardToNotionDto {
                         @Builder
                         @AllArgsConstructor
                         @NoArgsConstructor
-
                         public static class Link {
                             private String url;
                         }
@@ -142,7 +144,7 @@ public class UpdateCardToNotionDto {
 
             }
 
-            private PostCardToNotionDto.Request.Properties.File file;
+            private File file;
 
             @Getter
             @Builder

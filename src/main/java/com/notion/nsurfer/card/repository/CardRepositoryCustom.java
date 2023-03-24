@@ -4,8 +4,9 @@ import com.notion.nsurfer.card.entity.Card;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 public interface CardRepositoryCustom {
-    List<Card> findCardsWithWaveByUserId(Long userId);
-    Optional<Card> findByIdWithImages(Long userId);
+    List<Card> findCardsWithWaveByUserId(UUID userId);
+    Optional<Card> findByIdWithImages(UUID userId);
 }

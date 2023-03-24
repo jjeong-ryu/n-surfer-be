@@ -124,20 +124,43 @@ public class CardService {
     }
 
     @Transactional
-    public ResponseDto<Object> updateCard(Long cardId, UpdateCardDto.Request dto, List<MultipartFile> files, User user) throws Exception {
+    public ResponseDto<Object> updateCard(UUID cardId, UpdateCardDto.Request dto,
+                                          List<MultipartFile> addImgFiles,
+                                          List<String> deleteImgFiles,
+                                          User user) throws Exception {
+        List<String> imageUrls = new ArrayList<>();
+        List<String> imageNames = new ArrayList<>();
+        // 이미지 업로드 및 이미지 url 저장
+        if(addImgFiles != null){
+            for (int idx = 0; idx < addImgFiles.size(); idx++) {
+                MultipartFile image = addImgFiles.get(idx);
+                String imageName = StringUtils.join(List.of(user.getEmail(), user.getProvider(), UUID.randomUUID().toString()), "_");
+                Map uploadResponse = cloudinary.uploader().upload(image.getBytes(), ObjectUtils.asMap("public_id", imageName));
+                String url = uploadResponse.get("url").toString();
+                imageUrls.add(url);
+                imageNames.add(imageName);
+            }
+        }
+        // 이미지 제거 API
+        if(deleteImgFiles != null) {
+            cloudinary.api().deleteResources(deleteImgFiles, null);
+            for (String deleteImgFile : deleteImgFiles) {
+                CardImage cardImage = cardImageRepository.findById(UUID.fromString(deleteImgFile))
+                        .orElseThrow(CardNotFoundException::new);
+                cardImageRepository.delete(cardImage);
+            }
+        }
         Card card = cardRepository.findByIdWithImages(cardId)
                 .orElseThrow(CardNotFoundException::new);
-        List<String> deletedImages = dto.getDeletedImages();
         // card 수정 API
-        WebClient webClient = cardWebclientBuilder("");
+        WebClient webClient = cardWebclientBuilder(cardId.toString());
+        UpdateCardToNotionDto.Request notionRequest = cardMapper.updateCardToNotionRequest(dto, addImgFiles, user);
         UpdateCardToNotionDto.Response result = webClient.patch()
                 .accept(MediaType.APPLICATION_JSON)
 //                .bodyValue()
                 .retrieve()
                 .bodyToMono(UpdateCardToNotionDto.Response.class)
                 .block();
-        // 이미지 제거 API
-        cloudinary.api().deleteResources(deletedImages, null);
         // wave 추가
         ListOperations<String, String> ops = redisTemplate.opsForList();
         String timeKey = "update:" + AuthRedisKeyUtils.makeRedisWaveTimeKey(user, LocalDate.now());
@@ -148,11 +171,11 @@ public class CardService {
     }
 
     @Transactional
-    public ResponseDto<Object> deleteCard(Long cardId){
+    public ResponseDto<Object> deleteCard(UUID cardId){
         // 카드 제거 요청 API
         WebClient webClient = cardWebclientBuilder("");
         DeleteCardDto.Response result = webClient.patch()
-                .bodyValue(UpdateCardToNotionDto.Request.builder().build())
+                .bodyValue(DeleteCardToNotionDto.Request.builder().build())
                 .accept(MediaType.APPLICATION_JSON)
                 .retrieve()
                 .bodyToMono(DeleteCardDto.Response.class)
