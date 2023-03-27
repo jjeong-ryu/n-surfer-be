@@ -13,9 +13,11 @@ import com.notion.nsurfer.card.repository.CardImageRepository;
 import com.notion.nsurfer.card.repository.CardRepository;
 import com.notion.nsurfer.common.ResponseCode;
 import com.notion.nsurfer.common.ResponseDto;
+import com.notion.nsurfer.mypage.utils.MyPageRedisKeyUtils;
 import com.notion.nsurfer.user.entity.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.ListOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.MediaType;
@@ -25,11 +27,10 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -41,6 +42,7 @@ public class CardService {
     private final String NOTION_DB_URL = "https://api.notion.com/v1/databases/";
     private final CardMapper cardMapper;
     private final Cloudinary cloudinary;
+    private final SimpleDateFormat waveDateFormat = new SimpleDateFormat("yyyyMMdd");
 
     @Value("${notion.token}")
     private String apiKey;
@@ -79,7 +81,7 @@ public class CardService {
     }
 
     @Transactional
-    public ResponseDto<Object> postCard(PostCardDto.Request dto, List<MultipartFile> imgFiles, User user) throws IOException {
+    public ResponseDto<PostCardDto.Response> postCard(PostCardDto.Request dto, List<MultipartFile> imgFiles, User user) throws IOException {
         List<String> imageUrls = new ArrayList<>();
         List<String> imageNames = new ArrayList<>();
         // 이미지 업로드 및 이미지 url 저장
@@ -91,7 +93,6 @@ public class CardService {
                 String url = uploadResponse.get("url").toString();
                 imageUrls.add(url);
                 imageNames.add(imageName);
-
             }
         }
         // card(page)를 노션에 저장하고, 해당 id를 db에 저장
@@ -103,64 +104,82 @@ public class CardService {
                 .bodyToMono(PostCardToNotionDto.Response.class)
                 .block();
         Card card = cardRepository.save(Card.builder()
-                .notionId(notionResponse.getCardId())
+                .id(UUID.fromString(notionResponse.getCardId()))
                 .user(user).build());
         for (int idx = 0; idx < imageUrls.size(); idx++) {
             CardImage cardImage = CardImage.builder()
                     .id(UUID.randomUUID())
                     .url(imageUrls.get(idx))
                     .card(card)
-                    .cardName(imageNames.get(idx)).build();
+                    .cardImageName(imageNames.get(idx)).build();
             cardImageRepository.save(cardImage);
         }
 
-        // wave 추가
-        ListOperations<String, String> ops = redisTemplate.opsForList();
-        String timeKey = "create:" + AuthRedisKeyUtils.makeRedisWaveTimeKey(user, LocalDate.now());
-        ops.rightPush(timeKey, notionResponse.getCardId());
-        return ResponseDto.builder()
+        // wave에 오늘 날짜 잔디 수 value + 1, total +1,  cardId에 생성이력 추가
+        HashOperations<String, String, String> opsForHash = redisTemplate.opsForHash();
+        ListOperations<String, String> opsForList = redisTemplate.opsForList();
+
+        String waveKey = MyPageRedisKeyUtils.makeRedisWaveKey(user);
+        String redisWaveTimeFormat = waveDateFormat.format(new Date());
+
+        String strWaveNum = opsForHash.get(waveKey,redisWaveTimeFormat);
+        int intWaveNum = strWaveNum != null ? Integer.valueOf(strWaveNum) : 0;
+        opsForHash.put(waveKey, redisWaveTimeFormat, String.valueOf(intWaveNum + 1));
+
+        String strTotal = opsForHash.get(waveKey,"total");
+        int intTotal = strTotal != null ? Integer.valueOf(strTotal) : 0;
+        opsForHash.put(waveKey, "total", String.valueOf(intTotal + 1));
+
+        String historyValue = "create:" + AuthRedisKeyUtils.makeRedisCardHistoryValue(card.getId(), LocalDate.now());
+        opsForList.rightPush(notionResponse.getCardId(), historyValue);
+
+        return ResponseDto.<PostCardDto.Response>builder()
                 .responseCode(ResponseCode.POST_CARD)
-                .data(null).build();
+                .data(PostCardDto.Response.builder()
+                        .cardId(card.getId()).build()
+                )
+                .build();
     }
 
     @Transactional
-    public ResponseDto<Object> updateCard(UUID cardId, UpdateCardDto.Request dto,
-                                          List<MultipartFile> addImgFiles,
-                                          List<String> deleteImgFiles,
-                                          User user) throws Exception {
-        List<String> imageUrls = new ArrayList<>();
-        List<String> imageNames = new ArrayList<>();
-        // 이미지 업로드 및 이미지 url 저장
-        if(addImgFiles != null){
-            for (int idx = 0; idx < addImgFiles.size(); idx++) {
-                MultipartFile image = addImgFiles.get(idx);
-                String imageName = StringUtils.join(List.of(user.getEmail(), user.getProvider(), UUID.randomUUID().toString()), "_");
-                Map uploadResponse = cloudinary.uploader().upload(image.getBytes(), ObjectUtils.asMap("public_id", imageName));
-                String url = uploadResponse.get("url").toString();
-                imageUrls.add(url);
-                imageNames.add(imageName);
-            }
-        }
-        // 이미지 제거 API
-        if(deleteImgFiles != null) {
-            cloudinary.api().deleteResources(deleteImgFiles, null);
-            for (String deleteImgFile : deleteImgFiles) {
-                CardImage cardImage = cardImageRepository.findById(UUID.fromString(deleteImgFile))
-                        .orElseThrow(CardNotFoundException::new);
-                cardImageRepository.delete(cardImage);
-            }
-        }
+    public ResponseDto<Object> updateCard(UUID cardId, UpdateCardDto.Request dto, List<MultipartFile> addedImages, List<String> deletedImages,  User user) throws Exception {
         Card card = cardRepository.findByIdWithImages(cardId)
                 .orElseThrow(CardNotFoundException::new);
         // card 수정 API
-        WebClient webClient = cardWebclientBuilder(cardId.toString());
-        UpdateCardToNotionDto.Request notionRequest = cardMapper.updateCardToNotionRequest(dto, addImgFiles, user);
+        WebClient webClient = cardWebclientBuilder("");
         UpdateCardToNotionDto.Response result = webClient.patch()
                 .accept(MediaType.APPLICATION_JSON)
 //                .bodyValue()
                 .retrieve()
                 .bodyToMono(UpdateCardToNotionDto.Response.class)
                 .block();
+
+        List<CardImage> cardImages = card.getCardImages();
+        // 이미지 제거 API
+        if(deletedImages != null){
+            cloudinary.api().deleteResources(deletedImages, null);
+            for (String deletedImage : deletedImages) {
+                CardImage cardImage = cardImages.stream().filter(ci -> ci.getCardImageName().equals(deletedImage))
+                        .findFirst()
+                        .orElseThrow(CardNotFoundException::new);
+                card.getCardImages().remove(cardImage);
+            }
+        }
+        // 이미지 추가 API
+        if(addedImages != null){
+            for (MultipartFile addedImage : addedImages) {
+                // 카드 업로드 후 받은 url을
+                String imageName = StringUtils.join(List.of(user.getEmail(), user.getProvider(), UUID.randomUUID().toString()), "_");
+                Map uploadResponse = cloudinary.uploader().upload(addedImage.getBytes(), ObjectUtils.asMap("public_id", imageName));
+                String url = uploadResponse.get("url").toString();
+                CardImage cardImage = CardImage.builder()
+                        .url(url)
+                        .cardImageName(imageName)
+                        .card(card)
+                        .build();
+                cardImages.add(cardImage);
+            }
+        }
         // wave 추가
         ListOperations<String, String> ops = redisTemplate.opsForList();
         String timeKey = "update:" + AuthRedisKeyUtils.makeRedisWaveTimeKey(user, LocalDate.now());
@@ -171,21 +190,26 @@ public class CardService {
     }
 
     @Transactional
-    public ResponseDto<Object> deleteCard(UUID cardId){
+    public ResponseDto<Object> deleteCard(UUID cardId) throws Exception {
         // 카드 제거 요청 API
         WebClient webClient = cardWebclientBuilder("");
         DeleteCardDto.Response result = webClient.patch()
-                .bodyValue(DeleteCardToNotionDto.Request.builder().build())
+                .bodyValue(UpdateCardToNotionDto.Request.builder()
+                        .archived(true).build())
                 .accept(MediaType.APPLICATION_JSON)
                 .retrieve()
                 .bodyToMono(DeleteCardDto.Response.class)
                 .block();
 
-
         // 관련 이미지 db에서 제거 후 cloudinary에서도 제거
-        List<CardImage> images = cardImageRepository.findByCardId(cardId);
+        Card deletedCard = cardRepository.findByIdWithImages(cardId)
+                .orElseThrow(CardNotFoundException::new);
+        List<String> deletedImages = deletedCard.getCardImages().stream().map(ci -> ci.getCardImageName()).collect(Collectors.toList());
+        cloudinary.api().deleteResources(deletedImages, null);
+        cardRepository.delete(deletedCard);
 
         // 관련 wave 제거(create:cardId, update:cardId 모두 제거. 시작일은 card의 createdAt을 활용)
+
 
         return ResponseDto.builder()
                 .responseCode(ResponseCode.DELETE_CARD)

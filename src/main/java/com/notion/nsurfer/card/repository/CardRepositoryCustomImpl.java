@@ -40,7 +40,7 @@ public class CardRepositoryCustomImpl implements CardRepositoryCustom{
     }
 
     public BooleanExpression userIdEq(UUID userId){
+//        return userId != null ? card.user.id.eq(userId) : null;
         return null;
-//      return userId != null ? card.user.id.eq(userId) : null;
     }
 }

@@ -23,8 +23,6 @@ public class UpdateCardDto {
             private String name;
             private String color;
         }
-        @Builder.Default
-        private List<String> deletedImages = new ArrayList<>();
     }
     @Getter
     @Builder

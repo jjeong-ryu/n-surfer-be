@@ -20,8 +20,8 @@ public interface UserMapper {
     @Mapping(target = "password", ignore = true)
     @Mapping(target = "isDeleted", ignore = true)
     @Mapping(target = "cards", ignore = true)
-    User signUpToUser(SignUpDto.Request request, String nickname);
-    @Mapping(target = "nickname", source = "response.kakaoAccount.profile.nickname")
+    User signUpToUser(SignUpDto.Request request, String username);
+    @Mapping(target = "username", source = "response.kakaoAccount.profile.username")
     @Mapping(target = "email", source = "response.kakaoAccount.email")
     @Mapping(target = "provider", defaultValue = "KAKAO")
     @Mapping(target = "thumbnailImageUrl", source = "response.kakaoAccount.profile.thumbnailImageUrl")
@@ -31,11 +31,10 @@ public interface UserMapper {
     @Mapping(target = "userId", source = "user.id")
     @Mapping(target = "userEmail", source = "user.email")
     @Mapping(target = "provider", source = "user.provider")
-    @Mapping(target = "userName", source = "user.nickname")
+    @Mapping(target = "userName", source = "user.username")
     @Mapping(target = "userBirth", source = "user.birthday")
     @Mapping(target = "imgUrl", source = "user.thumbnailImageUrl")
-    @Mapping(target = "isOwned", ignore = true)
-    GetUserProfileDto.Response getUserProfileToResponse(User user);
+    GetUserProfileDto.Response getUserProfileToResponse(User user, Integer totalWave, Integer todayWave);
 
     @Mapping(target = "userId", source = "user.id")
     DeleteUserDto.Response deleteUserToResponse(User user);

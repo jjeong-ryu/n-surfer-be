@@ -3,6 +3,7 @@ package com.notion.nsurfer.auth.utils;
 import com.notion.nsurfer.user.entity.User;
 
 import java.time.LocalDate;
+import java.util.UUID;
 
 public class AuthRedisKeyUtils {
     public static final String DIVIDER = ":";
@@ -23,5 +24,11 @@ public class AuthRedisKeyUtils {
         return "email" + DIVIDER + user.getEmail() + DIVIDER +
                 "provider" + DIVIDER + user.getProvider() + DIVIDER +
                 "wave" +  DIVIDER + "date" + DIVIDER + waveTime;
+    }
+
+    public static String makeRedisCardHistoryValue(UUID cardId, LocalDate localDate){
+        String waveTime = localDate.toString().replace("-", "");
+        return "card" + DIVIDER + cardId + DIVIDER +
+                "date" + DIVIDER + waveTime;
     }
 }

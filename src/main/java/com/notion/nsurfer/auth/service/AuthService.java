@@ -84,7 +84,7 @@ public class AuthService {
                         .refreshToken(refreshToken)
                         .thumbnailImageUrl(user.getThumbnailImageUrl())
                         .email(user.getEmail())
-                        .nickname(user.getNickname()).build())
+                        .username(user.getUsername()).build())
                 .build();
     }
 

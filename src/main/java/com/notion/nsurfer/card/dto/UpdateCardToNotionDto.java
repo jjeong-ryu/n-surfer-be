@@ -7,7 +7,6 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class UpdateCardToNotionDto {
@@ -18,7 +17,6 @@ public class UpdateCardToNotionDto {
         @Builder.Default
         private Boolean archived = false;
         private Properties properties;
-
         @Getter
         @Builder
         @AllArgsConstructor
@@ -29,10 +27,8 @@ public class UpdateCardToNotionDto {
 
             @Getter
             @Builder
-            @AllArgsConstructor
-            @NoArgsConstructor
             public static class Name {
-                private List<Title> title = new ArrayList<>();
+                private List<Title> title;
 
                 @Getter
                 @Builder
@@ -128,6 +124,7 @@ public class UpdateCardToNotionDto {
 
                     @Getter
                     @Builder
+
                     public static class Text {
                         private String content;
                         private Link link;
@@ -136,6 +133,7 @@ public class UpdateCardToNotionDto {
                         @Builder
                         @AllArgsConstructor
                         @NoArgsConstructor
+
                         public static class Link {
                             private String url;
                         }

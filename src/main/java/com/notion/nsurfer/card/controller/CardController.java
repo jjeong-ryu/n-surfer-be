@@ -23,9 +23,9 @@ public class CardController {
     private final CardService cardService;
 
     @PostMapping
-    public ResponseDto<Object> postCard(
+    public ResponseDto<PostCardDto.Response> postCard(
             @RequestPart("postCard") PostCardDto.Request dto,
-            @RequestPart("imgFiles") List<MultipartFile> imgFiles,
+            @RequestPart(value = "imgFiles", required = false) List<MultipartFile> imgFiles,
             @AuthenticationPrincipal User user
             ) throws IOException {
         return cardService.postCard(dto, imgFiles, user);
@@ -44,15 +44,15 @@ public class CardController {
 
     @PatchMapping("/{cardId}")
     public ResponseDto<Object> updateCard(@PathVariable UUID cardId,
-                                          @RequestPart("updateCard") UpdateCardDto.Request dto,
-                                          @RequestPart("addImgFiles") List<MultipartFile> addImgFiles,
-                                          @RequestPart("deleteImgFiles") List<String> deleteImgFiles,
+                                          @RequestPart UpdateCardDto.Request request,
+                                          @RequestPart List<MultipartFile> addedImages,
+                                          @RequestPart List<String> deletedImages,
                                           @AuthenticationPrincipal User user
     ) throws Exception {
-        return cardService.updateCard(cardId, dto, addImgFiles, deleteImgFiles, user);
+        return cardService.updateCard(cardId, request, addedImages, deletedImages, user);
     }
     @DeleteMapping("/{cardId}")
-    public ResponseDto<Object> deleteCard(@PathVariable UUID cardId){
+    public ResponseDto<Object> deleteCard(@PathVariable UUID cardId) throws Exception {
         return cardService.deleteCard(cardId);
     }
 }

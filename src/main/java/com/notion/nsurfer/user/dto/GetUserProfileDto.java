@@ -1,10 +1,8 @@
 package com.notion.nsurfer.user.dto;
 
-import com.notion.nsurfer.common.config.Authority;
 import lombok.Builder;
 import lombok.Getter;
 
-import java.time.LocalDate;
 import java.util.List;
 
 public class GetUserProfileDto {
@@ -17,6 +15,7 @@ public class GetUserProfileDto {
         private String userName;
         private String userBirth;
         private String imgUrl;
-        private Boolean isOwned;
+        private Integer totalWave;
+        private Integer todayWave;
     }
 }

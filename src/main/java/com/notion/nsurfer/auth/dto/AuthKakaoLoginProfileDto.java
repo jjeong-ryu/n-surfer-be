@@ -35,7 +35,7 @@ public class AuthKakaoLoginProfileDto {
             @AllArgsConstructor
             @NoArgsConstructor
             public static class Profile {
-                private String nickname;
+                private String username;
                 @JsonProperty("thumbnail_image_url")
                 private String thumbnailImageUrl;
                 @JsonProperty("profile_image_url")

@@ -19,7 +19,7 @@ public class CardImage {
 
     private String url;
 
-    private String cardName;
+    private String cardImageName;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "card_id")
     private Card card;

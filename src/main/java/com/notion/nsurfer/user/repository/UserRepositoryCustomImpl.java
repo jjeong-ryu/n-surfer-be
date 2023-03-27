@@ -28,11 +28,11 @@ public class UserRepositoryCustomImpl implements UserRepositoryCustom{
     }
 
     @Override
-    public Optional<User> findByNickname(String nickname) {
+    public Optional<User> findByusername(String username) {
         return Optional.ofNullable(
                 queryFactory
                     .selectFrom(user)
-                    .where(nicknameEq(nickname))
+                    .where(usernameEq(username))
                     .fetchOne());
     }
 
@@ -40,7 +40,7 @@ public class UserRepositoryCustomImpl implements UserRepositoryCustom{
         return !StringUtils.hasText(email) ? null : user.email.eq(email);
     }
 
-    public BooleanExpression nicknameEq(String nickname){
-        return StringUtils.hasText(nickname) ? user.nickname.eq(nickname) : null;
+    public BooleanExpression usernameEq(String username){
+        return StringUtils.hasText(username) ? user.username.eq(username) : null;
     }
 }

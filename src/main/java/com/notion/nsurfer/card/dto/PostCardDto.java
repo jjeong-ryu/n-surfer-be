@@ -1,9 +1,12 @@
 package com.notion.nsurfer.card.dto;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.util.List;
+import java.util.UUID;
 
 public class PostCardDto {
 
@@ -18,8 +21,11 @@ public class PostCardDto {
             private String color;
         }
     }
+    @Getter
     @Builder
+    @AllArgsConstructor
+    @NoArgsConstructor
     public static class Response {
-
+        private UUID cardId;
     }
 }

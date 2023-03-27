@@ -3,9 +3,7 @@ package com.notion.nsurfer.card.mapper;
 import com.notion.nsurfer.card.dto.*;
 import com.notion.nsurfer.common.CommonMapperConfig;
 import com.notion.nsurfer.user.entity.User;
-import org.cloudinary.json.JSONObject;
 import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
@@ -173,7 +171,6 @@ public interface CardMapper {
         }
         return imageFiles;
     }
-
     default UpdateCardToNotionDto.Request updateCardToNotionRequest(
             UpdateCardDto.Request dto,
             List<MultipartFile> files,
@@ -213,7 +210,7 @@ public interface CardMapper {
             multiSelects.add(multiSelect);
         }
         return UpdateCardToNotionDto.Request.Properties.Label.builder()
-                        .multiSelect(multiSelects).build();
+                .multiSelect(multiSelects).build();
     }
     default UpdateCardToNotionDto.Request.Properties.File updateCardToNotionRequestFile(List<MultipartFile> files){
         return null;
@@ -239,6 +236,7 @@ public interface CardMapper {
                 .builder()
                 .title(titles).build();
     }
+
     default GetCardDto.Response getCardToResponse(GetCardToNotionDto.Response result){
         String username = result.getProperties().getCreator().getRichTexts().size() > 0
                 ? result.getProperties().getCreator().getRichTexts().get(0).getText().getContent()

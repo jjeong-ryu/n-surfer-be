@@ -15,7 +15,7 @@ public class AuthKakaoLoginDto {
         private String accessToken;
         private String refreshToken;
         private String email;
-        private String nickname;
+        private String username;
         private String thumbnailImageUrl;
     }
 }

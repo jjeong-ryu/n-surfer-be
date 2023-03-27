@@ -39,8 +39,8 @@ public class UserController {
 
     @GetMapping("/profile")
     public ResponseEntity<ResponseDto<GetUserProfileDto.Response>> getUserProfile(
-            @RequestPart String nickname
+            @RequestPart String username
     ){
-        return new ResponseEntity<>(userService.getUserProfile(nickname), OK);
+        return new ResponseEntity<>(userService.getUserProfile(username), OK);
     }
 }

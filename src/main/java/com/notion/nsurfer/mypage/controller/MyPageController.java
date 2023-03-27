@@ -22,10 +22,10 @@ public class MyPageController {
 
     @GetMapping("/wave")
     public ResponseEntity<ResponseDto<GetWavesDto.Response>> getSurfingRecord(
-            @RequestParam String nickname,
+            @RequestParam String username,
             @RequestParam Integer month
     ){
-        return new ResponseEntity<>(myPageService.getWaves(nickname, month), OK);
+        return new ResponseEntity<>(myPageService.getWaves(username, month), OK);
     }
 
     @GetMapping("/profile")

@@ -17,10 +17,9 @@ import java.util.UUID;
 @AllArgsConstructor
 @NoArgsConstructor
 public class Card {
-    @Id @GeneratedValue
+    @Id
     private UUID id;
 
-    private String notionId;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;

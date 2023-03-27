@@ -10,13 +10,14 @@ public class GetWavesDto {
     @Getter
     @Builder
     public static class Response {
+        private Integer totalWaves;
         private List<Wave> waves;
 
         @Getter
         @Builder
         public static class Wave {
             private String date;
-            private Long count;
+            private Integer count;
         }
     }
 }
