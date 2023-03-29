@@ -105,7 +105,7 @@ public class MyPageService {
         return waves;
     }
     @Transactional
-    public ResponseDto<Object> updateUserProfile(UpdateUserProfileDto.Request dto, MultipartFile image, User user) throws Exception {
+    public ResponseDto<Object> updateProfile(UpdateUserProfileDto.Request dto, MultipartFile image, User user) throws Exception {
         usernameValidation(dto.getUsername());
         user.update(dto);
         if(image != null){
