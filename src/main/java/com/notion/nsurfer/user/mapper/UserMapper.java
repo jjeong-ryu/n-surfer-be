@@ -21,12 +21,14 @@ public interface UserMapper {
     @Mapping(target = "isDeleted", ignore = true)
     @Mapping(target = "cards", ignore = true)
     @Mapping(target = "nickname", source = "nickname")
+    @Mapping(target = "thumbnailImageName", defaultValue = "Default")
     User signUpToUser(SignUpDto.Request request, String nickname);
     @Mapping(target = "nickname", source = "response.kakaoAccount.profile.username")
     @Mapping(target = "email", source = "response.kakaoAccount.email")
     @Mapping(target = "provider", defaultValue = "KAKAO")
     @Mapping(target = "thumbnailImageUrl", source = "response.kakaoAccount.profile.thumbnailImageUrl")
     @Mapping(target = "authority", ignore = true)
+    @Mapping(target = "thumbnailImageName", source = "response.kakaoAccount.profile.thumbnailImageName")
     SignUpDto.Request signUpKakaoToRequest(AuthKakaoLoginProfileDto.Response response);
 
     @Mapping(target = "userId", source = "user.id")

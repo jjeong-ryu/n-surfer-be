@@ -6,6 +6,7 @@ import com.cloudinary.utils.StringUtils;
 import com.notion.nsurfer.auth.utils.AuthRedisKeyUtils;
 import com.notion.nsurfer.common.ResponseCode;
 import com.notion.nsurfer.common.ResponseDto;
+import com.notion.nsurfer.mypage.dto.GetWavesDto;
 import com.notion.nsurfer.mypage.dto.UpdateUserProfileDto;
 import com.notion.nsurfer.mypage.exception.UserNotFoundException;
 import com.notion.nsurfer.mypage.utils.MyPageRedisKeyUtils;
@@ -31,10 +32,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 import static com.notion.nsurfer.auth.common.AuthUtil.KAKAO;
 
@@ -49,8 +47,9 @@ public class UserService {
 
     @Transactional
     public SignUpDto.Response signUpWithKakao(SignUpDto.Request request) {
-        String randomNickname = UUID.randomUUID().toString().replace("-", "").substring(8);
+        String randomNickname = UUID.randomUUID().toString().replace("-", "").substring(8, 23);
         User user = userMapper.signUpToUser(request, randomNickname);
+        System.out.println(user.getThumbnailImageName());
         userRepository.save(user);
         return SignUpDto.Response.builder()
                 .thumbnailImageUrl(request.getThumbnailImageUrl())
@@ -67,7 +66,51 @@ public class UserService {
                 .data(userMapper.deleteUserToResponse(findUser))
                 .build();
     }
+    public ResponseDto<GetWavesDto.Response> getWaves(String nickname, Integer month){
+        Calendar startDate = getStartDateCal(month);
+        Calendar endDate = getEndDateCal();
+        User user = userRepository.findByNickname(nickname)
+                .orElseThrow(UserNotFoundException::new);
+        List<GetWavesDto.Response.Wave> waves = getWavesWithDate(startDate, endDate, user);
+        return ResponseDto.<GetWavesDto.Response>builder()
+                .responseCode(ResponseCode.GET_WAVES)
+                .data(GetWavesDto.Response.builder()
+                        .totalWaves(getTotalWaves(user))
+                        .waves(waves).build())
+                .build();
+    }
+    private Calendar getStartDateCal(Integer month){
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(new Date());
+        cal.add(Calendar.MONTH, -month);
+        return cal;
+    }
 
+    private Calendar getEndDateCal(){
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(new Date());
+        cal.add(Calendar.DATE,1);
+        return cal;
+    }
+
+    private List<GetWavesDto.Response.Wave> getWavesWithDate(Calendar startDateCal, Calendar endDateCal, User user){
+        HashOperations<String, String, String> opsForHash = redisTemplate.opsForHash();
+        List<GetWavesDto.Response.Wave> waves = new ArrayList<>();
+        String redisWavesKey = MyPageRedisKeyUtils.makeRedisWaveKey(user);
+        while(startDateCal.before(endDateCal)){
+            String redisWaveTimeFormat = waveDateFormat.format(startDateCal.getTime());
+            String waveNum = opsForHash.get(redisWavesKey, redisWaveTimeFormat);
+            if(waveNum != null){
+                GetWavesDto.Response.Wave wave = GetWavesDto.Response.Wave.builder()
+                        .date(redisWaveTimeFormat)
+                        .count(Integer.valueOf(waveNum))
+                        .build();
+                waves.add(wave);
+            }
+            startDateCal.add(Calendar.DATE, 1);
+        }
+        return waves;
+    }
     @Transactional
     public String localSignUpForTest(SignUpDto.Request request){
         ValueOperations<String, String> ops = redisTemplate.opsForValue();
@@ -97,8 +140,8 @@ public class UserService {
                 .refreshToken(refreshToken).build();
     }
 
-    public ResponseDto<GetUserProfileDto.Response> getUserProfile(String username){
-        User user = userRepository.findByNickname(username)
+    public ResponseDto<GetUserProfileDto.Response> getUserProfile(String nickname){
+        User user = userRepository.findByNickname(nickname)
                 .orElseThrow(UserNotFoundException::new);
         Integer totalWave = getTotalWaves(user);
         Integer todayWave = getTodayWave(user);
