@@ -34,13 +34,6 @@ public class MyPageService {
     private final SimpleDateFormat waveDateFormat = new SimpleDateFormat("yyyyMMdd");
     private final Cloudinary cloudinary;
 
-    private Integer getTotalWaves(User user) {
-        HashOperations<String, String, String> opsForHash = redisTemplate.opsForHash();
-        String redisWavesKey = MyPageRedisKeyUtils.makeRedisWaveKey(user);
-        String total = opsForHash.get(redisWavesKey, "total");
-        return total != null ? Integer.valueOf(total) : 0;
-    }
-
     public ResponseDto<GetUserProfileDto.Response> getUserProfile(User user){
         Integer totalWave = getTotalWaves(user);
         Integer todayWave = getTodayWave(user);
@@ -49,7 +42,12 @@ public class MyPageService {
                 .data(userMapper.getUserProfileToResponse(user,totalWave,todayWave))
                 .build();
     }
-
+    private Integer getTotalWaves(User user) {
+        HashOperations<String, String, String> opsForHash = redisTemplate.opsForHash();
+        String redisWavesKey = MyPageRedisKeyUtils.makeRedisWaveKey(user);
+        String total = opsForHash.get(redisWavesKey, "total");
+        return total != null ? Integer.valueOf(total) : 0;
+    }
     private Integer getTodayWave(User user) {
         HashOperations<String, String, String> opsForHash = redisTemplate.opsForHash();
         String redisWavesKey = MyPageRedisKeyUtils.makeRedisWaveKey(user);
