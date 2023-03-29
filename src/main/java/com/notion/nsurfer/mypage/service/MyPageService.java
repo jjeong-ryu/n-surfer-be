@@ -120,7 +120,10 @@ public class MyPageService {
         }
         return ResponseDto.builder()
                 .responseCode(ResponseCode.UPDATE_USER_PROFILE)
-                .data(null).build();
+                .data(UpdateUserProfileDto.Response.builder()
+                        .userId(user.getId())
+                        .build())
+                .build();
     }
     private void usernameValidation(String username){
         if(userRepository.findByusername(username).isPresent()){
