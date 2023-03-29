@@ -22,14 +22,6 @@ import static org.springframework.http.HttpStatus.*;
 public class MyPageController {
     private final MyPageService myPageService;
 
-    @GetMapping("/wave")
-    public ResponseEntity<ResponseDto<GetWavesDto.Response>> getSurfingRecord(
-            @RequestParam String username,
-            @RequestParam Integer month
-    ){
-        return new ResponseEntity<>(myPageService.getWaves(username, month), OK);
-    }
-
     @GetMapping("/profile")
     public ResponseEntity<ResponseDto<GetUserProfileDto.Response>> getUserProfile(
             @AuthenticationPrincipal User user
@@ -38,9 +30,9 @@ public class MyPageController {
     }
     @PatchMapping("/profile")
     public ResponseEntity<Object> updateProfile(
-            @RequestPart("updateProfile") UpdateUserProfileDto.Request dto,
-            @RequestPart MultipartFile imageFile,
+            @RequestPart(value = "updateProfile") UpdateUserProfileDto.Request dto,
+            @RequestPart(value = "imgFile", required = false) MultipartFile imgFile,
             @AuthenticationPrincipal User user) throws Exception {
-        return new ResponseEntity<>(myPageService.updateProfile(dto, imageFile, user), OK);
+        return new ResponseEntity<>(myPageService.updateProfile(dto, imgFile, user), OK);
     }
 }

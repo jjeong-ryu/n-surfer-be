@@ -34,20 +34,6 @@ public class MyPageService {
     private final SimpleDateFormat waveDateFormat = new SimpleDateFormat("yyyyMMdd");
     private final Cloudinary cloudinary;
 
-    public ResponseDto<GetWavesDto.Response> getWaves(String username, Integer month){
-        Calendar startDate = getStartDateCal(month);
-        Calendar endDate = getEndDateCal();
-        User user = userRepository.findByNickname(username)
-                .orElseThrow(UserNotFoundException::new);
-        List<GetWavesDto.Response.Wave> waves = getWavesWithDate(startDate, endDate, user);
-        return ResponseDto.<GetWavesDto.Response>builder()
-                .responseCode(ResponseCode.GET_WAVES)
-                .data(GetWavesDto.Response.builder()
-                    .totalWaves(getTotalWaves(user))
-                    .waves(waves).build())
-                .build();
-    }
-
     private Integer getTotalWaves(User user) {
         HashOperations<String, String, String> opsForHash = redisTemplate.opsForHash();
         String redisWavesKey = MyPageRedisKeyUtils.makeRedisWaveKey(user);
@@ -72,51 +58,26 @@ public class MyPageService {
         return todayWave != null ? Integer.valueOf(todayWave) : 0;
     }
 
-    private Calendar getStartDateCal(Integer month){
-        Calendar cal = Calendar.getInstance();
-        cal.setTime(new Date());
-        cal.add(Calendar.MONTH, -month);
-        return cal;
-    }
-
-    private Calendar getEndDateCal(){
-        Calendar cal = Calendar.getInstance();
-        cal.setTime(new Date());
-        cal.add(Calendar.DATE,1);
-        return cal;
-    }
-
-    private List<GetWavesDto.Response.Wave> getWavesWithDate(Calendar startDateCal, Calendar endDateCal, User user){
-        HashOperations<String, String, String> opsForHash = redisTemplate.opsForHash();
-        List<GetWavesDto.Response.Wave> waves = new ArrayList<>();
-        String redisWavesKey = MyPageRedisKeyUtils.makeRedisWaveKey(user);
-        while(startDateCal.before(endDateCal)){
-            String redisWaveTimeFormat = waveDateFormat.format(startDateCal.getTime());
-            String waveNum = opsForHash.get(redisWavesKey, redisWaveTimeFormat);
-            if(waveNum != null){
-                GetWavesDto.Response.Wave wave = GetWavesDto.Response.Wave.builder()
-                        .date(redisWaveTimeFormat)
-                        .count(Integer.valueOf(waveNum))
-                        .build();
-                waves.add(wave);
-            }
-            startDateCal.add(Calendar.DATE, 1);
-        }
-        return waves;
-    }
     @Transactional
     public ResponseDto<UpdateUserProfileDto.Response> updateProfile(UpdateUserProfileDto.Request dto, MultipartFile image, User user) throws Exception {
-        usernameValidation(dto.getNickname());
+        if(!user.getNickname().equals(dto.getNickname())){
+            usernameValidation(dto.getNickname());
+        }
         user.update(dto);
+        if(dto.getIsBasicImg()){
+            System.out.println(user.getThumbnailImageName());
+            cloudinary.api().deleteResources(List.of(user.getThumbnailImageName()), null);
+            user.updateImage(DEFAULT_PROFILE_IMAGE, null);
+        }
         if(image != null){
-            String imageName = StringUtils.join(List.of(user.getEmail(), user.getProvider()), "_");
-            Map uploadResponse = cloudinary.uploader().upload(image, ObjectUtils.asMap("public_id", imageName));
-            user.updateImage(uploadResponse.get("url").toString());
+            cloudinary.api().deleteResources(List.of(user.getThumbnailImageName()), null);
+            System.out.println(image.getOriginalFilename());
+            String imageName = StringUtils.join(List.of(user.getEmail(), user.getProvider(),
+                    UUID.randomUUID().toString().substring(16)), "_");
+            Map uploadResponse = cloudinary.uploader().upload(image.getBytes(), ObjectUtils.asMap("public_id", imageName));
+            user.updateImage(uploadResponse.get("url").toString(), imageName);
         }
-        if(dto.getIsBasicImage()){
-            cloudinary.api().deleteResources(List.of(user.getThumbnailImageUrl()), null);
-            user.updateImage(DEFAULT_PROFILE_IMAGE);
-        }
+
         return ResponseDto.<UpdateUserProfileDto.Response>builder()
                 .responseCode(ResponseCode.UPDATE_USER_PROFILE)
                 .data(UpdateUserProfileDto.Response.builder()
