@@ -10,17 +10,18 @@ public class SignUpDto {
     public static class Request {
         private String email;
         private String provider;
-        private String username;
+        private String nickname;
         @Builder.Default
         private Authority authority = Authority.USER;
         private String thumbnailImageUrl;
+        private String thumbnailImageName;
     }
 
     @Getter
     @Builder
     public static class Response {
         private String email;
-        private String username;
+        private String nickname;
         private String thumbnailImageUrl;
     }
 

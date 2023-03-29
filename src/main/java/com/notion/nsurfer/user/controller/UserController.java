@@ -1,6 +1,7 @@
 package com.notion.nsurfer.user.controller;
 
 import com.notion.nsurfer.common.ResponseDto;
+import com.notion.nsurfer.mypage.dto.GetWavesDto;
 import com.notion.nsurfer.mypage.dto.UpdateUserProfileDto;
 import com.notion.nsurfer.user.dto.DeleteUserDto;
 import com.notion.nsurfer.user.dto.GetUserProfileDto;
@@ -39,8 +40,15 @@ public class UserController {
 
     @GetMapping("/profile")
     public ResponseEntity<ResponseDto<GetUserProfileDto.Response>> getUserProfile(
-            @RequestPart String username
+            @RequestParam String nickname
     ){
-        return new ResponseEntity<>(userService.getUserProfile(username), OK);
+        return new ResponseEntity<>(userService.getUserProfile(nickname), OK);
+    }
+    @GetMapping("/wave")
+    public ResponseEntity<ResponseDto<GetWavesDto.Response>> getSurfingRecord(
+            @RequestParam String nickname,
+            @RequestParam Integer month
+    ){
+        return new ResponseEntity<>(userService.getWaves(nickname, month), OK);
     }
 }

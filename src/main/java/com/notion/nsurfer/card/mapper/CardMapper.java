@@ -1,6 +1,7 @@
 package com.notion.nsurfer.card.mapper;
 
 import com.notion.nsurfer.card.dto.*;
+import com.notion.nsurfer.card.util.CardComparator;
 import com.notion.nsurfer.common.CommonMapperConfig;
 import com.notion.nsurfer.user.entity.User;
 import org.mapstruct.Mapper;
@@ -8,6 +9,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Mapper(config = CommonMapperConfig.class)
 public interface CardMapper {
@@ -22,9 +24,13 @@ public interface CardMapper {
                 .build();
     }
 
-    default GetCardsDto.Response getCardsToResponse(GetCardsToNotionDto.Response response){
+    default GetCardsDto.Response getCardsToResponse(GetCardsToNotionDto.Response response, String numberOfCards){
+        List<GetCardsDto.Response.Card> cardList = getCardsToCardList(response.getResults());
+        if(!numberOfCards.equals("")){
+            cardList = cardList.stream().sorted(new CardComparator()).limit(Integer.valueOf(numberOfCards)).collect(Collectors.toList());
+        }
         return GetCardsDto.Response.builder()
-                .cardList(getCardsToCardList(response.getResults()))
+                .cardList(cardList)
                 .build();
     }
 
@@ -238,7 +244,7 @@ public interface CardMapper {
     }
 
     default GetCardDto.Response getCardToResponse(GetCardToNotionDto.Response result){
-        String username = result.getProperties().getCreator().getRichTexts().size() > 0
+        String nickname = result.getProperties().getCreator().getRichTexts().size() > 0
                 ? result.getProperties().getCreator().getRichTexts().get(0).getText().getContent()
                 : "";
         String content = result.getProperties().getContent().getRichTexts().size() > 0
@@ -257,7 +263,7 @@ public interface CardMapper {
                         : new ArrayList<>();
         return GetCardDto.Response.builder()
                 .cardId(result.getId())
-                .username(username)
+                .nickname(nickname)
                 .content(content)
                 .createDate(result.getCreatedTime())
                 .title(title)

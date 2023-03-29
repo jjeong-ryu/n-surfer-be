@@ -12,7 +12,7 @@ public class GetUserProfileDto {
         private Long userId;
         private String userEmail;
         private String provider;
-        private String userName;
+        private String nickname;
         private String userBirth;
         private String imgUrl;
         private Integer totalWave;

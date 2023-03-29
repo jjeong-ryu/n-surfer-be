@@ -32,7 +32,6 @@ public enum ResponseCode {
     SIGN_UP("Success", "U001", "User sign up", "유저 회원가입"),
     SIGN_IN("Success", "U002", "User sign in", "유저 로그인"),
     GET_USER_PROFILE("Success", "U003", "Get user profile", "유저 프로필 조회"),
-    UPDATE_USER_PROFILE("Success", "U004", "Update user profile", "유저 프로필 업데이트"),
     DELETE_USER("Success", "U005", "Delete User", "유저 회원탈퇴"),
 
     // Error - User
@@ -48,7 +47,8 @@ public enum ResponseCode {
 
     // My-page
     GET_USER_PROFILE_USING_ACCESS_TOKEN("Success", "MP001", "Get user profile using accessToken", "액세스 토큰 활용한 유저 프로필 조회"),
-    GET_WAVES("Success", "MP002", "Get waves", "유저 잔디 정보 조회");
+    GET_WAVES("Success", "MP002", "Get waves", "유저 잔디 정보 조회"),
+    UPDATE_USER_PROFILE("Success", "MP004", "Update user profile", "유저 프로필 업데이트");
 
     // Error - My-page
 

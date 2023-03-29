@@ -84,7 +84,7 @@ public class AuthService {
                         .refreshToken(refreshToken)
                         .thumbnailImageUrl(user.getThumbnailImageUrl())
                         .email(user.getEmail())
-                        .username(user.getUsername()).build())
+                        .nickname(user.getNickname()).build())
                 .build();
     }
 
@@ -93,7 +93,6 @@ public class AuthService {
                 .baseUrl(KAKAO_ACCESS_TOKEN_REQUEST_URL)
                 .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED_VALUE)
                 .build();
-
         MultiValueMap<String, String> profileRequest = makeProfileRequest(code, redirectUrl, provider);
         AuthKakaoLoginTokenDto.Response profileResponse = webClient
                 .post()

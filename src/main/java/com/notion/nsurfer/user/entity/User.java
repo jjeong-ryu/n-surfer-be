@@ -25,7 +25,7 @@ public class User implements UserDetails {
     @Id @GeneratedValue
     private Long id;
 
-    private String username;
+    private String nickname;
 
     private String provider;
 
@@ -36,6 +36,7 @@ public class User implements UserDetails {
 
     private String password;
 
+    private String thumbnailImageName;
     private String thumbnailImageUrl;
 
     @Builder.Default
@@ -87,10 +88,11 @@ public class User implements UserDetails {
     }
 
     public void update(UpdateUserProfileDto.Request dto){
-        this.username = dto.getUsername();
+        this.nickname = dto.getNickname();
     }
 
-    public void updateImage(String url){
+    public void updateImage(String url, String thumbnailImageName){
         this.thumbnailImageUrl = url;
+        this.thumbnailImageName = thumbnailImageName;
     }
 }

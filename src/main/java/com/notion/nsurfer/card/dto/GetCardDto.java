@@ -14,7 +14,7 @@ public class GetCardDto {
     @Builder
     public static class Response {
         private String cardId;
-        private String username;
+        private String nickname;
         private String title;
         private String content;
         private LocalDateTime createDate;

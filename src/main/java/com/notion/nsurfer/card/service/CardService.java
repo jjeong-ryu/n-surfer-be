@@ -63,7 +63,7 @@ public class CardService {
                 .build();
     }
 
-    public ResponseDto<GetCardsDto.Response> getCards(final String username) {
+    public ResponseDto<GetCardsDto.Response> getCards(final String username, final String numberOfCards) {
         // username이 null이어도 가능
         WebClient webClient = dbQueryWebclientBuilder();
         GetCardsToNotionDto.Response notionResponse = webClient.post()
@@ -72,7 +72,8 @@ public class CardService {
                 .retrieve()
                 .bodyToMono(GetCardsToNotionDto.Response.class)
                 .block();
-        GetCardsDto.Response responseData = cardMapper.getCardsToResponse(notionResponse);
+        GetCardsDto.Response responseData = cardMapper.getCardsToResponse(notionResponse, numberOfCards);
+
         // 현재 DB에 저장된 모든 카드 return
         return ResponseDto.<GetCardsDto.Response>builder()
                 .responseCode(ResponseCode.GET_CARD_LIST)

@@ -38,6 +38,9 @@ public class AuthKakaoLoginProfileDto {
                 private String username;
                 @JsonProperty("thumbnail_image_url")
                 private String thumbnailImageUrl;
+
+                @Builder.Default
+                private String thumbnailImageName = "Default";
                 @JsonProperty("profile_image_url")
                 private String profileImageUrl;
             }
