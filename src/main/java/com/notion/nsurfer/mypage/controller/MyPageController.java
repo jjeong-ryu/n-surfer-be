@@ -37,10 +37,10 @@ public class MyPageController {
         return new ResponseEntity<>(myPageService.getUserProfile(user), OK);
     }
     @PatchMapping("/profile")
-    public ResponseEntity<Object> updateUserProfile(
+    public ResponseEntity<Object> updateProfile(
             @RequestPart("updateProfile") UpdateUserProfileDto.Request dto,
             @RequestPart MultipartFile imageFile,
             @AuthenticationPrincipal User user) throws Exception {
-        return new ResponseEntity<>(myPageService.updateUserProfile(dto, imageFile, user), OK);
+        return new ResponseEntity<>(myPageService.updateProfile(dto, imageFile, user), OK);
     }
 }
