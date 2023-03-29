@@ -244,7 +244,7 @@ public interface CardMapper {
     }
 
     default GetCardDto.Response getCardToResponse(GetCardToNotionDto.Response result){
-        String username = result.getProperties().getCreator().getRichTexts().size() > 0
+        String nickname = result.getProperties().getCreator().getRichTexts().size() > 0
                 ? result.getProperties().getCreator().getRichTexts().get(0).getText().getContent()
                 : "";
         String content = result.getProperties().getContent().getRichTexts().size() > 0
@@ -263,7 +263,7 @@ public interface CardMapper {
                         : new ArrayList<>();
         return GetCardDto.Response.builder()
                 .cardId(result.getId())
-                .username(username)
+                .nickname(nickname)
                 .content(content)
                 .createDate(result.getCreatedTime())
                 .title(title)
