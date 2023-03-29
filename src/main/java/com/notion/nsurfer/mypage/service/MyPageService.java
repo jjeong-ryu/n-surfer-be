@@ -105,13 +105,12 @@ public class MyPageService {
         return waves;
     }
     @Transactional
-    public ResponseDto<Object> updateUserProfile(UpdateUserProfileDto.Request dto, User user) throws Exception {
+    public ResponseDto<Object> updateUserProfile(UpdateUserProfileDto.Request dto, MultipartFile image, User user) throws Exception {
         usernameValidation(dto.getUsername());
         user.update(dto);
-        MultipartFile uploadedImage = dto.getImage();
-        if(uploadedImage != null){
+        if(image != null){
             String imageName = StringUtils.join(List.of(user.getEmail(), user.getProvider()), "_");
-            Map uploadResponse = cloudinary.uploader().upload(uploadedImage, ObjectUtils.asMap("public_id", imageName));
+            Map uploadResponse = cloudinary.uploader().upload(image, ObjectUtils.asMap("public_id", imageName));
             user.updateImage(uploadResponse.get("url").toString());
         }
         if(dto.getIsBasicImage()){

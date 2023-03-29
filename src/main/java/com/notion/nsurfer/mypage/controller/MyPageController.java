@@ -1,5 +1,6 @@
 package com.notion.nsurfer.mypage.controller;
 
+import com.notion.nsurfer.card.dto.PostCardDto;
 import com.notion.nsurfer.common.ResponseDto;
 import com.notion.nsurfer.mypage.dto.GetWavesDto;
 import com.notion.nsurfer.mypage.dto.UpdateUserProfileDto;
@@ -10,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 
 import static org.springframework.http.HttpStatus.*;
@@ -36,8 +38,9 @@ public class MyPageController {
     }
     @PatchMapping("/profile")
     public ResponseEntity<Object> updateUserProfile(
-            @RequestPart UpdateUserProfileDto.Request dto,
+            @RequestPart("updateProfile") UpdateUserProfileDto.Request dto,
+            @RequestPart MultipartFile imageFile,
             @AuthenticationPrincipal User user) throws Exception {
-        return new ResponseEntity<>(myPageService.updateUserProfile(dto,user), OK);
+        return new ResponseEntity<>(myPageService.updateUserProfile(dto, imageFile, user), OK);
     }
 }
