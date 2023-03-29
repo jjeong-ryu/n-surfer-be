@@ -14,6 +14,7 @@ public class SignUpDto {
         @Builder.Default
         private Authority authority = Authority.USER;
         private String thumbnailImageUrl;
+        private String thumbnailImageName;
     }
 
     @Getter
