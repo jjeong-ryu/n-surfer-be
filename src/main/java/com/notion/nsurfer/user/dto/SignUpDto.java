@@ -10,7 +10,7 @@ public class SignUpDto {
     public static class Request {
         private String email;
         private String provider;
-        private String username;
+        private String nickname;
         @Builder.Default
         private Authority authority = Authority.USER;
         private String thumbnailImageUrl;
@@ -20,7 +20,7 @@ public class SignUpDto {
     @Builder
     public static class Response {
         private String email;
-        private String username;
+        private String nickname;
         private String thumbnailImageUrl;
     }
 

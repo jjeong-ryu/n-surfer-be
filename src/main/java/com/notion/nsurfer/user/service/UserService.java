@@ -49,13 +49,13 @@ public class UserService {
 
     @Transactional
     public SignUpDto.Response signUpWithKakao(SignUpDto.Request request) {
-        String randomusername = UUID.randomUUID().toString().replace("-", "").substring(8);
-        User user = userMapper.signUpToUser(request, randomusername);
+        String randomNickname = UUID.randomUUID().toString().replace("-", "").substring(8);
+        User user = userMapper.signUpToUser(request, randomNickname);
         userRepository.save(user);
         return SignUpDto.Response.builder()
                 .thumbnailImageUrl(request.getThumbnailImageUrl())
                 .email(request.getEmail())
-                .username(request.getUsername()).build();
+                .nickname(request.getNickname()).build();
     }
     @Transactional
     public ResponseDto<DeleteUserDto.Response> deleteUser(User user) {
@@ -72,7 +72,7 @@ public class UserService {
     public String localSignUpForTest(SignUpDto.Request request){
         ValueOperations<String, String> ops = redisTemplate.opsForValue();
         User user = User.builder()
-                .username(request.getUsername())
+                .nickname(request.getNickname())
                 .email(request.getEmail())
                 .password("1234")
                 .thumbnailImageUrl("hi")
@@ -98,7 +98,7 @@ public class UserService {
     }
 
     public ResponseDto<GetUserProfileDto.Response> getUserProfile(String username){
-        User user = userRepository.findByusername(username)
+        User user = userRepository.findByNickname(username)
                 .orElseThrow(UserNotFoundException::new);
         Integer totalWave = getTotalWaves(user);
         Integer todayWave = getTodayWave(user);

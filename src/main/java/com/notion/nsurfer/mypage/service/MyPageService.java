@@ -37,7 +37,7 @@ public class MyPageService {
     public ResponseDto<GetWavesDto.Response> getWaves(String username, Integer month){
         Calendar startDate = getStartDateCal(month);
         Calendar endDate = getEndDateCal();
-        User user = userRepository.findByusername(username)
+        User user = userRepository.findByNickname(username)
                 .orElseThrow(UserNotFoundException::new);
         List<GetWavesDto.Response.Wave> waves = getWavesWithDate(startDate, endDate, user);
         return ResponseDto.<GetWavesDto.Response>builder()
@@ -106,7 +106,7 @@ public class MyPageService {
     }
     @Transactional
     public ResponseDto<UpdateUserProfileDto.Response> updateProfile(UpdateUserProfileDto.Request dto, MultipartFile image, User user) throws Exception {
-        usernameValidation(dto.getUsername());
+        usernameValidation(dto.getNickname());
         user.update(dto);
         if(image != null){
             String imageName = StringUtils.join(List.of(user.getEmail(), user.getProvider()), "_");
@@ -125,7 +125,7 @@ public class MyPageService {
                 .build();
     }
     private void usernameValidation(String username){
-        if(userRepository.findByusername(username).isPresent()){
+        if(userRepository.findByNickname(username).isPresent()){
             throw new UsernameAlreadyExistException();
         }
     }
