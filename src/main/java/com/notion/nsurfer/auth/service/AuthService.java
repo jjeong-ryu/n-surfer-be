@@ -93,7 +93,6 @@ public class AuthService {
                 .baseUrl(KAKAO_ACCESS_TOKEN_REQUEST_URL)
                 .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED_VALUE)
                 .build();
-
         MultiValueMap<String, String> profileRequest = makeProfileRequest(code, redirectUrl, provider);
         AuthKakaoLoginTokenDto.Response profileResponse = webClient
                 .post()
