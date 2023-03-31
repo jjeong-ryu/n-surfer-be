@@ -20,7 +20,7 @@ public class GetCardsDto {
         @Builder
         public static class Card {
             private String cardId;
-            private String username;
+            private String nickname;
             private String title;
             private String content;
             private LocalDateTime createDate;
