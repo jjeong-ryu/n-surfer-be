@@ -143,16 +143,29 @@ public class CardService {
     }
 
     @Transactional
-    public ResponseDto<Object> updateCard(UUID cardId, UpdateCardDto.Request dto, List<MultipartFile> addedImages, List<String> deletedImages,  User user) throws Exception {
+    public ResponseDto<Object> updateCard(UUID cardId, PostCardDto.Request dto, List<MultipartFile> imgFiles, List<String> deletedImages,  User user) throws Exception {List<String> imageUrls = new ArrayList<>();
+        List<String> imageNames = new ArrayList<>();
+        // 이미지 업로드 및 이미지 url 저장
+        if(imgFiles != null){
+            for (int idx = 0; idx < imgFiles.size(); idx++) {
+                MultipartFile image = imgFiles.get(idx);
+                String imageName = StringUtils.join(List.of(user.getEmail(), user.getProvider(), UUID.randomUUID().toString()), "_");
+                Map uploadResponse = cloudinary.uploader().upload(image.getBytes(), ObjectUtils.asMap("public_id", imageName));
+                String url = uploadResponse.get("url").toString();
+                imageUrls.add(url);
+                imageNames.add(imageName);
+            }
+        }
+        // card(page)를 노션에 저장하고, 해당 id를 db에 저장
+        WebClient webClient = cardWebclientBuilder("");
         Card card = cardRepository.findByIdWithImages(cardId)
                 .orElseThrow(CardNotFoundException::new);
         // card 수정 API
-        WebClient webClient = cardWebclientBuilder("");
-        UpdateCardToNotionDto.Response result = webClient.patch()
+        PostCardToNotionDto.Response result = webClient.patch()
                 .accept(MediaType.APPLICATION_JSON)
-//                .bodyValue()
+                .bodyValue(cardMapper.postCardToRequest(dto, user.getId(), dbId, imageUrls, imageNames))
                 .retrieve()
-                .bodyToMono(UpdateCardToNotionDto.Response.class)
+                .bodyToMono(PostCardToNotionDto.Response.class)
                 .block();
 
         List<CardImage> cardImages = card.getCardImages();
@@ -167,8 +180,8 @@ public class CardService {
             }
         }
         // 이미지 추가 API
-        if(addedImages != null){
-            for (MultipartFile addedImage : addedImages) {
+        if(imgFiles != null){
+            for (MultipartFile addedImage : imgFiles) {
                 // 카드 업로드 후 받은 url을
                 String imageName = StringUtils.join(List.of(user.getEmail(), user.getProvider(), UUID.randomUUID().toString()), "_");
                 Map uploadResponse = cloudinary.uploader().upload(addedImage.getBytes(), ObjectUtils.asMap("public_id", imageName));

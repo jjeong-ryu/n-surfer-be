@@ -3,7 +3,6 @@ package com.notion.nsurfer.card.controller;
 import com.notion.nsurfer.card.dto.GetCardDto;
 import com.notion.nsurfer.card.dto.GetCardsDto;
 import com.notion.nsurfer.card.dto.PostCardDto;
-import com.notion.nsurfer.card.dto.UpdateCardDto;
 import com.notion.nsurfer.card.service.CardService;
 import com.notion.nsurfer.common.ResponseDto;
 import com.notion.nsurfer.user.entity.User;
@@ -45,12 +44,12 @@ public class CardController {
 
     @PatchMapping("/{cardId}")
     public ResponseDto<Object> updateCard(@PathVariable UUID cardId,
-                                          @RequestPart UpdateCardDto.Request request,
-                                          @RequestPart List<MultipartFile> addedImages,
+                                          @RequestPart(value = "updateCard") PostCardDto.Request dto,
+                                          @RequestPart List<MultipartFile> imgFiles,
                                           @RequestPart List<String> deletedImages,
                                           @AuthenticationPrincipal User user
     ) throws Exception {
-        return cardService.updateCard(cardId, request, addedImages, deletedImages, user);
+        return cardService.updateCard(cardId, dto, imgFiles, deletedImages, user);
     }
     @DeleteMapping("/{cardId}")
     public ResponseDto<Object> deleteCard(@PathVariable UUID cardId) throws Exception {
