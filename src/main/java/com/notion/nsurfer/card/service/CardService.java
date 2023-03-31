@@ -163,7 +163,7 @@ public class CardService {
                 CardImage cardImage = cardImages.stream().filter(ci -> ci.getCardImageName().equals(deletedImage))
                         .findFirst()
                         .orElseThrow(CardNotFoundException::new);
-                card.getCardImages().remove(cardImage);
+                cardImages.remove(cardImage);
             }
         }
         // 이미지 추가 API
