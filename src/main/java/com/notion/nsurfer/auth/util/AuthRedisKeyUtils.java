@@ -1,4 +1,4 @@
-package com.notion.nsurfer.auth.utils;
+package com.notion.nsurfer.auth.util;
 
 import com.notion.nsurfer.user.entity.User;
 
@@ -24,11 +24,5 @@ public class AuthRedisKeyUtils {
         return "email" + DIVIDER + user.getEmail() + DIVIDER +
                 "provider" + DIVIDER + user.getProvider() + DIVIDER +
                 "wave" +  DIVIDER + "date" + DIVIDER + waveTime;
-    }
-
-    public static String makeRedisCardHistoryValue(UUID cardId, LocalDate localDate){
-        String waveTime = localDate.toString().replace("-", "");
-        return "card" + DIVIDER + cardId + DIVIDER +
-                "date" + DIVIDER + waveTime;
     }
 }

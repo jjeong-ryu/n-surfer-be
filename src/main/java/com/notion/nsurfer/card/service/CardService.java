@@ -3,7 +3,7 @@ package com.notion.nsurfer.card.service;
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
 import com.cloudinary.utils.StringUtils;
-import com.notion.nsurfer.auth.utils.AuthRedisKeyUtils;
+import com.notion.nsurfer.auth.util.AuthRedisKeyUtils;
 import com.notion.nsurfer.card.dto.*;
 import com.notion.nsurfer.card.entity.Card;
 import com.notion.nsurfer.card.entity.CardImage;
@@ -11,6 +11,7 @@ import com.notion.nsurfer.card.exception.CardNotFoundException;
 import com.notion.nsurfer.card.mapper.CardMapper;
 import com.notion.nsurfer.card.repository.CardImageRepository;
 import com.notion.nsurfer.card.repository.CardRepository;
+import com.notion.nsurfer.card.util.CardRedisKeyUtils;
 import com.notion.nsurfer.common.ResponseCode;
 import com.notion.nsurfer.common.ResponseDto;
 import com.notion.nsurfer.mypage.utils.MyPageRedisKeyUtils;
@@ -131,7 +132,7 @@ public class CardService {
         int intTotal = strTotal != null ? Integer.valueOf(strTotal) : 0;
         opsForHash.put(waveKey, "total", String.valueOf(intTotal + 1));
 
-        String historyValue = "create:" + AuthRedisKeyUtils.makeRedisCardHistoryValue(card.getId(), LocalDate.now());
+        String historyValue = "create:" + CardRedisKeyUtils.makeRedisCardHistoryValue(card.getId(), LocalDate.now());
         opsForList.rightPush(notionResponse.getCardId(), historyValue);
 
         return ResponseDto.<PostCardDto.Response>builder()
@@ -210,7 +211,7 @@ public class CardService {
         cardRepository.delete(deletedCard);
 
         // 관련 wave 제거(create:cardId, update:cardId 모두 제거. 시작일은 card의 createdAt을 활용)
-
+        redisTemplate.
 
         return ResponseDto.builder()
                 .responseCode(ResponseCode.DELETE_CARD)

@@ -1,7 +1,7 @@
 package com.notion.nsurfer.auth.service;
 
 import com.notion.nsurfer.auth.dto.*;
-import com.notion.nsurfer.auth.utils.AuthRedisKeyUtils;
+import com.notion.nsurfer.auth.util.AuthRedisKeyUtils;
 import com.notion.nsurfer.common.ResponseCode;
 import com.notion.nsurfer.common.ResponseDto;
 import com.notion.nsurfer.mypage.exception.UserNotFoundException;

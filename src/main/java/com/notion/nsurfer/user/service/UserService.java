@@ -1,13 +1,9 @@
 package com.notion.nsurfer.user.service;
 
-import com.cloudinary.Cloudinary;
-import com.cloudinary.utils.ObjectUtils;
-import com.cloudinary.utils.StringUtils;
-import com.notion.nsurfer.auth.utils.AuthRedisKeyUtils;
+import com.notion.nsurfer.auth.util.AuthRedisKeyUtils;
 import com.notion.nsurfer.common.ResponseCode;
 import com.notion.nsurfer.common.ResponseDto;
 import com.notion.nsurfer.mypage.dto.GetWavesDto;
-import com.notion.nsurfer.mypage.dto.UpdateUserProfileDto;
 import com.notion.nsurfer.mypage.exception.UserNotFoundException;
 import com.notion.nsurfer.mypage.utils.MyPageRedisKeyUtils;
 import com.notion.nsurfer.security.util.JwtUtil;
@@ -18,7 +14,6 @@ import com.notion.nsurfer.user.dto.SignUpDto;
 import com.notion.nsurfer.user.entity.User;
 import com.notion.nsurfer.user.entity.UserLoginInfo;
 import com.notion.nsurfer.user.exception.EmailNotFoundException;
-import com.notion.nsurfer.user.exception.UsernameAlreadyExistException;
 import com.notion.nsurfer.user.mapper.UserMapper;
 import com.notion.nsurfer.user.repository.UserLoginInfoRepository;
 import com.notion.nsurfer.user.repository.UserRepository;
@@ -28,9 +23,7 @@ import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
