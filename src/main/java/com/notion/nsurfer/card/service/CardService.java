@@ -148,18 +148,9 @@ public class CardService {
     }
 
     @Transactional
-    public ResponseDto<Object> updateCard(UUID cardId, UpdateCardDto.Request dto, List<MultipartFile> addedImages, List<String> deletedImages,  User user) throws Exception {
+    public ResponseDto<Object> updateCard(UUID cardId, PostCardDto.Request dto, List<MultipartFile> addedImages, List<String> deletedImages,  User user) throws Exception {
         Card card = cardRepository.findByIdWithImages(cardId)
                 .orElseThrow(CardNotFoundException::new);
-        // card 수정 API
-        WebClient webClient = cardWebclientBuilder("");
-        UpdateCardToNotionDto.Response result = webClient.patch()
-                .accept(MediaType.APPLICATION_JSON)
-//                .bodyValue()
-                .retrieve()
-                .bodyToMono(UpdateCardToNotionDto.Response.class)
-                .block();
-
         List<CardImage> cardImages = card.getCardImages();
         // 이미지 제거 API
         if(deletedImages != null){
@@ -174,7 +165,7 @@ public class CardService {
         // 이미지 추가 API
         if(addedImages != null){
             for (MultipartFile addedImage : addedImages) {
-                // 카드 업로드 후 받은 url을
+                // 카드 업로드 후 받은 url을 저장
                 String imageName = StringUtils.join(List.of(user.getEmail(), user.getProvider(), UUID.randomUUID().toString()), "_");
                 Map uploadResponse = cloudinary.uploader().upload(addedImage.getBytes(), ObjectUtils.asMap("public_id", imageName));
                 String url = uploadResponse.get("url").toString();
@@ -186,6 +177,16 @@ public class CardService {
                 cardImages.add(cardImage);
             }
         }
+
+        // notion 상에서의 카드 정보 수정
+        WebClient webClient = cardWebclientBuilder("");
+        UpdateCardToNotionDto.Response result = webClient.patch()
+                .accept(MediaType.APPLICATION_JSON)
+                .bodyValue(cardMapper.postCardToRequest(dto, user.getId(), dbId, imageUrls, imageNames))
+                .retrieve()
+                .bodyToMono(UpdateCardToNotionDto.Response.class)
+                .block();
+
         // wave 추가
         ListOperations<String, String> ops = redisTemplate.opsForList();
         String timeKey = "update:" + CardRedisKeyUtils.makeRedisCardHistoryValue(cardId, LocalDate.now());

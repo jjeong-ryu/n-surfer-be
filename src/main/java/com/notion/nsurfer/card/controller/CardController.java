@@ -45,12 +45,12 @@ public class CardController {
 
     @PatchMapping("/{cardId}")
     public ResponseDto<Object> updateCard(@PathVariable UUID cardId,
-                                          @RequestPart UpdateCardDto.Request request,
+                                          @RequestPart("updateCard") PostCardDto.Request dto,
                                           @RequestPart List<MultipartFile> addedImages,
                                           @RequestPart List<String> deletedImages,
                                           @AuthenticationPrincipal User user
     ) throws Exception {
-        return cardService.updateCard(cardId, request, addedImages, deletedImages, user);
+        return cardService.updateCard(cardId, dto, addedImages, deletedImages, user);
     }
     @DeleteMapping("/{cardId}")
     public ResponseDto<Object> deleteCard(@PathVariable UUID cardId) throws Exception {
