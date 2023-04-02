@@ -18,11 +18,4 @@ public class AuthRedisKeyUtils {
                 "provider" + DIVIDER + user.getProvider() + DIVIDER +
                 "refreshToken";
     }
-
-    public static String makeRedisWaveTimeKey(User user, LocalDate localDate){
-        String waveTime = localDate.toString().replace("-", "");
-        return "email" + DIVIDER + user.getEmail() + DIVIDER +
-                "provider" + DIVIDER + user.getProvider() + DIVIDER +
-                "wave" +  DIVIDER + "date" + DIVIDER + waveTime;
-    }
 }

@@ -14,6 +14,8 @@ import com.notion.nsurfer.card.repository.CardRepository;
 import com.notion.nsurfer.card.util.CardRedisKeyUtils;
 import com.notion.nsurfer.common.ResponseCode;
 import com.notion.nsurfer.common.ResponseDto;
+import com.notion.nsurfer.mypage.dto.GetWavesDto;
+import com.notion.nsurfer.mypage.exception.UserNotFoundException;
 import com.notion.nsurfer.mypage.utils.MyPageRedisKeyUtils;
 import com.notion.nsurfer.user.entity.User;
 import lombok.RequiredArgsConstructor;
@@ -28,8 +30,10 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import java.io.IOException;
+import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -184,7 +188,7 @@ public class CardService {
         }
         // wave 추가
         ListOperations<String, String> ops = redisTemplate.opsForList();
-        String timeKey = "update:" + AuthRedisKeyUtils.makeRedisWaveTimeKey(user, LocalDate.now());
+        String timeKey = "update:" + CardRedisKeyUtils.makeRedisCardHistoryValue(cardId, LocalDate.now());
         ops.rightPush(timeKey, result.getCardId());
         return ResponseDto.builder()
                 .responseCode(ResponseCode.UPDATE_CARD)
@@ -210,12 +214,26 @@ public class CardService {
         cloudinary.api().deleteResources(deletedImages, null);
         cardRepository.delete(deletedCard);
 
-        // 관련 wave 제거(create:cardId, update:cardId 모두 제거. 시작일은 card의 createdAt을 활용)
-        redisTemplate.
+        // cardId 순회하면서 해당 일자에 해당하는 wave:email:provider hash값 -1
+
+        // card 제거
 
         return ResponseDto.builder()
                 .responseCode(ResponseCode.DELETE_CARD)
                 .data(null).build();
+    }
+
+    private Calendar getStartDateCal(LocalDateTime startDate){
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(Timestamp.valueOf(startDate));
+        return cal;
+    }
+
+    private Calendar getEndDateCal(){
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(new Date());
+        cal.add(Calendar.DATE,1);
+        return cal;
     }
 
     private WebClient cardWebclientBuilder(String url){
