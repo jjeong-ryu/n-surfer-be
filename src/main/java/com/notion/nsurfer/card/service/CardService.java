@@ -136,7 +136,7 @@ public class CardService {
         int intTotal = strTotal != null ? Integer.valueOf(strTotal) : 0;
         opsForHash.put(waveKey, "total", String.valueOf(intTotal + 1));
 
-        String historyValue = "create:" + CardRedisKeyUtils.makeRedisCardHistoryValue(card.getId(), LocalDate.now());
+        String historyValue = "create:" + CardRedisKeyUtils.makeRedisCardHistoryValue(card.getId());
         opsForList.rightPush(notionResponse.getCardId(), historyValue);
 
         return ResponseDto.<PostCardDto.Response>builder()
@@ -153,6 +153,7 @@ public class CardService {
                 .orElseThrow(CardNotFoundException::new);
         List<CardImage> cardImages = card.getCardImages();
         // 이미지 제거 API
+//        if(deletedImages != null && deletedImages.size() > 0 && !deletedImages.get(0).isEmpty()){
         if(deletedImages != null){
             cloudinary.api().deleteResources(deletedImages, null);
             for (String deletedImage : deletedImages) {
@@ -163,12 +164,17 @@ public class CardService {
             }
         }
         // 이미지 추가 API
+        List<String> imageUrls = new ArrayList<>();
+        List<String> imageNames = new ArrayList<>();
+//        if(addedImages != null && addedImages.size() > 0 && !addedImages.get(0).isEmpty()){
         if(addedImages != null){
             for (MultipartFile addedImage : addedImages) {
                 // 카드 업로드 후 받은 url을 저장
                 String imageName = StringUtils.join(List.of(user.getEmail(), user.getProvider(), UUID.randomUUID().toString()), "_");
                 Map uploadResponse = cloudinary.uploader().upload(addedImage.getBytes(), ObjectUtils.asMap("public_id", imageName));
                 String url = uploadResponse.get("url").toString();
+                imageUrls.add(url);
+                imageNames.add(imageName);
                 CardImage cardImage = CardImage.builder()
                         .url(url)
                         .cardImageName(imageName)
@@ -177,9 +183,8 @@ public class CardService {
                 cardImages.add(cardImage);
             }
         }
-
         // notion 상에서의 카드 정보 수정
-        WebClient webClient = cardWebclientBuilder("");
+        WebClient webClient = cardWebclientBuilder(cardId.toString());
         UpdateCardToNotionDto.Response result = webClient.patch()
                 .accept(MediaType.APPLICATION_JSON)
                 .bodyValue(cardMapper.postCardToRequest(dto, user.getId(), dbId, imageUrls, imageNames))
@@ -189,7 +194,7 @@ public class CardService {
 
         // wave 추가
         ListOperations<String, String> ops = redisTemplate.opsForList();
-        String timeKey = "update:" + CardRedisKeyUtils.makeRedisCardHistoryValue(cardId, LocalDate.now());
+        String timeKey = "update:" + CardRedisKeyUtils.makeRedisCardHistoryValue(cardId);
         ops.rightPush(timeKey, result.getCardId());
         return ResponseDto.builder()
                 .responseCode(ResponseCode.UPDATE_CARD)
@@ -216,25 +221,18 @@ public class CardService {
         cardRepository.delete(deletedCard);
 
         // cardId 순회하면서 해당 일자에 해당하는 wave:email:provider hash값 -1
-
+        ListOperations<String, String> opsForList = redisTemplate.opsForList();
+        String cardRecordKey = CardRedisKeyUtils.makeRedisCardHistoryValue(cardId);
+        String cardRecordValue = opsForList.leftPop(cardRecordKey);
+        while(cardRecordValue != null){
+            // 처리
+            cardRecordValue = opsForList.leftPop(cardRecordKey);
+        }
         // card 제거
 
         return ResponseDto.builder()
                 .responseCode(ResponseCode.DELETE_CARD)
                 .data(null).build();
-    }
-
-    private Calendar getStartDateCal(LocalDateTime startDate){
-        Calendar cal = Calendar.getInstance();
-        cal.setTime(Timestamp.valueOf(startDate));
-        return cal;
-    }
-
-    private Calendar getEndDateCal(){
-        Calendar cal = Calendar.getInstance();
-        cal.setTime(new Date());
-        cal.add(Calendar.DATE,1);
-        return cal;
     }
 
     private WebClient cardWebclientBuilder(String url){

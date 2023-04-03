@@ -173,7 +173,10 @@ public class UpdateCardToNotionDto {
 
     @Getter
     @Builder
+    @AllArgsConstructor
+    @NoArgsConstructor
     public static class Response {
+        @JsonProperty("id")
         private String cardId;
     }
 }
