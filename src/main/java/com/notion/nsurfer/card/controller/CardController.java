@@ -54,7 +54,8 @@ public class CardController {
         return cardService.updateCard(cardId, dto, addedImages, deletedImages, user);
     }
     @DeleteMapping("/{cardId}")
-    public ResponseDto<Object> deleteCard(@PathVariable UUID cardId) throws Exception {
-        return cardService.deleteCard(cardId);
+    public ResponseDto<Object> deleteCard(@PathVariable UUID cardId,
+                                          @AuthenticationPrincipal User user) throws Exception {
+        return cardService.deleteCard(cardId, user);
     }
 }
