@@ -32,15 +32,20 @@ public class CardRepositoryCustomImpl implements CardRepositoryCustom{
     }
 
     @Override
-    public Optional<Card> findByIdWithImages(UUID userId) {
+    public Optional<Card> findByIdWithImages(UUID cardId) {
         return Optional.ofNullable(queryFactory
                 .selectFrom(card)
                 .leftJoin(card.cardImages, cardImage)
+                .where(cardIdEq(cardId))
                 .fetchOne());
     }
 
     public BooleanExpression userIdEq(UUID userId){
 //        return userId != null ? card.user.id.eq(userId) : null;
         return null;
+    }
+
+    public BooleanExpression cardIdEq(UUID cardId){
+        return cardId != null ? card.id.eq(cardId) : null;
     }
 }

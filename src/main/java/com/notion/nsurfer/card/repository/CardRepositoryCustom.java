@@ -8,5 +8,5 @@ import java.util.UUID;
 
 public interface CardRepositoryCustom {
     List<Card> findCardsWithWaveByUserId(UUID userId);
-    Optional<Card> findByIdWithImages(UUID userId);
+    Optional<Card> findByIdWithImages(UUID cardId);
 }
