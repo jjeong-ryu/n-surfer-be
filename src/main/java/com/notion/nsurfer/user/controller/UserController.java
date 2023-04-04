@@ -15,6 +15,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
+import java.util.Date;
 
 import static org.springframework.http.HttpStatus.*;
 
@@ -50,5 +51,10 @@ public class UserController {
             @RequestParam Integer month
     ){
         return new ResponseEntity<>(userService.getWaves(nickname, month), OK);
+    }
+
+    @GetMapping("/test")
+    public void getDate(){
+        System.out.println(new Date());
     }
 }

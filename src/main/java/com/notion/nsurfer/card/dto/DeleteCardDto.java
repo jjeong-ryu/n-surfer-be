@@ -19,6 +19,8 @@ public class DeleteCardDto {
     }
     @Getter
     @Builder
+    @AllArgsConstructor
+    @NoArgsConstructor
     public static class Response {
         @JsonProperty("id")
         private String cardId;

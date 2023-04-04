@@ -165,6 +165,15 @@ public class CardService {
 
     @Transactional
     public ResponseDto<Object> updateCard(UUID cardId, PostCardDto.Request dto, List<MultipartFile> addedImages, List<String> deletedImages,  User user) throws Exception {
+        List<String> imageNames = new ArrayList<>();
+        List<String> imageUrls = new ArrayList<>();
+        List<GetCardDto.Response.Image> originalCardImages = this.getCard(cardId).getData().getImages();
+
+        for (GetCardDto.Response.Image originalCardImage : originalCardImages) {
+            imageUrls.add(originalCardImage.getImageUrl());
+            imageNames.add(originalCardImage.getImageId());
+        }
+
         Card card = cardRepository.findByIdWithImages(cardId)
                 .orElseThrow(CardNotFoundException::new);
         List<CardImage> cardImages = card.getCardImages();
@@ -176,12 +185,12 @@ public class CardService {
                 CardImage cardImage = cardImages.stream().filter(ci -> ci.getCardImageName().equals(deletedImage))
                         .findFirst()
                         .orElseThrow(CardNotFoundException::new);
+                imageNames = deleteStringElementFromArray(imageNames, cardImage.getCardImageName());
+                imageUrls = deleteStringElementFromArray(imageUrls, cardImage.getUrl());
                 cardImages.remove(cardImage);
             }
         }
         // 이미지 추가 API
-        List<String> imageUrls = new ArrayList<>();
-        List<String> imageNames = new ArrayList<>();
 //        if(addedImages != null && addedImages.size() > 0 && !addedImages.get(0).isEmpty()){
         if(addedImages != null){
             for (MultipartFile addedImage : addedImages) {
@@ -210,7 +219,7 @@ public class CardService {
 
         // wave 추가
         ListOperations<String, String> ops = redisTemplate.opsForList();
-        String historyValue = "create:" + LocalDate.now().toString().replace("-", "");
+        String historyValue = "update:" + LocalDate.now().toString().replace("-", "");
         ops.rightPush(result.getCardId(), historyValue);
         String waveKey = MyPageRedisKeyUtils.makeRedisWaveKey(user);
         addWaveToToday(waveKey);
@@ -221,12 +230,16 @@ public class CardService {
                 .data(null).build();
     }
 
+    private List<String> deleteStringElementFromArray(List<String> array, String element) {
+        return array.stream().filter(el -> !el.equals(element)).toList();
+    }
+
     @Transactional
     public ResponseDto<Object> deleteCard(UUID cardId, User user) throws Exception {
         // 카드 제거 요청 API
-        WebClient webClient = cardWebclientBuilder("");
+        WebClient webClient = cardWebclientBuilder(cardId.toString());
         DeleteCardDto.Response result = webClient.patch()
-                .bodyValue(UpdateCardToNotionDto.Request.builder()
+                .bodyValue(DeleteCardToNotionDto.Request.builder()
                         .archived(true).build())
                 .accept(MediaType.APPLICATION_JSON)
                 .retrieve()
@@ -236,10 +249,11 @@ public class CardService {
         // 관련 이미지 db에서 제거 후 cloudinary에서도 제거
         Card deletedCard = cardRepository.findByIdWithImages(cardId)
                 .orElseThrow(CardNotFoundException::new);
-        List<String> deletedImages = deletedCard.getCardImages().stream().map(ci -> ci.getCardImageName()).collect(Collectors.toList());
-        cloudinary.api().deleteResources(deletedImages, null);
-        cardRepository.delete(deletedCard);
-
+        if(deletedCard.getCardImages().size() > 0){
+            List<String> deletedImages = deletedCard.getCardImages().stream().map(ci -> ci.getCardImageName()).collect(Collectors.toList());
+            cloudinary.api().deleteResources(deletedImages, null);
+            cardRepository.delete(deletedCard);
+        }
         // cardId 순회하면서 해당 일자에 해당하는 wave:email:provider hash값 -1
         ListOperations<String, String> opsForList = redisTemplate.opsForList();
         String cardRecordKey = CardRedisKeyUtils.makeRedisCardHistoryValue(cardId);
@@ -257,11 +271,11 @@ public class CardService {
     private void eraseWaveFromUser(String cardRecordValue, User user) {
         String userWaveKey = MyPageRedisKeyUtils.makeRedisWaveKey(user);
         String userWaveHashKey = cardRecordValue.split(":")[1];
-        HashOperations<String, String, Integer> opsForHash = redisTemplate.opsForHash();
-        Integer wave = opsForHash.get(userWaveKey, userWaveHashKey);
-        opsForHash.put(userWaveKey, userWaveHashKey, wave - 1 );
-        Integer totalWave = opsForHash.get(userWaveKey, "total");
-        opsForHash.put(userWaveKey, "total", totalWave - 1 );
+        HashOperations<String, String, String> opsForHash = redisTemplate.opsForHash();
+        String wave = opsForHash.get(userWaveKey, userWaveHashKey);
+        opsForHash.put(userWaveKey, userWaveHashKey, String.valueOf(Integer.valueOf(wave) - 1));
+        String totalWave = opsForHash.get(userWaveKey, "total");
+        opsForHash.put(userWaveKey, "total", String.valueOf(Integer.valueOf(totalWave) - 1) );
     }
 
     private WebClient cardWebclientBuilder(String url){

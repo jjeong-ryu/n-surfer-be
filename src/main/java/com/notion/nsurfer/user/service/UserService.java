@@ -25,6 +25,7 @@ import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Service;
 
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.util.*;
 
 import static com.notion.nsurfer.auth.common.AuthUtil.KAKAO;
@@ -153,8 +154,9 @@ public class UserService {
     private Integer getTodayWave(User user) {
         HashOperations<String, String, String> opsForHash = redisTemplate.opsForHash();
         String redisWavesKey = MyPageRedisKeyUtils.makeRedisWaveKey(user);
-        String redisWaveHashKey = waveDateFormat.format(new Date());
+        String redisWaveHashKey = LocalDate.now().toString().replace("-" ,"");
         String todayWave = opsForHash.get(redisWavesKey, redisWaveHashKey);
+        System.out.println("키 " + redisWavesKey + "해쉬 키 " + redisWaveHashKey + "todayWave" + todayWave);
         return todayWave != null ? Integer.valueOf(todayWave) : 0;
     }
     // 추후 accessToken의 갯수를 늘리는 경우, key - List 형식으로 변경 필요성 있음(opsForValue)

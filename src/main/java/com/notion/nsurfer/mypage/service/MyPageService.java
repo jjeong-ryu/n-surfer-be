@@ -69,7 +69,6 @@ public class MyPageService {
         }
         if(image != null){
             cloudinary.api().deleteResources(List.of(user.getThumbnailImageName()), null);
-            System.out.println(image.getOriginalFilename());
             String imageName = StringUtils.join(List.of(user.getEmail(), user.getProvider(),
                     UUID.randomUUID().toString().substring(16)), "_");
             Map uploadResponse = cloudinary.uploader().upload(image.getBytes(), ObjectUtils.asMap("public_id", imageName));
