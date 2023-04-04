@@ -1,6 +1,7 @@
 package com.notion.nsurfer.card.mapper;
 
 import com.notion.nsurfer.card.dto.*;
+import com.notion.nsurfer.card.repository.CardRepository;
 import com.notion.nsurfer.card.util.CardComparator;
 import com.notion.nsurfer.common.CommonMapperConfig;
 import com.notion.nsurfer.user.entity.User;
@@ -82,7 +83,7 @@ public interface CardMapper {
 
     default PostCardToNotionDto.Request postCardToRequest(
             PostCardDto.Request dto,
-            Long userId,
+            String nickname,
             String dbId,
             List<String> imageUrls,
             List<String> imageNames
@@ -106,7 +107,7 @@ public interface CardMapper {
         PostCardToNotionDto.Request.Properties.Creator.RichText creatorRichText = PostCardToNotionDto.Request.Properties.Creator.RichText.builder()
                 .text(
                         PostCardToNotionDto.Request.Properties.Creator.RichText.Text.builder()
-                                .content(String.valueOf(userId))
+                                .content(nickname)
                                 .build()
                 )
                 .build();
@@ -243,10 +244,7 @@ public interface CardMapper {
 //                .title(titles).build();
 //    }
 
-    default GetCardDto.Response getCardToResponse(GetCardToNotionDto.Response result){
-        String nickname = result.getProperties().getCreator().getRichTexts().size() > 0
-                ? result.getProperties().getCreator().getRichTexts().get(0).getText().getContent()
-                : "";
+    default GetCardDto.Response getCardToResponse(GetCardToNotionDto.Response result, String nickname){
         String content = result.getProperties().getContent().getRichTexts().size() > 0
                 ? result.getProperties().getContent().getRichTexts().get(0).getText().getContent()
                 : "";

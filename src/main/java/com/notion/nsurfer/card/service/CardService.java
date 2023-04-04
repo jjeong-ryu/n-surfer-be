@@ -17,6 +17,7 @@ import com.notion.nsurfer.common.ResponseDto;
 import com.notion.nsurfer.mypage.utils.MyPageRedisKeyUtils;
 import com.notion.nsurfer.user.entity.User;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.ListOperations;
@@ -37,6 +38,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class CardService {
     private final CardRepository cardRepository;
     private final CardImageRepository cardImageRepository;
@@ -52,7 +54,10 @@ public class CardService {
     @Value("${notion.dbId}")
     private String dbId;
     private final String VERSION = "2022-06-28";
-    public ResponseDto<GetCardDto.Response> getCard(UUID cardId){
+    public ResponseDto<GetCardDto.Response> getCard(final UUID cardId){
+        Card card = cardRepository.findById(cardId)
+                .orElseThrow(CardNotFoundException::new);
+        User user = card.getUser();
         WebClient webClient = cardWebclientBuilder(cardId.toString());
         GetCardToNotionDto.Response notionResponse = webClient.get()
                 .accept(MediaType.APPLICATION_JSON)
@@ -62,7 +67,7 @@ public class CardService {
         // 해당 정보를 받아 최종적으로 프론트로 전달
         return ResponseDto.<GetCardDto.Response>builder()
                 .responseCode(ResponseCode.GET_CARD_LIST)
-                .data(cardMapper.getCardToResponse(notionResponse))
+                .data(cardMapper.getCardToResponse(notionResponse, user.getNickname()))
                 .build();
     }
 
@@ -101,12 +106,13 @@ public class CardService {
         }
         // card(page)를 노션에 저장하고, 해당 id를 db에 저장
         WebClient webClient = cardWebclientBuilder("");
+
         PostCardToNotionDto.Response notionResponse = webClient.post()
-                .accept(MediaType.APPLICATION_JSON)
-                .bodyValue(cardMapper.postCardToRequest(dto, user.getId(), dbId, imageUrls, imageNames))
-                .retrieve()
-                .bodyToMono(PostCardToNotionDto.Response.class)
-                .block();
+                    .accept(MediaType.APPLICATION_JSON)
+                    .bodyValue(cardMapper.postCardToRequest(dto, user.getNickname(), dbId, imageUrls, imageNames))
+                    .retrieve()
+                    .bodyToMono(PostCardToNotionDto.Response.class)
+                    .block();
         Card card = cardRepository.save(Card.builder()
                 .id(UUID.fromString(notionResponse.getCardId()))
                 .user(user).build());
@@ -142,20 +148,19 @@ public class CardService {
     }
 
     private void addWaveToToday(String waveKey) {
-        HashOperations<String, String, Integer> opsForHash = redisTemplate.opsForHash();
+        HashOperations<String, String, String> opsForHash = redisTemplate.opsForHash();
         String redisWaveTimeFormat = waveDateFormat.format(new Date());
 
-        Integer waveNum = opsForHash.get(waveKey,redisWaveTimeFormat);
-        waveNum = waveNum != null ? waveNum : 0;
-        opsForHash.put(waveKey, redisWaveTimeFormat, waveNum);
+        String todayWave = opsForHash.get(waveKey,"total");
+        Integer intTotalWave = todayWave != null ? Integer.valueOf(todayWave) + 1 : 1;
+        opsForHash.put(waveKey, redisWaveTimeFormat, String.valueOf(intTotalWave));
 
     }
     private void addWaveToTotal(String waveKey) {
-        HashOperations<String, String, Integer> opsForHash = redisTemplate.opsForHash();
-
-        Integer totalWaveNum = opsForHash.get(waveKey,"total");
-        totalWaveNum = totalWaveNum != null ? totalWaveNum : 0;
-        opsForHash.put(waveKey, "total", totalWaveNum);
+        HashOperations<String, String, String> opsForHash = redisTemplate.opsForHash();
+        String totalWave = opsForHash.get(waveKey,"total");
+        Integer intTotalWave = totalWave != null ? Integer.valueOf(totalWave) + 1 : 1;
+        opsForHash.put(waveKey, "total", String.valueOf(intTotalWave));
     }
 
     @Transactional
@@ -198,7 +203,7 @@ public class CardService {
         WebClient webClient = cardWebclientBuilder(cardId.toString());
         UpdateCardToNotionDto.Response result = webClient.patch()
                 .accept(MediaType.APPLICATION_JSON)
-                .bodyValue(cardMapper.postCardToRequest(dto, user.getId(), dbId, imageUrls, imageNames))
+                .bodyValue(cardMapper.postCardToRequest(dto, user.getNickname(), dbId, imageUrls, imageNames))
                 .retrieve()
                 .bodyToMono(UpdateCardToNotionDto.Response.class)
                 .block();
@@ -207,6 +212,10 @@ public class CardService {
         ListOperations<String, String> ops = redisTemplate.opsForList();
         String historyValue = "create:" + LocalDate.now().toString().replace("-", "");
         ops.rightPush(result.getCardId(), historyValue);
+        String waveKey = MyPageRedisKeyUtils.makeRedisWaveKey(user);
+        addWaveToToday(waveKey);
+        addWaveToTotal(waveKey);
+
         return ResponseDto.builder()
                 .responseCode(ResponseCode.UPDATE_CARD)
                 .data(null).build();
