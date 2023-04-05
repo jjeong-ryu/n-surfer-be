@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
 
 @Mapper(config = CommonMapperConfig.class)
 public interface CardMapper {
-    default GetCardsToNotionDto.Request getCardsToNotionRequest(final String username){
+    default GetCardsToNotionDto.Request getCardsToNotionWithPagingRequest(final String username, final Integer numberOfCards, final String nextCardId){
         return GetCardsToNotionDto.Request.builder()
                 .filter(GetCardsToNotionDto.Request.Filter.builder()
                         .property("Creator")
@@ -22,9 +22,21 @@ public interface CardMapper {
                                 .contains(username)
                                 .build())
                         .build())
+                .pageSize(numberOfCards)
+                .nextCardId(nextCardId)
                 .build();
     }
-
+    default GetCardsToNotionDto.Request getCardsToNotionWithoutPagingRequest(final String username, final Integer numberOfCards){
+        return GetCardsToNotionDto.Request.builder()
+                .filter(GetCardsToNotionDto.Request.Filter.builder()
+                        .property("Creator")
+                        .richText(GetCardsToNotionDto.Request.Filter.RichText.builder()
+                                .contains(username)
+                                .build())
+                        .build())
+                .pageSize(numberOfCards)
+                .build();
+    }
     default GetCardsDto.Response getCardsToResponse(GetCardsToNotionDto.Response response, String numberOfCards){
         List<GetCardsDto.Response.Card> cardList = getCardsToCardList(response.getResults());
         if(!numberOfCards.equals("")){

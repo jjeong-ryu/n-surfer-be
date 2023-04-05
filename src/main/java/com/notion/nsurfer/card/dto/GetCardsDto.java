@@ -1,5 +1,6 @@
 package com.notion.nsurfer.card.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -44,5 +45,8 @@ public class GetCardsDto {
                 private String imageUrl;
             }
         }
+
+        @JsonProperty("next_cursor")
+        private String nextCardId;
     }
 }

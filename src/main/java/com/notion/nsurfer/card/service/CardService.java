@@ -71,15 +71,14 @@ public class CardService {
                 .build();
     }
 
-    public ResponseDto<GetCardsDto.Response> getCards(final String username, final String numberOfCards) {
+    public ResponseDto<GetCardsDto.Response> getCards(final String username, final String numberOfCards, final String nextCardId) {
         // username이 null이어도 가능
         WebClient webClient = dbQueryWebclientBuilder();
-        GetCardsToNotionDto.Response notionResponse = webClient.post()
-                .accept(MediaType.APPLICATION_JSON)
-                .bodyValue(cardMapper.getCardsToNotionRequest(username))
-                .retrieve()
-                .bodyToMono(GetCardsToNotionDto.Response.class)
-                .block();
+        GetCardsToNotionDto.Response notionResponse =
+                !nextCardId.equals("")
+                ? getNotionResponseWithPaging(webClient, username, numberOfCards, nextCardId)
+                : getNotionResponseWithoutPaging(webClient, username, numberOfCards);
+
         GetCardsDto.Response responseData = cardMapper.getCardsToResponse(notionResponse, numberOfCards);
 
         // 현재 DB에 저장된 모든 카드 return
@@ -87,6 +86,26 @@ public class CardService {
                 .responseCode(ResponseCode.GET_CARD_LIST)
                 .data(responseData)
                 .build();
+    }
+    private GetCardsToNotionDto.Response getNotionResponseWithPaging(
+            WebClient webClient, final String username, final String numberOfCards, final String nextCardId
+    ) {
+        return webClient.post()
+                .accept(MediaType.APPLICATION_JSON)
+                .bodyValue(cardMapper.getCardsToNotionWithPagingRequest(username, Integer.valueOf(numberOfCards), nextCardId))
+                .retrieve()
+                .bodyToMono(GetCardsToNotionDto.Response.class)
+                .block();
+    }
+    private GetCardsToNotionDto.Response getNotionResponseWithoutPaging(
+            WebClient webClient, final String username, final String numberOfCards
+    ) {
+        return webClient.post()
+                .accept(MediaType.APPLICATION_JSON)
+                .bodyValue(cardMapper.getCardsToNotionWithoutPagingRequest(username, Integer.valueOf(numberOfCards)))
+                .retrieve()
+                .bodyToMono(GetCardsToNotionDto.Response.class)
+                .block();
     }
 
     @Transactional
@@ -97,40 +116,24 @@ public class CardService {
         if(imgFiles != null){
             for (int idx = 0; idx < imgFiles.size(); idx++) {
                 MultipartFile image = imgFiles.get(idx);
-                String imageName = StringUtils.join(List.of(user.getEmail(), user.getProvider(), UUID.randomUUID().toString()), "_");
-                Map uploadResponse = cloudinary.uploader().upload(image.getBytes(), ObjectUtils.asMap("public_id", imageName));
-                String url = uploadResponse.get("url").toString();
-                imageUrls.add(url);
-                imageNames.add(imageName);
+                uploadImageToCloudinary(user, imageUrls, imageNames, image);
             }
         }
         // card(page)를 노션에 저장하고, 해당 id를 db에 저장
-        WebClient webClient = cardWebclientBuilder("");
+        PostCardToNotionDto.Response notionResponse = postCardToNotion(dto, user, imageUrls, imageNames);
 
-        PostCardToNotionDto.Response notionResponse = webClient.post()
-                    .accept(MediaType.APPLICATION_JSON)
-                    .bodyValue(cardMapper.postCardToRequest(dto, user.getNickname(), dbId, imageUrls, imageNames))
-                    .retrieve()
-                    .bodyToMono(PostCardToNotionDto.Response.class)
-                    .block();
         Card card = cardRepository.save(Card.builder()
                 .id(UUID.fromString(notionResponse.getCardId()))
                 .user(user).build());
+
         for (int idx = 0; idx < imageUrls.size(); idx++) {
-            CardImage cardImage = CardImage.builder()
-                    .id(UUID.randomUUID())
-                    .url(imageUrls.get(idx))
-                    .card(card)
-                    .cardImageName(imageNames.get(idx)).build();
-            cardImageRepository.save(cardImage);
+            saveCardImage(imageUrls, imageNames, card, idx);
         }
 
         // wave에 오늘 날짜 잔디 수 value + 1, total +1,  cardId에 생성이력 추가
         String waveKey = MyPageRedisKeyUtils.makeRedisWaveKey(user);
-
         addWaveToToday(waveKey);
         addWaveToTotal(waveKey);
-
         String cardKey = CardRedisKeyUtils.makeRedisCardHistoryValue(UUID.fromString(notionResponse.getCardId()));
         addCardHistory(cardKey);
 
@@ -139,6 +142,35 @@ public class CardService {
                 .data(PostCardDto.Response.builder()
                         .cardId(card.getId()).build())
                 .build();
+    }
+
+    private void saveCardImage(List<String> imageUrls, List<String> imageNames, Card card, int idx) {
+        CardImage cardImage = CardImage.builder()
+                .id(UUID.randomUUID())
+                .url(imageUrls.get(idx))
+                .card(card)
+                .cardImageName(imageNames.get(idx)).build();
+        cardImageRepository.save(cardImage);
+    }
+
+    private PostCardToNotionDto.Response postCardToNotion(PostCardDto.Request dto, User user, List<String> imageUrls, List<String> imageNames) {
+        WebClient webClient = cardWebclientBuilder("");
+
+        PostCardToNotionDto.Response notionResponse = webClient.post()
+                    .accept(MediaType.APPLICATION_JSON)
+                    .bodyValue(cardMapper.postCardToRequest(dto, user.getNickname(), dbId, imageUrls, imageNames))
+                    .retrieve()
+                    .bodyToMono(PostCardToNotionDto.Response.class)
+                    .block();
+        return notionResponse;
+    }
+
+    private void uploadImageToCloudinary(User user, List<String> imageUrls, List<String> imageNames, MultipartFile image) throws IOException {
+        String imageName = StringUtils.join(List.of(user.getEmail(), user.getProvider(), UUID.randomUUID().toString()), "_");
+        Map uploadResponse = cloudinary.uploader().upload(image.getBytes(), ObjectUtils.asMap("public_id", imageName));
+        String url = uploadResponse.get("url").toString();
+        imageUrls.add(url);
+        imageNames.add(imageName);
     }
 
     private void addCardHistory(String cardKey) {
@@ -175,12 +207,10 @@ public class CardService {
         List<CardImage> cardImages = card.getCardImages();
 
         // 이미지 제거 API
-//        if(deletedImages != null && deletedImages.size() > 0 && !deletedImages.get(0).isEmpty()){
         if(deletedImages != null){
             deleteCardsFromNotionDBAndDB(deletedImages, cardImages, imageNames, imageUrls);
         }
         // 이미지 추가 API
-//        if(addedImages != null && addedImages.size() > 0 && !addedImages.get(0).isEmpty()){
         if(addedImages != null){
             addImagesToNotionDBAndDB(addedImages, user, imageNames, imageUrls, card, cardImages);
         }
@@ -188,15 +218,19 @@ public class CardService {
         updateCardFromNotionDB(cardId, dto, user, imageNames, imageUrls);
 
         // wave 추가
-
-        addCardWave(cardId);
-        String waveKey = MyPageRedisKeyUtils.makeRedisWaveKey(user);
-        addWaveToToday(waveKey);
-        addWaveToTotal(waveKey);
+        addWave(cardId, user);
 
         return ResponseDto.builder()
                 .responseCode(ResponseCode.UPDATE_CARD)
                 .data(null).build();
+    }
+
+    private void addWave(UUID cardId, User user) {
+        addCardWave(cardId);
+
+        String waveKey = MyPageRedisKeyUtils.makeRedisWaveKey(user);
+        addWaveToToday(waveKey);
+        addWaveToTotal(waveKey);
     }
 
     private void addCardWave(UUID cardId) {
