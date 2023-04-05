@@ -168,59 +168,28 @@ public class CardService {
         List<String> imageNames = new ArrayList<>();
         List<String> imageUrls = new ArrayList<>();
         List<GetCardDto.Response.Image> originalCardImages = this.getCard(cardId).getData().getImages();
-
-        for (GetCardDto.Response.Image originalCardImage : originalCardImages) {
-            imageUrls.add(originalCardImage.getImageUrl());
-            imageNames.add(originalCardImage.getImageId());
-        }
+        addNameAndUrlFromOriginalCardImages(imageNames, imageUrls, originalCardImages);
 
         Card card = cardRepository.findByIdWithImages(cardId)
                 .orElseThrow(CardNotFoundException::new);
         List<CardImage> cardImages = card.getCardImages();
+
         // 이미지 제거 API
 //        if(deletedImages != null && deletedImages.size() > 0 && !deletedImages.get(0).isEmpty()){
         if(deletedImages != null){
-            cloudinary.api().deleteResources(deletedImages, null);
-            for (String deletedImage : deletedImages) {
-                CardImage cardImage = cardImages.stream().filter(ci -> ci.getCardImageName().equals(deletedImage))
-                        .findFirst()
-                        .orElseThrow(CardNotFoundException::new);
-                imageNames = deleteStringElementFromArray(imageNames, cardImage.getCardImageName());
-                imageUrls = deleteStringElementFromArray(imageUrls, cardImage.getUrl());
-                cardImages.remove(cardImage);
-            }
+            deleteCardsFromNotionDBAndDB(deletedImages, cardImages, imageNames, imageUrls);
         }
         // 이미지 추가 API
 //        if(addedImages != null && addedImages.size() > 0 && !addedImages.get(0).isEmpty()){
         if(addedImages != null){
-            for (MultipartFile addedImage : addedImages) {
-                // 카드 업로드 후 받은 url을 저장
-                String imageName = StringUtils.join(List.of(user.getEmail(), user.getProvider(), UUID.randomUUID().toString()), "_");
-                Map uploadResponse = cloudinary.uploader().upload(addedImage.getBytes(), ObjectUtils.asMap("public_id", imageName));
-                String url = uploadResponse.get("url").toString();
-                imageUrls.add(url);
-                imageNames.add(imageName);
-                CardImage cardImage = CardImage.builder()
-                        .url(url)
-                        .cardImageName(imageName)
-                        .card(card)
-                        .build();
-                cardImages.add(cardImage);
-            }
+            addImagesToNotionDBAndDB(addedImages, user, imageNames, imageUrls, card, cardImages);
         }
         // notion 상에서의 카드 정보 수정
-        WebClient webClient = cardWebclientBuilder(cardId.toString());
-        UpdateCardToNotionDto.Response result = webClient.patch()
-                .accept(MediaType.APPLICATION_JSON)
-                .bodyValue(cardMapper.postCardToRequest(dto, user.getNickname(), dbId, imageUrls, imageNames))
-                .retrieve()
-                .bodyToMono(UpdateCardToNotionDto.Response.class)
-                .block();
+        updateCardFromNotionDB(cardId, dto, user, imageNames, imageUrls);
 
         // wave 추가
-        ListOperations<String, String> ops = redisTemplate.opsForList();
-        String historyValue = "update:" + LocalDate.now().toString().replace("-", "");
-        ops.rightPush(result.getCardId(), historyValue);
+
+        addCardWave(cardId);
         String waveKey = MyPageRedisKeyUtils.makeRedisWaveKey(user);
         addWaveToToday(waveKey);
         addWaveToTotal(waveKey);
@@ -230,6 +199,59 @@ public class CardService {
                 .data(null).build();
     }
 
+    private void addCardWave(UUID cardId) {
+        ListOperations<String, String> ops = redisTemplate.opsForList();
+        String historyValue = "update:" + LocalDate.now().toString().replace("-", "");
+        ops.rightPush(cardId.toString(), historyValue);
+    }
+
+    private UpdateCardToNotionDto.Response updateCardFromNotionDB(UUID cardId, PostCardDto.Request dto, User user, List<String> imageNames, List<String> imageUrls) {
+        WebClient webClient = cardWebclientBuilder(cardId.toString());
+        UpdateCardToNotionDto.Response result = webClient.patch()
+                .accept(MediaType.APPLICATION_JSON)
+                .bodyValue(cardMapper.postCardToRequest(dto, user.getNickname(), dbId, imageUrls, imageNames))
+                .retrieve()
+                .bodyToMono(UpdateCardToNotionDto.Response.class)
+                .block();
+        return result;
+    }
+
+    private void addImagesToNotionDBAndDB(List<MultipartFile> addedImages, User user, List<String> imageNames, List<String> imageUrls, Card card, List<CardImage> cardImages) throws IOException {
+        for (MultipartFile addedImage : addedImages) {
+            // 카드 업로드 후 받은 url을 저장
+            String imageName = StringUtils.join(List.of(user.getEmail(), user.getProvider(), UUID.randomUUID().toString()), "_");
+            Map uploadResponse = cloudinary.uploader().upload(addedImage.getBytes(), ObjectUtils.asMap("public_id", imageName));
+            String url = uploadResponse.get("url").toString();
+            imageUrls.add(url);
+            imageNames.add(imageName);
+            CardImage cardImage = CardImage.builder()
+                    .url(url)
+                    .cardImageName(imageName)
+                    .card(card)
+                    .build();
+            cardImages.add(cardImage);
+        }
+    }
+
+    private void addNameAndUrlFromOriginalCardImages(List<String> imageNames, List<String> imageUrls, List<GetCardDto.Response.Image> originalCardImages) {
+        for (GetCardDto.Response.Image originalCardImage : originalCardImages) {
+            imageUrls.add(originalCardImage.getImageUrl());
+            imageNames.add(originalCardImage.getImageId());
+        }
+    }
+
+    private void deleteCardsFromNotionDBAndDB(List<String> deletedImages, List<CardImage> cardImages,
+                                              List<String> imageNames, List<String> imageUrls) throws Exception {
+        cloudinary.api().deleteResources(deletedImages, null);
+        for (String deletedImage : deletedImages) {
+            CardImage cardImage = cardImages.stream().filter(ci -> ci.getCardImageName().equals(deletedImage))
+                    .findFirst()
+                    .orElseThrow(CardNotFoundException::new);
+            imageNames = deleteStringElementFromArray(imageNames, cardImage.getCardImageName());
+            imageUrls = deleteStringElementFromArray(imageUrls, cardImage.getUrl());
+            cardImages.remove(cardImage);
+        }
+    }
     private List<String> deleteStringElementFromArray(List<String> array, String element) {
         return array.stream().filter(el -> !el.equals(element)).toList();
     }
