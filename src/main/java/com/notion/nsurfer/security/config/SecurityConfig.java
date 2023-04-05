@@ -48,7 +48,6 @@ public class SecurityConfig {
             web.ignoring()
                     .requestMatchers("/auth/reissue/access-token")
                     .requestMatchers("/auth/reissue/access-refresh-token")
-                    .requestMatchers("/user/**")
                     .requestMatchers("/auth/login/**")
                     .requestMatchers("/actuator/**")
                     .requestMatchers(HttpMethod.GET,"/card")
