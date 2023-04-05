@@ -1,6 +1,12 @@
 package com.notion.nsurfer.user.service;
 
+import com.cloudinary.Cloudinary;
 import com.notion.nsurfer.auth.util.AuthRedisKeyUtils;
+import com.notion.nsurfer.card.dto.DeleteCardDto;
+import com.notion.nsurfer.card.entity.Card;
+import com.notion.nsurfer.card.entity.CardImage;
+import com.notion.nsurfer.card.repository.CardRepository;
+import com.notion.nsurfer.card.util.CardRedisKeyUtils;
 import com.notion.nsurfer.common.ResponseCode;
 import com.notion.nsurfer.common.ResponseDto;
 import com.notion.nsurfer.mypage.dto.GetWavesDto;
@@ -22,11 +28,15 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.client.WebClient;
 
+import java.net.URI;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static com.notion.nsurfer.auth.common.AuthUtil.KAKAO;
 
@@ -34,16 +44,19 @@ import static com.notion.nsurfer.auth.common.AuthUtil.KAKAO;
 @RequiredArgsConstructor
 public class UserService {
     private final UserRepository userRepository;
-    private final UserMapper userMapper;
+    private final CardRepository cardRepository;
     private final UserLoginInfoRepository userLoginInfoRepository;
+
+    private final Cloudinary cloudinary;
+    private final UserMapper userMapper;
     private final RedisTemplate<String, String> redisTemplate;
     private final SimpleDateFormat waveDateFormat = new SimpleDateFormat("yyyyMMdd");
 
+    private final static String NOTION_CARD_URL = "https://api.notion.com/v1/pages/";
     @Transactional
     public SignUpDto.Response signUpWithKakao(SignUpDto.Request request) {
         String randomNickname = UUID.randomUUID().toString().replace("-", "").substring(8, 23);
         User user = userMapper.signUpToUser(request, randomNickname);
-        System.out.println(user.getThumbnailImageName());
         userRepository.save(user);
         return SignUpDto.Response.builder()
                 .thumbnailImageUrl(request.getThumbnailImageUrl())
@@ -51,15 +64,43 @@ public class UserService {
                 .nickname(request.getNickname()).build();
     }
     @Transactional
-    public ResponseDto<DeleteUserDto.Response> deleteUser(User user) {
-        User findUser = userRepository.findByEmailAndProvider(user.getEmail(), user.getProvider())
-                .orElseThrow(EmailNotFoundException::new);
-        findUser.delete();
+    public ResponseDto<DeleteUserDto.Response> deleteUser(User user) throws Exception {
+        List<Card> cards = cardRepository.findCardsWithImagesByUserId(user.getId());
+        WebClient webClient = WebClient.create();
+        for (Card card : cards) {
+            deleteCardFromCloudinary(webClient, card);
+            deleteCardWave(card.getId());
+            deleteUserWave(user);
+            cardRepository.delete(card);
+        }
+        user.delete();
         return ResponseDto.<DeleteUserDto.Response>builder()
                 .responseCode(ResponseCode.DELETE_USER)
-                .data(userMapper.deleteUserToResponse(findUser))
+                .data(userMapper.deleteUserToResponse(user))
                 .build();
     }
+    private void deleteCardFromCloudinary(WebClient webClient, Card card) throws Exception {
+        List<CardImage> cardImages = card.getCardImages();
+        List<String> cardNames = cardImages.stream().map(ci -> ci.getCardImageName()).collect(Collectors.toList());
+        cloudinary.api().deleteResources(cardNames, null);
+        URI uri = URI.create(NOTION_CARD_URL + card.getId());
+        webClient.patch().uri(uri)
+                .bodyValue(DeleteCardDto.Request.builder()
+                        .archived(true).build())
+                .accept(MediaType.APPLICATION_JSON)
+                .retrieve()
+                .bodyToMono(DeleteCardDto.Response.class)
+                .block();
+    }
+
+    private void deleteUserWave(User user) {
+        redisTemplate.delete(MyPageRedisKeyUtils.makeRedisWaveKey(user));
+    }
+
+    private void deleteCardWave(UUID cardId) {
+        redisTemplate.delete(CardRedisKeyUtils.makeRedisCardHistoryValue(cardId));
+    }
+
     public ResponseDto<GetWavesDto.Response> getWaves(String nickname, Integer month){
         Calendar startDate = getStartDateCal(month);
         Calendar endDate = getEndDateCal();
@@ -107,7 +148,6 @@ public class UserService {
     }
     @Transactional
     public String localSignUpForTest(SignUpDto.Request request){
-        ValueOperations<String, String> ops = redisTemplate.opsForValue();
         User user = User.builder()
                 .nickname(request.getNickname())
                 .email(request.getEmail())

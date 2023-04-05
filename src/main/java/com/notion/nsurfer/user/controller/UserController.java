@@ -26,7 +26,7 @@ public class UserController {
     private final UserService userService;
 
     @DeleteMapping
-    public ResponseEntity<ResponseDto<DeleteUserDto>> DeleteUser(@AuthenticationPrincipal User user){
+    public ResponseEntity<ResponseDto<DeleteUserDto>> DeleteUser(@AuthenticationPrincipal User user) throws Exception {
         return new ResponseEntity(userService.deleteUser(user), OK);
     }
 
