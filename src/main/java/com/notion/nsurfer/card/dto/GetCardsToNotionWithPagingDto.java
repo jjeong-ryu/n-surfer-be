@@ -10,7 +10,35 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-public class GetCardsToNotionDto {
+public class GetCardsToNotionWithPagingDto {
+    @Getter
+    @Builder
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class Request {
+        private Filter filter;
+        @Getter
+        @Builder
+        @AllArgsConstructor
+        @NoArgsConstructor
+        public static class Filter {
+            private String property;
+            @JsonProperty("rich_text")
+            private RichText richText;
+
+            @Getter
+            @Builder
+            @AllArgsConstructor
+            @NoArgsConstructor
+            public static class RichText {
+                private String contains;
+            }
+        }
+        @JsonProperty("page_size")
+        private Integer pageSize;
+        @JsonProperty("start_cursor")
+        private String nextCardId;
+    }
     @Getter
     @Builder
     @AllArgsConstructor

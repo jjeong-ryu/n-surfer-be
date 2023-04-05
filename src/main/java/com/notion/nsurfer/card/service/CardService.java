@@ -3,7 +3,6 @@ package com.notion.nsurfer.card.service;
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
 import com.cloudinary.utils.StringUtils;
-import com.notion.nsurfer.auth.util.AuthRedisKeyUtils;
 import com.notion.nsurfer.card.dto.*;
 import com.notion.nsurfer.card.entity.Card;
 import com.notion.nsurfer.card.entity.CardImage;
@@ -29,10 +28,8 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import java.io.IOException;
-import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -71,15 +68,16 @@ public class CardService {
                 .build();
     }
 
-    public ResponseDto<GetCardsDto.Response> getCards(final String username, final String numberOfCards, final String nextCardId) {
+    public ResponseDto<GetCardsDto.Response> getCards(final String nickname, String numOfCards, final String nextCardId) {
         // username이 null이어도 가능
+        numOfCards = numOfCards.equals("") ? "15" : numOfCards;
         WebClient webClient = dbQueryWebclientBuilder();
         GetCardsToNotionDto.Response notionResponse =
                 !nextCardId.equals("")
-                ? getNotionResponseWithPaging(webClient, username, numberOfCards, nextCardId)
-                : getNotionResponseWithoutPaging(webClient, username, numberOfCards);
+                ? getNotionResponseWithPaging(webClient, nickname, numOfCards, nextCardId)
+                : getNotionResponseWithoutPaging(webClient, nickname, numOfCards);
 
-        GetCardsDto.Response responseData = cardMapper.getCardsToResponse(notionResponse, numberOfCards);
+        GetCardsDto.Response responseData = cardMapper.getCardsToResponse(notionResponse, numOfCards);
 
         // 현재 DB에 저장된 모든 카드 return
         return ResponseDto.<GetCardsDto.Response>builder()
@@ -88,21 +86,21 @@ public class CardService {
                 .build();
     }
     private GetCardsToNotionDto.Response getNotionResponseWithPaging(
-            WebClient webClient, final String username, final String numberOfCards, final String nextCardId
+            WebClient webClient, final String nickname, final String numOfCards, final String nextCardId
     ) {
         return webClient.post()
                 .accept(MediaType.APPLICATION_JSON)
-                .bodyValue(cardMapper.getCardsToNotionWithPagingRequest(username, Integer.valueOf(numberOfCards), nextCardId))
+                .bodyValue(cardMapper.getCardsToNotionWithPagingRequest(nickname, Integer.valueOf(numOfCards), nextCardId))
                 .retrieve()
                 .bodyToMono(GetCardsToNotionDto.Response.class)
                 .block();
     }
     private GetCardsToNotionDto.Response getNotionResponseWithoutPaging(
-            WebClient webClient, final String username, final String numberOfCards
+            WebClient webClient, final String nickname, final String numOfCards
     ) {
         return webClient.post()
                 .accept(MediaType.APPLICATION_JSON)
-                .bodyValue(cardMapper.getCardsToNotionWithoutPagingRequest(username, Integer.valueOf(numberOfCards)))
+                .bodyValue(cardMapper.getCardsToNotionWithoutPagingRequest(nickname, Integer.valueOf(numOfCards)))
                 .retrieve()
                 .bodyToMono(GetCardsToNotionDto.Response.class)
                 .block();

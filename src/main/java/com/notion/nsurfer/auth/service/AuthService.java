@@ -218,7 +218,6 @@ public class AuthService {
     private User getUserFromEmailAndProvider(String emailAndProvider){
         String email = emailAndProvider.split("_")[0];
         String provider = emailAndProvider.split("_")[1];
-        System.out.println(email + " " + provider);
         return userRepository.findByEmailAndProvider(email, provider)
                 .orElseThrow(UserNotFoundException::new);
     }

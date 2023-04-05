@@ -132,7 +132,7 @@ public class GetCardToNotionDto {
                 private String type = "rich_text";
                 @JsonProperty("rich_text")
                 @Builder.Default
-                private List<GetCardsToNotionDto.Response.Result.Properties.Creator.RichText> richTexts = new ArrayList<>();
+                private List<GetCardsToNotionWithPagingDto.Response.Result.Properties.Creator.RichText> richTexts = new ArrayList<>();
 
                 @Getter
                 @Builder
@@ -141,7 +141,7 @@ public class GetCardToNotionDto {
                 public static class RichText {
                     @Builder.Default
                     private String type = "text";
-                    private GetCardsToNotionDto.Response.Result.Properties.Creator.RichText.Text text;
+                    private GetCardsToNotionWithPagingDto.Response.Result.Properties.Creator.RichText.Text text;
 
                     @Getter
                     @Builder
@@ -149,7 +149,7 @@ public class GetCardToNotionDto {
                     @NoArgsConstructor
                     public static class Text {
                         private String content;
-                        private GetCardsToNotionDto.Response.Result.Properties.Creator.RichText.Text.Link link;
+                        private GetCardsToNotionWithPagingDto.Response.Result.Properties.Creator.RichText.Text.Link link;
 
                         @Getter
                         @Builder

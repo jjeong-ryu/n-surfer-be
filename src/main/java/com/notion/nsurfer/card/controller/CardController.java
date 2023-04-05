@@ -34,11 +34,11 @@ public class CardController {
 
     @GetMapping
     public ResponseDto<GetCardsDto.Response> getCards(
-            @RequestParam(required = false, defaultValue = "") String username,
-            @RequestParam(required = false, defaultValue = "") String numberOfCards,
+            @RequestParam(required = false, defaultValue = "") String nickname,
+            @RequestParam(required = false, defaultValue = "") String numOfCards,
             @RequestParam(required = false, defaultValue = "") String nextCardId
     ){
-        return cardService.getCards(username, numberOfCards, nextCardId);
+        return cardService.getCards(nickname, numOfCards, nextCardId);
     }
     @GetMapping("/{cardId}")
     public ResponseDto<GetCardDto.Response> getCard(@PathVariable UUID cardId){

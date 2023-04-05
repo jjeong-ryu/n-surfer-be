@@ -201,7 +201,6 @@ public class UserService {
         String redisWavesKey = MyPageRedisKeyUtils.makeRedisWaveKey(user);
         String redisWaveHashKey = LocalDate.now().toString().replace("-" ,"");
         String todayWave = opsForHash.get(redisWavesKey, redisWaveHashKey);
-        System.out.println("키 " + redisWavesKey + "해쉬 키 " + redisWaveHashKey + "todayWave" + todayWave);
         return todayWave != null ? Integer.valueOf(todayWave) : 0;
     }
     // 추후 accessToken의 갯수를 늘리는 경우, key - List 형식으로 변경 필요성 있음(opsForValue)

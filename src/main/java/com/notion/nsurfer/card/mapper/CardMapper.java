@@ -1,12 +1,9 @@
 package com.notion.nsurfer.card.mapper;
 
 import com.notion.nsurfer.card.dto.*;
-import com.notion.nsurfer.card.repository.CardRepository;
 import com.notion.nsurfer.card.util.CardComparator;
 import com.notion.nsurfer.common.CommonMapperConfig;
-import com.notion.nsurfer.user.entity.User;
 import org.mapstruct.Mapper;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,24 +11,24 @@ import java.util.stream.Collectors;
 
 @Mapper(config = CommonMapperConfig.class)
 public interface CardMapper {
-    default GetCardsToNotionDto.Request getCardsToNotionWithPagingRequest(final String username, final Integer numberOfCards, final String nextCardId){
-        return GetCardsToNotionDto.Request.builder()
-                .filter(GetCardsToNotionDto.Request.Filter.builder()
+    default GetCardsToNotionWithPagingDto.Request getCardsToNotionWithPagingRequest(final String nickname, final Integer numberOfCards, final String nextCardId){
+        return GetCardsToNotionWithPagingDto.Request.builder()
+                .filter(GetCardsToNotionWithPagingDto.Request.Filter.builder()
                         .property("Creator")
-                        .richText(GetCardsToNotionDto.Request.Filter.RichText.builder()
-                                .contains(username)
+                        .richText(GetCardsToNotionWithPagingDto.Request.Filter.RichText.builder()
+                                .contains(nickname)
                                 .build())
                         .build())
                 .pageSize(numberOfCards)
                 .nextCardId(nextCardId)
                 .build();
     }
-    default GetCardsToNotionDto.Request getCardsToNotionWithoutPagingRequest(final String username, final Integer numberOfCards){
-        return GetCardsToNotionDto.Request.builder()
-                .filter(GetCardsToNotionDto.Request.Filter.builder()
+    default GetCardsToNotionWithoutPagingDto.Request getCardsToNotionWithoutPagingRequest(final String nickname, final Integer numberOfCards){
+        return GetCardsToNotionWithoutPagingDto.Request.builder()
+                .filter(GetCardsToNotionWithoutPagingDto.Request.Filter.builder()
                         .property("Creator")
-                        .richText(GetCardsToNotionDto.Request.Filter.RichText.builder()
-                                .contains(username)
+                        .richText(GetCardsToNotionWithoutPagingDto.Request.Filter.RichText.builder()
+                                .contains(nickname)
                                 .build())
                         .build())
                 .pageSize(numberOfCards)
