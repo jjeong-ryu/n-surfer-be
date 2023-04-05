@@ -47,9 +47,10 @@ public class User implements UserDetails {
     private Authority authority = Authority.USER;
 
     public void delete(){
+        this.cards = null;
         this.isDeleted = true;
     }
-    @OneToMany(mappedBy = "user")
+    @OneToMany(mappedBy = "user", orphanRemoval = true)
     private List<Card> cards;
 
     @Override
