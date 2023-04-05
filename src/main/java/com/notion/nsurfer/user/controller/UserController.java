@@ -52,9 +52,4 @@ public class UserController {
     ){
         return new ResponseEntity<>(userService.getWaves(nickname, month), OK);
     }
-
-    @GetMapping("/test")
-    public void getDate(){
-        System.out.println(new Date());
-    }
 }

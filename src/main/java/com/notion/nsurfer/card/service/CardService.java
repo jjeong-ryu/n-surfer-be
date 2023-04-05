@@ -181,7 +181,8 @@ public class CardService {
 
     private void addWaveToToday(String waveKey) {
         HashOperations<String, String, String> opsForHash = redisTemplate.opsForHash();
-        String redisWaveTimeFormat = waveDateFormat.format(new Date());
+        String redisWaveTimeFormat = LocalDate.now().toString().replace("-", "");
+
 
         String todayWave = opsForHash.get(waveKey,"total");
         Integer intTotalWave = todayWave != null ? Integer.valueOf(todayWave) + 1 : 1;

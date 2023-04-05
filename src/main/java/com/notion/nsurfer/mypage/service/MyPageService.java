@@ -22,6 +22,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.util.*;
 
 @Service
@@ -50,9 +51,9 @@ public class MyPageService {
     }
     private Integer getTodayWave(User user) {
         HashOperations<String, String, String> opsForHash = redisTemplate.opsForHash();
-        String redisWavesKey = MyPageRedisKeyUtils.makeRedisWaveKey(user);
-        String redisWaveHashKey = waveDateFormat.format(new Date());
-        String todayWave = opsForHash.get(redisWavesKey, redisWaveHashKey);
+        String redisWaveKey = MyPageRedisKeyUtils.makeRedisWaveKey(user);
+        String redisWaveHashKey = LocalDate.now().toString().replace("-", "");
+        String todayWave = opsForHash.get(redisWaveKey, redisWaveHashKey);
         return todayWave != null ? Integer.valueOf(todayWave) : 0;
     }
 
