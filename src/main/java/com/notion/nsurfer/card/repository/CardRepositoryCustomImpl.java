@@ -23,10 +23,10 @@ import static com.notion.nsurfer.user.entity.QWave.*;
 public class CardRepositoryCustomImpl implements CardRepositoryCustom{
     private final JPAQueryFactory queryFactory;
     @Override
-    public List<Card> findCardsWithWaveByUserId(UUID userId) {
+    public List<Card> findCardsWithImagesByUserId(Long userId) {
         return queryFactory
                 .selectFrom(card)
-//                .leftJoin(card.waves, wave)
+                .leftJoin(card.cardImages, cardImage)
                 .where(userIdEq(userId))
                 .fetch();
     }
@@ -40,9 +40,8 @@ public class CardRepositoryCustomImpl implements CardRepositoryCustom{
                 .fetchOne());
     }
 
-    public BooleanExpression userIdEq(UUID userId){
-//        return userId != null ? card.user.id.eq(userId) : null;
-        return null;
+    public BooleanExpression userIdEq(Long userId){
+        return userId != null ? card.user.id.eq(userId) : null;
     }
 
     public BooleanExpression cardIdEq(UUID cardId){
