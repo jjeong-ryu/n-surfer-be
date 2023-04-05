@@ -26,7 +26,7 @@ public class Card {
     @JoinColumn(name = "user_id")
     private User user;
 
-    @OneToMany(mappedBy = "card", cascade = CascadeType.PERSIST)
+    @OneToMany(mappedBy = "card", cascade = CascadeType.PERSIST, orphanRemoval = true)
     private List<CardImage> cardImages;
 
     @CreatedDate

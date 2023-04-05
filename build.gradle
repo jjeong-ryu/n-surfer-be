@@ -41,7 +41,6 @@ dependencies {
     annotationProcessor group: 'org.mapstruct', name: 'mapstruct-processor', version: '1.5.2.Final'
     testAnnotationProcessor group: 'org.mapstruct', name: 'mapstruct-processor', version: '1.5.2.Final'
 
-
     runtimeOnly 'com.mysql:mysql-connector-j'
 
     // For JWT Token

@@ -71,15 +71,14 @@ public class CardService {
                 .build();
     }
 
-    public ResponseDto<GetCardsDto.Response> getCards(final String username, final String numberOfCards) {
+    public ResponseDto<GetCardsDto.Response> getCards(final String username, final String numberOfCards, final String nextCardId) {
         // username이 null이어도 가능
         WebClient webClient = dbQueryWebclientBuilder();
-        GetCardsToNotionDto.Response notionResponse = webClient.post()
-                .accept(MediaType.APPLICATION_JSON)
-                .bodyValue(cardMapper.getCardsToNotionRequest(username))
-                .retrieve()
-                .bodyToMono(GetCardsToNotionDto.Response.class)
-                .block();
+        GetCardsToNotionDto.Response notionResponse =
+                !nextCardId.equals("")
+                ? getNotionResponseWithPaging(webClient, username, numberOfCards, nextCardId)
+                : getNotionResponseWithoutPaging(webClient, username, numberOfCards);
+
         GetCardsDto.Response responseData = cardMapper.getCardsToResponse(notionResponse, numberOfCards);
 
         // 현재 DB에 저장된 모든 카드 return
@@ -87,6 +86,26 @@ public class CardService {
                 .responseCode(ResponseCode.GET_CARD_LIST)
                 .data(responseData)
                 .build();
+    }
+    private GetCardsToNotionDto.Response getNotionResponseWithPaging(
+            WebClient webClient, final String username, final String numberOfCards, final String nextCardId
+    ) {
+        return webClient.post()
+                .accept(MediaType.APPLICATION_JSON)
+                .bodyValue(cardMapper.getCardsToNotionWithPagingRequest(username, Integer.valueOf(numberOfCards), nextCardId))
+                .retrieve()
+                .bodyToMono(GetCardsToNotionDto.Response.class)
+                .block();
+    }
+    private GetCardsToNotionDto.Response getNotionResponseWithoutPaging(
+            WebClient webClient, final String username, final String numberOfCards
+    ) {
+        return webClient.post()
+                .accept(MediaType.APPLICATION_JSON)
+                .bodyValue(cardMapper.getCardsToNotionWithoutPagingRequest(username, Integer.valueOf(numberOfCards)))
+                .retrieve()
+                .bodyToMono(GetCardsToNotionDto.Response.class)
+                .block();
     }
 
     @Transactional
@@ -97,40 +116,24 @@ public class CardService {
         if(imgFiles != null){
             for (int idx = 0; idx < imgFiles.size(); idx++) {
                 MultipartFile image = imgFiles.get(idx);
-                String imageName = StringUtils.join(List.of(user.getEmail(), user.getProvider(), UUID.randomUUID().toString()), "_");
-                Map uploadResponse = cloudinary.uploader().upload(image.getBytes(), ObjectUtils.asMap("public_id", imageName));
-                String url = uploadResponse.get("url").toString();
-                imageUrls.add(url);
-                imageNames.add(imageName);
+                uploadImageToCloudinary(user, imageUrls, imageNames, image);
             }
         }
         // card(page)를 노션에 저장하고, 해당 id를 db에 저장
-        WebClient webClient = cardWebclientBuilder("");
+        PostCardToNotionDto.Response notionResponse = postCardToNotion(dto, user, imageUrls, imageNames);
 
-        PostCardToNotionDto.Response notionResponse = webClient.post()
-                    .accept(MediaType.APPLICATION_JSON)
-                    .bodyValue(cardMapper.postCardToRequest(dto, user.getNickname(), dbId, imageUrls, imageNames))
-                    .retrieve()
-                    .bodyToMono(PostCardToNotionDto.Response.class)
-                    .block();
         Card card = cardRepository.save(Card.builder()
                 .id(UUID.fromString(notionResponse.getCardId()))
                 .user(user).build());
+
         for (int idx = 0; idx < imageUrls.size(); idx++) {
-            CardImage cardImage = CardImage.builder()
-                    .id(UUID.randomUUID())
-                    .url(imageUrls.get(idx))
-                    .card(card)
-                    .cardImageName(imageNames.get(idx)).build();
-            cardImageRepository.save(cardImage);
+            saveCardImage(imageUrls, imageNames, card, idx);
         }
 
         // wave에 오늘 날짜 잔디 수 value + 1, total +1,  cardId에 생성이력 추가
         String waveKey = MyPageRedisKeyUtils.makeRedisWaveKey(user);
-
         addWaveToToday(waveKey);
         addWaveToTotal(waveKey);
-
         String cardKey = CardRedisKeyUtils.makeRedisCardHistoryValue(UUID.fromString(notionResponse.getCardId()));
         addCardHistory(cardKey);
 
@@ -141,6 +144,35 @@ public class CardService {
                 .build();
     }
 
+    private void saveCardImage(List<String> imageUrls, List<String> imageNames, Card card, int idx) {
+        CardImage cardImage = CardImage.builder()
+                .id(UUID.randomUUID())
+                .url(imageUrls.get(idx))
+                .card(card)
+                .cardImageName(imageNames.get(idx)).build();
+        cardImageRepository.save(cardImage);
+    }
+
+    private PostCardToNotionDto.Response postCardToNotion(PostCardDto.Request dto, User user, List<String> imageUrls, List<String> imageNames) {
+        WebClient webClient = cardWebclientBuilder("");
+
+        PostCardToNotionDto.Response notionResponse = webClient.post()
+                    .accept(MediaType.APPLICATION_JSON)
+                    .bodyValue(cardMapper.postCardToRequest(dto, user.getNickname(), dbId, imageUrls, imageNames))
+                    .retrieve()
+                    .bodyToMono(PostCardToNotionDto.Response.class)
+                    .block();
+        return notionResponse;
+    }
+
+    private void uploadImageToCloudinary(User user, List<String> imageUrls, List<String> imageNames, MultipartFile image) throws IOException {
+        String imageName = StringUtils.join(List.of(user.getEmail(), user.getProvider(), UUID.randomUUID().toString()), "_");
+        Map uploadResponse = cloudinary.uploader().upload(image.getBytes(), ObjectUtils.asMap("public_id", imageName));
+        String url = uploadResponse.get("url").toString();
+        imageUrls.add(url);
+        imageNames.add(imageName);
+    }
+
     private void addCardHistory(String cardKey) {
         ListOperations<String, String> opsForList = redisTemplate.opsForList();
         String historyValue = "create:" + LocalDate.now().toString().replace("-", "");
@@ -149,7 +181,8 @@ public class CardService {
 
     private void addWaveToToday(String waveKey) {
         HashOperations<String, String, String> opsForHash = redisTemplate.opsForHash();
-        String redisWaveTimeFormat = waveDateFormat.format(new Date());
+        String redisWaveTimeFormat = LocalDate.now().toString().replace("-", "");
+
 
         String todayWave = opsForHash.get(waveKey,"total");
         Integer intTotalWave = todayWave != null ? Integer.valueOf(todayWave) + 1 : 1;
@@ -165,41 +198,49 @@ public class CardService {
 
     @Transactional
     public ResponseDto<Object> updateCard(UUID cardId, PostCardDto.Request dto, List<MultipartFile> addedImages, List<String> deletedImages,  User user) throws Exception {
+        List<String> imageNames = new ArrayList<>();
+        List<String> imageUrls = new ArrayList<>();
+        List<GetCardDto.Response.Image> originalCardImages = this.getCard(cardId).getData().getImages();
+        addNameAndUrlFromOriginalCardImages(imageNames, imageUrls, originalCardImages);
+
         Card card = cardRepository.findByIdWithImages(cardId)
                 .orElseThrow(CardNotFoundException::new);
         List<CardImage> cardImages = card.getCardImages();
+
         // 이미지 제거 API
-//        if(deletedImages != null && deletedImages.size() > 0 && !deletedImages.get(0).isEmpty()){
         if(deletedImages != null){
-            cloudinary.api().deleteResources(deletedImages, null);
-            for (String deletedImage : deletedImages) {
-                CardImage cardImage = cardImages.stream().filter(ci -> ci.getCardImageName().equals(deletedImage))
-                        .findFirst()
-                        .orElseThrow(CardNotFoundException::new);
-                cardImages.remove(cardImage);
-            }
+            deleteCardsFromNotionDBAndDB(deletedImages, cardImages, imageNames, imageUrls);
         }
         // 이미지 추가 API
-        List<String> imageUrls = new ArrayList<>();
-        List<String> imageNames = new ArrayList<>();
-//        if(addedImages != null && addedImages.size() > 0 && !addedImages.get(0).isEmpty()){
         if(addedImages != null){
-            for (MultipartFile addedImage : addedImages) {
-                // 카드 업로드 후 받은 url을 저장
-                String imageName = StringUtils.join(List.of(user.getEmail(), user.getProvider(), UUID.randomUUID().toString()), "_");
-                Map uploadResponse = cloudinary.uploader().upload(addedImage.getBytes(), ObjectUtils.asMap("public_id", imageName));
-                String url = uploadResponse.get("url").toString();
-                imageUrls.add(url);
-                imageNames.add(imageName);
-                CardImage cardImage = CardImage.builder()
-                        .url(url)
-                        .cardImageName(imageName)
-                        .card(card)
-                        .build();
-                cardImages.add(cardImage);
-            }
+            addImagesToNotionDBAndDB(addedImages, user, imageNames, imageUrls, card, cardImages);
         }
         // notion 상에서의 카드 정보 수정
+        updateCardFromNotionDB(cardId, dto, user, imageNames, imageUrls);
+
+        // wave 추가
+        addWave(cardId, user);
+
+        return ResponseDto.builder()
+                .responseCode(ResponseCode.UPDATE_CARD)
+                .data(null).build();
+    }
+
+    private void addWave(UUID cardId, User user) {
+        addCardWave(cardId);
+
+        String waveKey = MyPageRedisKeyUtils.makeRedisWaveKey(user);
+        addWaveToToday(waveKey);
+        addWaveToTotal(waveKey);
+    }
+
+    private void addCardWave(UUID cardId) {
+        ListOperations<String, String> ops = redisTemplate.opsForList();
+        String historyValue = "update:" + LocalDate.now().toString().replace("-", "");
+        ops.rightPush(cardId.toString(), historyValue);
+    }
+
+    private UpdateCardToNotionDto.Response updateCardFromNotionDB(UUID cardId, PostCardDto.Request dto, User user, List<String> imageNames, List<String> imageUrls) {
         WebClient webClient = cardWebclientBuilder(cardId.toString());
         UpdateCardToNotionDto.Response result = webClient.patch()
                 .accept(MediaType.APPLICATION_JSON)
@@ -207,77 +248,107 @@ public class CardService {
                 .retrieve()
                 .bodyToMono(UpdateCardToNotionDto.Response.class)
                 .block();
+        return result;
+    }
 
-        // wave 추가
-        ListOperations<String, String> ops = redisTemplate.opsForList();
-        String historyValue = "create:" + LocalDate.now().toString().replace("-", "");
-        ops.rightPush(result.getCardId(), historyValue);
-        String waveKey = MyPageRedisKeyUtils.makeRedisWaveKey(user);
-        addWaveToToday(waveKey);
-        addWaveToTotal(waveKey);
+    private void addImagesToNotionDBAndDB(List<MultipartFile> addedImages, User user, List<String> imageNames, List<String> imageUrls, Card card, List<CardImage> cardImages) throws IOException {
+        for (MultipartFile addedImage : addedImages) {
+            // 카드 업로드 후 받은 url을 저장
+            String imageName = StringUtils.join(List.of(user.getEmail(), user.getProvider(), UUID.randomUUID().toString()), "_");
+            Map uploadResponse = cloudinary.uploader().upload(addedImage.getBytes(), ObjectUtils.asMap("public_id", imageName));
+            String url = uploadResponse.get("url").toString();
+            imageUrls.add(url);
+            imageNames.add(imageName);
+            CardImage cardImage = CardImage.builder()
+                    .url(url)
+                    .cardImageName(imageName)
+                    .card(card)
+                    .build();
+            cardImages.add(cardImage);
+        }
+    }
 
-        return ResponseDto.builder()
-                .responseCode(ResponseCode.UPDATE_CARD)
-                .data(null).build();
+    private void addNameAndUrlFromOriginalCardImages(List<String> imageNames, List<String> imageUrls, List<GetCardDto.Response.Image> originalCardImages) {
+        for (GetCardDto.Response.Image originalCardImage : originalCardImages) {
+            imageUrls.add(originalCardImage.getImageUrl());
+            imageNames.add(originalCardImage.getImageId());
+        }
+    }
+
+    private void deleteCardsFromNotionDBAndDB(List<String> deletedImages, List<CardImage> cardImages,
+                                              List<String> imageNames, List<String> imageUrls) throws Exception {
+        cloudinary.api().deleteResources(deletedImages, null);
+        for (String deletedImage : deletedImages) {
+            CardImage cardImage = cardImages.stream().filter(ci -> ci.getCardImageName().equals(deletedImage))
+                    .findFirst()
+                    .orElseThrow(CardNotFoundException::new);
+            imageNames = deleteStringElementFromArray(imageNames, cardImage.getCardImageName());
+            imageUrls = deleteStringElementFromArray(imageUrls, cardImage.getUrl());
+            cardImages.remove(cardImage);
+        }
+    }
+    private List<String> deleteStringElementFromArray(List<String> array, String element) {
+        return array.stream().filter(el -> !el.equals(element)).toList();
     }
 
     @Transactional
     public ResponseDto<Object> deleteCard(UUID cardId, User user) throws Exception {
         // 카드 제거 요청 API
-        WebClient webClient = cardWebclientBuilder("");
-        DeleteCardDto.Response result = webClient.patch()
-                .bodyValue(UpdateCardToNotionDto.Request.builder()
-                        .archived(true).build())
-                .accept(MediaType.APPLICATION_JSON)
-                .retrieve()
-                .bodyToMono(DeleteCardDto.Response.class)
-                .block();
-
+        deleteCardFromNotionDB(cardId);
         // 관련 이미지 db에서 제거 후 cloudinary에서도 제거
         Card deletedCard = cardRepository.findByIdWithImages(cardId)
                 .orElseThrow(CardNotFoundException::new);
-        List<String> deletedImages = deletedCard.getCardImages().stream().map(ci -> ci.getCardImageName()).collect(Collectors.toList());
-        cloudinary.api().deleteResources(deletedImages, null);
-        cardRepository.delete(deletedCard);
-
-        // cardId 순회하면서 해당 일자에 해당하는 wave:email:provider hash값 -1
-        ListOperations<String, String> opsForList = redisTemplate.opsForList();
-        String cardRecordKey = CardRedisKeyUtils.makeRedisCardHistoryValue(cardId);
-        String cardRecordValue = opsForList.leftPop(cardRecordKey);
-        //
-        while(cardRecordValue != null){
-            eraseWaveFromUser(cardRecordValue, user);
-            cardRecordValue = opsForList.leftPop(cardRecordKey);
+        if(deletedCard.getCardImages().size() > 0){
+            deleteCardImagesFromNotionDB(deletedCard);
         }
+        cardRepository.delete(deletedCard);
+        // cardId 순회하면서 해당 일자에 해당하는 wave:email:provider hash값 -1
+        deleteUserWave(cardId, user);
         return ResponseDto.builder()
                 .responseCode(ResponseCode.DELETE_CARD)
                 .data(null).build();
     }
 
+    private void deleteUserWave(UUID cardId, User user) {
+        ListOperations<String, String> opsForList = redisTemplate.opsForList();
+        String cardRecordKey = CardRedisKeyUtils.makeRedisCardHistoryValue(cardId);
+        String cardRecordValue = opsForList.leftPop(cardRecordKey);
+
+        while(cardRecordValue != null){
+            eraseWaveFromUser(cardRecordValue, user);
+            cardRecordValue = opsForList.leftPop(cardRecordKey);
+        }
+    }
+
+    private void deleteCardImagesFromNotionDB(Card deletedCard) throws Exception {
+        List<String> deletedImages = deletedCard.getCardImages().stream().map(ci -> ci.getCardImageName()).collect(Collectors.toList());
+        cloudinary.api().deleteResources(deletedImages, null);
+    }
+
+    private void deleteCardFromNotionDB(UUID cardId) {
+        WebClient webClient = cardWebclientBuilder(cardId.toString());
+        webClient.patch()
+                .bodyValue(DeleteCardToNotionDto.Request.builder()
+                        .archived(true).build())
+                .accept(MediaType.APPLICATION_JSON)
+                .retrieve()
+                .bodyToMono(DeleteCardDto.Response.class)
+                .block();
+    }
+
     private void eraseWaveFromUser(String cardRecordValue, User user) {
         String userWaveKey = MyPageRedisKeyUtils.makeRedisWaveKey(user);
         String userWaveHashKey = cardRecordValue.split(":")[1];
-        HashOperations<String, String, Integer> opsForHash = redisTemplate.opsForHash();
-        Integer wave = opsForHash.get(userWaveKey, userWaveHashKey);
-        opsForHash.put(userWaveKey, userWaveHashKey, wave - 1 );
-        Integer totalWave = opsForHash.get(userWaveKey, "total");
-        opsForHash.put(userWaveKey, "total", totalWave - 1 );
+        HashOperations<String, String, String> opsForHash = redisTemplate.opsForHash();
+        String wave = opsForHash.get(userWaveKey, userWaveHashKey);
+        opsForHash.put(userWaveKey, userWaveHashKey, String.valueOf(Integer.valueOf(wave) - 1));
+        String totalWave = opsForHash.get(userWaveKey, "total");
+        opsForHash.put(userWaveKey, "total", String.valueOf(Integer.valueOf(totalWave) - 1) );
     }
 
     private WebClient cardWebclientBuilder(String url){
         return WebClient.builder()
                 .baseUrl(NOTION_CARD_URL + url)
-                .defaultHeader("Notion-Version", VERSION)
-                .defaultHeader("Authorization", "Bearer " + apiKey)
-                .build();
-    }
-
-    private WebClient dbWebclientBuilder(String username){
-        if(username != null){
-
-        }
-        return WebClient.builder()
-                .baseUrl(NOTION_DB_URL + dbId)
                 .defaultHeader("Notion-Version", VERSION)
                 .defaultHeader("Authorization", "Bearer " + apiKey)
                 .build();

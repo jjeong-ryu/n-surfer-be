@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 public class GetCardsToNotionDto {
     @Getter
@@ -34,6 +35,10 @@ public class GetCardsToNotionDto {
                 private String contains;
             }
         }
+        @JsonProperty("page_size")
+        private Integer pageSize;
+        @JsonProperty("start_cursor")
+        private String nextCardId;
     }
     @Getter
     @Builder

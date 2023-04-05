@@ -15,6 +15,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
+import java.util.Date;
 
 import static org.springframework.http.HttpStatus.*;
 
@@ -25,7 +26,7 @@ public class UserController {
     private final UserService userService;
 
     @DeleteMapping
-    public ResponseEntity<ResponseDto<DeleteUserDto>> DeleteUser(@AuthenticationPrincipal User user){
+    public ResponseEntity<ResponseDto<DeleteUserDto>> DeleteUser(@AuthenticationPrincipal User user) throws Exception {
         return new ResponseEntity(userService.deleteUser(user), OK);
     }
 
