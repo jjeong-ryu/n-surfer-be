@@ -237,35 +237,46 @@ public class CardService {
     @Transactional
     public ResponseDto<Object> deleteCard(UUID cardId, User user) throws Exception {
         // 카드 제거 요청 API
+        deleteCardFromNotionDB(cardId);
+        // 관련 이미지 db에서 제거 후 cloudinary에서도 제거
+        Card deletedCard = cardRepository.findByIdWithImages(cardId)
+                .orElseThrow(CardNotFoundException::new);
+        if(deletedCard.getCardImages().size() > 0){
+            deleteCardImagesFromNotionDB(deletedCard);
+        }
+        cardRepository.delete(deletedCard);
+        // cardId 순회하면서 해당 일자에 해당하는 wave:email:provider hash값 -1
+        deleteUserWave(cardId, user);
+        return ResponseDto.builder()
+                .responseCode(ResponseCode.DELETE_CARD)
+                .data(null).build();
+    }
+
+    private void deleteUserWave(UUID cardId, User user) {
+        ListOperations<String, String> opsForList = redisTemplate.opsForList();
+        String cardRecordKey = CardRedisKeyUtils.makeRedisCardHistoryValue(cardId);
+        String cardRecordValue = opsForList.leftPop(cardRecordKey);
+
+        while(cardRecordValue != null){
+            eraseWaveFromUser(cardRecordValue, user);
+            cardRecordValue = opsForList.leftPop(cardRecordKey);
+        }
+    }
+
+    private void deleteCardImagesFromNotionDB(Card deletedCard) throws Exception {
+        List<String> deletedImages = deletedCard.getCardImages().stream().map(ci -> ci.getCardImageName()).collect(Collectors.toList());
+        cloudinary.api().deleteResources(deletedImages, null);
+    }
+
+    private void deleteCardFromNotionDB(UUID cardId) {
         WebClient webClient = cardWebclientBuilder(cardId.toString());
-        DeleteCardDto.Response result = webClient.patch()
+        webClient.patch()
                 .bodyValue(DeleteCardToNotionDto.Request.builder()
                         .archived(true).build())
                 .accept(MediaType.APPLICATION_JSON)
                 .retrieve()
                 .bodyToMono(DeleteCardDto.Response.class)
                 .block();
-
-        // 관련 이미지 db에서 제거 후 cloudinary에서도 제거
-        Card deletedCard = cardRepository.findByIdWithImages(cardId)
-                .orElseThrow(CardNotFoundException::new);
-        if(deletedCard.getCardImages().size() > 0){
-            List<String> deletedImages = deletedCard.getCardImages().stream().map(ci -> ci.getCardImageName()).collect(Collectors.toList());
-            cloudinary.api().deleteResources(deletedImages, null);
-            cardRepository.delete(deletedCard);
-        }
-        // cardId 순회하면서 해당 일자에 해당하는 wave:email:provider hash값 -1
-        ListOperations<String, String> opsForList = redisTemplate.opsForList();
-        String cardRecordKey = CardRedisKeyUtils.makeRedisCardHistoryValue(cardId);
-        String cardRecordValue = opsForList.leftPop(cardRecordKey);
-        //
-        while(cardRecordValue != null){
-            eraseWaveFromUser(cardRecordValue, user);
-            cardRecordValue = opsForList.leftPop(cardRecordKey);
-        }
-        return ResponseDto.builder()
-                .responseCode(ResponseCode.DELETE_CARD)
-                .data(null).build();
     }
 
     private void eraseWaveFromUser(String cardRecordValue, User user) {
@@ -281,17 +292,6 @@ public class CardService {
     private WebClient cardWebclientBuilder(String url){
         return WebClient.builder()
                 .baseUrl(NOTION_CARD_URL + url)
-                .defaultHeader("Notion-Version", VERSION)
-                .defaultHeader("Authorization", "Bearer " + apiKey)
-                .build();
-    }
-
-    private WebClient dbWebclientBuilder(String username){
-        if(username != null){
-
-        }
-        return WebClient.builder()
-                .baseUrl(NOTION_DB_URL + dbId)
                 .defaultHeader("Notion-Version", VERSION)
                 .defaultHeader("Authorization", "Bearer " + apiKey)
                 .build();

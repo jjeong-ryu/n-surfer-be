@@ -7,6 +7,6 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface CardRepositoryCustom {
-    List<Card> findCardsWithWaveByUserId(UUID userId);
+    List<Card> findCardsWithImagesByUserId(Long userId);
     Optional<Card> findByIdWithImages(UUID cardId);
 }
