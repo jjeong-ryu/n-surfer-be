@@ -12,6 +12,7 @@ import com.notion.nsurfer.common.ResponseDto;
 import com.notion.nsurfer.mypage.dto.GetWavesDto;
 import com.notion.nsurfer.mypage.exception.UserNotFoundException;
 import com.notion.nsurfer.mypage.utils.MyPageRedisKeyUtils;
+import com.notion.nsurfer.mypage.utils.WebClientBuilder;
 import com.notion.nsurfer.security.util.JwtUtil;
 import com.notion.nsurfer.user.dto.DeleteUserDto;
 import com.notion.nsurfer.user.dto.GetUserProfileDto;
@@ -19,7 +20,6 @@ import com.notion.nsurfer.user.dto.SignInDto;
 import com.notion.nsurfer.user.dto.SignUpDto;
 import com.notion.nsurfer.user.entity.User;
 import com.notion.nsurfer.user.entity.UserLoginInfo;
-import com.notion.nsurfer.user.exception.EmailNotFoundException;
 import com.notion.nsurfer.user.mapper.UserMapper;
 import com.notion.nsurfer.user.repository.UserLoginInfoRepository;
 import com.notion.nsurfer.user.repository.UserRepository;
@@ -27,12 +27,10 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
-import java.net.URI;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.util.*;
@@ -66,7 +64,7 @@ public class UserService {
     @Transactional
     public ResponseDto<DeleteUserDto.Response> deleteUser(User user) throws Exception {
         List<Card> cards = cardRepository.findCardsWithImagesByUserId(user.getId());
-        WebClient webClient = WebClient.create();
+        WebClient webClient = WebClientBuilder.cardWebclientBuilder("");
         for (Card card : cards) {
             deleteCardFromCloudinary(webClient, card);
             deleteCardWave(card.getId());
@@ -74,6 +72,7 @@ public class UserService {
             cardRepository.delete(card);
         }
         user.delete();
+        userRepository.delete(user);
         return ResponseDto.<DeleteUserDto.Response>builder()
                 .responseCode(ResponseCode.DELETE_USER)
                 .data(userMapper.deleteUserToResponse(user))
@@ -81,16 +80,22 @@ public class UserService {
     }
     private void deleteCardFromCloudinary(WebClient webClient, Card card) throws Exception {
         List<CardImage> cardImages = card.getCardImages();
-        List<String> cardNames = cardImages.stream().map(ci -> ci.getCardImageName()).collect(Collectors.toList());
-        cloudinary.api().deleteResources(cardNames, null);
-        URI uri = URI.create(NOTION_CARD_URL + card.getId());
-        webClient.patch().uri(uri)
-                .bodyValue(DeleteCardDto.Request.builder()
-                        .archived(true).build())
-                .accept(MediaType.APPLICATION_JSON)
-                .retrieve()
-                .bodyToMono(DeleteCardDto.Response.class)
-                .block();
+        if(cardImages.size() > 0){
+            List<String> cardNames = cardImages.stream().map(ci -> ci.getCardImageName()).collect(Collectors.toList());
+            cloudinary.api().deleteResources(cardNames, null);
+        }
+        try {
+            webClient.patch().uri(WebClientBuilder.NOTION_CARD_URL + card.getId())
+                    .bodyValue(DeleteCardDto.Request.builder()
+                            .archived(true).build())
+                    .accept(MediaType.APPLICATION_JSON)
+                    .retrieve()
+                    .bodyToMono(DeleteCardDto.Response.class)
+                    .block();
+        } catch (Exception e){
+            System.out.println("이미 삭제된 카드입니다.");
+        }
+
     }
 
     private void deleteUserWave(User user) {
@@ -196,7 +201,6 @@ public class UserService {
         String redisWavesKey = MyPageRedisKeyUtils.makeRedisWaveKey(user);
         String redisWaveHashKey = LocalDate.now().toString().replace("-" ,"");
         String todayWave = opsForHash.get(redisWavesKey, redisWaveHashKey);
-        System.out.println("키 " + redisWavesKey + "해쉬 키 " + redisWaveHashKey + "todayWave" + todayWave);
         return todayWave != null ? Integer.valueOf(todayWave) : 0;
     }
     // 추후 accessToken의 갯수를 늘리는 경우, key - List 형식으로 변경 필요성 있음(opsForValue)

@@ -64,7 +64,6 @@ public class MyPageService {
         }
         user.update(dto);
         if(dto.getIsBasicImg()){
-            System.out.println(user.getThumbnailImageName());
             cloudinary.api().deleteResources(List.of(user.getThumbnailImageName()), null);
             user.updateImage(DEFAULT_PROFILE_IMAGE, null);
         }

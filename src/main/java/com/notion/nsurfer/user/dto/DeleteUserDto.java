@@ -1,7 +1,9 @@
 package com.notion.nsurfer.user.dto;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 public class DeleteUserDto {
     @Getter
@@ -10,7 +12,10 @@ public class DeleteUserDto {
 
     }
 
+    @Getter
     @Builder
+    @AllArgsConstructor
+    @NoArgsConstructor
     public static class Response {
         private Long userId;
     }

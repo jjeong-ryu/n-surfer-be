@@ -14,7 +14,7 @@ spring:
     database-platform: org.hibernate.dialect.MySQLDialect
 #    database-platform: org.hibernate.spatial.dialect.mysql.MySQL56InnoDBSpatialDialect
     hibernate:
-      ddl-auto: update
+      ddl-auto: create
     defer-datasource-initialization: true
   data:
     redis:
@@ -30,7 +30,7 @@ notion:
   database: c1b4b8a152e94d90909717d92be2c116
   token: secret_bGUWaYI7PCpufgCmO7vX4pFD3Qt1kT2qiCv1aAJhcxR
   dbId: 05e61a0a-a980-4d4d-b5a4-4f73a197ea7d
-
+#  dbId: 28dc11c7-273a-4fb6-a3fe-c546c8bad921
 auth:
   kakao:
     client-id: a0565a02972a2d88bbf1eed72c6fa1ad
