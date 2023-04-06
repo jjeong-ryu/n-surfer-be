@@ -45,8 +45,6 @@ public class GetCardsDto {
                 private String imageUrl;
             }
         }
-
-        @JsonProperty("next_cursor")
         private String nextCardId;
     }
 }
