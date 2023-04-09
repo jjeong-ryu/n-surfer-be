@@ -3,6 +3,7 @@ package com.notion.nsurfer.card.repository;
 import com.notion.nsurfer.card.entity.Card;
 import com.notion.nsurfer.card.entity.QCard;
 import com.notion.nsurfer.card.entity.QCardImage;
+import com.notion.nsurfer.user.entity.QUser;
 import com.notion.nsurfer.user.entity.QWave;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -16,6 +17,7 @@ import java.util.UUID;
 
 import static com.notion.nsurfer.card.entity.QCard.*;
 import static com.notion.nsurfer.card.entity.QCardImage.*;
+import static com.notion.nsurfer.user.entity.QUser.user;
 import static com.notion.nsurfer.user.entity.QWave.*;
 
 @Repository
@@ -37,6 +39,15 @@ public class CardRepositoryCustomImpl implements CardRepositoryCustom{
                 .selectFrom(card)
                 .leftJoin(card.cardImages, cardImage)
                 .where(cardIdEq(cardId))
+                .fetchOne());
+    }
+
+    @Override
+    public Optional<Card> findByIdWithUser(UUID userId) {
+        return Optional.ofNullable(queryFactory
+                .selectFrom(card)
+                .leftJoin(card.user, user)
+                .where(cardIdEq(userId))
                 .fetchOne());
     }
 

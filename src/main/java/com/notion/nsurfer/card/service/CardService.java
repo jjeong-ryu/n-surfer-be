@@ -57,7 +57,7 @@ public class CardService {
     private String dbId;
     private final String VERSION = "2022-06-28";
     public ResponseDto<GetCardDto.Response> getCard(final UUID cardId){
-        Card card = cardRepository.findById(cardId)
+        Card card = cardRepository.findByIdWithUser(cardId)
                 .orElseThrow(CardNotFoundException::new);
         User user = card.getUser();
         WebClient webClient = cardWebclientBuilder(cardId.toString());
@@ -160,7 +160,6 @@ public class CardService {
 
     private PostCardToNotionDto.Response postCardToNotion(PostCardDto.Request dto, User user, List<String> imageUrls, List<String> imageNames) {
         WebClient webClient = cardWebclientBuilder("");
-
         PostCardToNotionDto.Response notionResponse = webClient.post()
                     .accept(MediaType.APPLICATION_JSON)
                     .bodyValue(cardMapper.postCardToRequest(dto, user.getNickname(), dbId, imageUrls, imageNames))
@@ -187,7 +186,6 @@ public class CardService {
     private void addWaveToToday(String waveKey) {
         HashOperations<String, String, String> opsForHash = redisTemplate.opsForHash();
         String redisWaveTimeFormat = LocalDate.now().toString().replace("-", "");
-
 
         String todayWave = opsForHash.get(waveKey,"total");
         Integer intTotalWave = todayWave != null ? Integer.valueOf(todayWave) + 1 : 1;
