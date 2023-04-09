@@ -106,12 +106,12 @@ public class UserService {
         redisTemplate.delete(CardRedisKeyUtils.makeRedisCardHistoryValue(cardId));
     }
 
-    public ResponseDto<GetWavesDto.Response> getWaves(String nickname, Integer month){
-        Calendar startDate = getStartDateCal(month);
-        Calendar endDate = getEndDateCal();
+    public ResponseDto<GetWavesDto.Response> getWaves(String nickname, String startDate){
+        Calendar calStartDate = getStartDateCal(startDate);
+        Calendar endDate = getEndDateCal(startDate);
         User user = userRepository.findByNickname(nickname)
                 .orElseThrow(UserNotFoundException::new);
-        List<GetWavesDto.Response.Wave> waves = getWavesWithDate(startDate, endDate, user);
+        List<GetWavesDto.Response.Wave> waves = getWavesWithDate(calStartDate, endDate, user);
         return ResponseDto.<GetWavesDto.Response>builder()
                 .responseCode(ResponseCode.GET_WAVES)
                 .data(GetWavesDto.Response.builder()
@@ -119,17 +119,16 @@ public class UserService {
                         .waves(waves).build())
                 .build();
     }
-    private Calendar getStartDateCal(Integer month){
+    private Calendar getStartDateCal(String startDate){
         Calendar cal = Calendar.getInstance();
-        cal.setTime(new Date());
-        cal.add(Calendar.MONTH, -month);
+        cal.setTime(java.sql.Date.valueOf(startDate));
         return cal;
     }
 
-    private Calendar getEndDateCal(){
+    private Calendar getEndDateCal(String startDate){
         Calendar cal = Calendar.getInstance();
-        cal.setTime(new Date());
-        cal.add(Calendar.DATE,1);
+        cal.setTime(java.sql.Date.valueOf(startDate));
+        cal.add(Calendar.DATE,71);
         return cal;
     }
 

@@ -45,8 +45,8 @@ public class UserController {
     @GetMapping("/wave")
     public ResponseEntity<ResponseDto<GetWavesDto.Response>> getSurfingRecord(
             @RequestParam String nickname,
-            @RequestParam Integer month
+            @RequestParam String startDate
     ){
-        return new ResponseEntity<>(userService.getWaves(nickname, month), OK);
+        return new ResponseEntity<>(userService.getWaves(nickname, startDate), OK);
     }
 }
