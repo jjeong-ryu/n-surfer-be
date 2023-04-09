@@ -3,6 +3,8 @@ package com.notion.nsurfer.card.service;
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
 import com.cloudinary.utils.StringUtils;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 import com.notion.nsurfer.card.dto.*;
 import com.notion.nsurfer.card.entity.Card;
 import com.notion.nsurfer.card.entity.CardImage;
@@ -17,6 +19,8 @@ import com.notion.nsurfer.mypage.utils.MyPageRedisKeyUtils;
 import com.notion.nsurfer.user.entity.User;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.cloudinary.json.JSONArray;
+import org.cloudinary.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.ListOperations;
@@ -25,6 +29,7 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import java.io.IOException;
@@ -68,14 +73,15 @@ public class CardService {
                 .build();
     }
 
-    public ResponseDto<GetCardsDto.Response> getCards(final String nickname, String numOfCards, final String nextCardId) {
+    public ResponseDto<GetCardsDto.Response> getCards(final String nickname, String numOfCards,
+                                                      final String nextCardId, final String label) {
         // username이 null이어도 가능
         numOfCards = numOfCards.equals("") ? "15" : numOfCards;
         WebClient webClient = dbQueryWebclientBuilder();
         GetCardsToNotionDto.Response notionResponse =
                 !nextCardId.equals("")
-                ? getNotionResponseWithPaging(webClient, nickname, numOfCards, nextCardId)
-                : getNotionResponseWithoutPaging(webClient, nickname, numOfCards);
+                ? getNotionResponseWithPaging(webClient, nickname, numOfCards, nextCardId, label)
+                : getNotionResponseWithoutPaging(webClient, nickname, numOfCards, label);
 
         GetCardsDto.Response responseData = cardMapper.getCardsToResponse(notionResponse, numOfCards);
 
@@ -86,21 +92,22 @@ public class CardService {
                 .build();
     }
     private GetCardsToNotionDto.Response getNotionResponseWithPaging(
-            WebClient webClient, final String nickname, final String numOfCards, final String nextCardId
+            WebClient webClient, final String nickname, final String numOfCards, final String nextCardId, final String label
     ) {
         return webClient.post()
                 .accept(MediaType.APPLICATION_JSON)
-                .bodyValue(cardMapper.getCardsToNotionWithPagingRequest(nickname, Integer.valueOf(numOfCards), nextCardId))
+                .bodyValue(cardMapper.getCardsToNotionWithPagingRequest(nickname, Integer.valueOf(numOfCards), nextCardId, label))
                 .retrieve()
                 .bodyToMono(GetCardsToNotionDto.Response.class)
                 .block();
     }
     private GetCardsToNotionDto.Response getNotionResponseWithoutPaging(
-            WebClient webClient, final String nickname, final String numOfCards
+            WebClient webClient, final String nickname, final String numOfCards, final String label
     ) {
         return webClient.post()
                 .accept(MediaType.APPLICATION_JSON)
-                .bodyValue(cardMapper.getCardsToNotionWithoutPagingRequest(nickname, Integer.valueOf(numOfCards)))
+//                .bodyValue(cardMapper.getCardsToNotionWithoutPagingRequest(nickname, Integer.valueOf(numOfCards), label))
+                .bodyValue(BodyInserters.fromValue(makeGetCardsBody(nickname, Integer.valueOf(numOfCards), label, "")))
                 .retrieve()
                 .bodyToMono(GetCardsToNotionDto.Response.class)
                 .block();
@@ -358,5 +365,35 @@ public class CardService {
                 .defaultHeader("Notion-Version", VERSION)
                 .defaultHeader("Authorization", "Bearer " + apiKey)
                 .build();
+    }
+
+    private JsonObject makeGetCardsBody(final String nickname, final int pageSize,  final String label, final String nextCardId){
+        JsonObject body = new JsonObject();
+        JsonObject filterObject = new JsonObject();
+        JsonArray andObject = new JsonArray();
+
+        JsonObject creatorObject = new JsonObject();
+        creatorObject.addProperty("property", "Creator");
+        JsonObject richTextContains = new JsonObject();
+        creatorObject.add("rich_text", richTextContains);
+        richTextContains.addProperty("contains", nickname);
+
+        andObject.add(creatorObject);
+
+        JsonObject labelObject = new JsonObject();
+        labelObject.addProperty("property", "Label");
+        JsonObject multiSelectObject = new JsonObject();
+        labelObject.add("multi_select", multiSelectObject);
+        multiSelectObject.addProperty("contains", label);
+        andObject.add(labelObject);
+
+        filterObject.add("and", andObject);
+        body.add("filter", filterObject);
+        body.addProperty("page_size", pageSize);
+
+        if(!nextCardId.equals("")){
+            body.addProperty("start_cursor", nextCardId);
+        }
+        return body;
     }
 }

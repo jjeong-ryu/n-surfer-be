@@ -65,6 +65,10 @@ dependencies {
 
     // cloudinary
     implementation 'com.cloudinary:cloudinary-http44:1.31.0'
+
+    // gson
+    implementation 'com.google.code.gson:gson:2.8.9'
+
 }
 
 tasks.named('test') {

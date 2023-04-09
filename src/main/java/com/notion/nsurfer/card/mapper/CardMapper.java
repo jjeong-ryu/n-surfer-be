@@ -11,7 +11,8 @@ import java.util.stream.Collectors;
 
 @Mapper(config = CommonMapperConfig.class)
 public interface CardMapper {
-    default GetCardsToNotionWithPagingDto.Request getCardsToNotionWithPagingRequest(final String nickname, final Integer numberOfCards, final String nextCardId){
+    default GetCardsToNotionWithPagingDto.Request getCardsToNotionWithPagingRequest(
+            final String nickname, final Integer numberOfCards, final String nextCardId, final String label){
         return GetCardsToNotionWithPagingDto.Request.builder()
                 .filter(GetCardsToNotionWithPagingDto.Request.Filter.builder()
                         .property("Creator")
