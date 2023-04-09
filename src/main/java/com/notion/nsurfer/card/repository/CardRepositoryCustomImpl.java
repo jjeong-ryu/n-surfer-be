@@ -29,6 +29,7 @@ public class CardRepositoryCustomImpl implements CardRepositoryCustom{
         return queryFactory
                 .selectFrom(card)
                 .leftJoin(card.cardImages, cardImage)
+                .fetchJoin()
                 .where(userIdEq(userId))
                 .fetch();
     }
@@ -38,6 +39,7 @@ public class CardRepositoryCustomImpl implements CardRepositoryCustom{
         return Optional.ofNullable(queryFactory
                 .selectFrom(card)
                 .leftJoin(card.cardImages, cardImage)
+                .fetchJoin()
                 .where(cardIdEq(cardId))
                 .fetchOne());
     }
@@ -47,6 +49,7 @@ public class CardRepositoryCustomImpl implements CardRepositoryCustom{
         return Optional.ofNullable(queryFactory
                 .selectFrom(card)
                 .leftJoin(card.user, user)
+                .fetchJoin()
                 .where(cardIdEq(userId))
                 .fetchOne());
     }
