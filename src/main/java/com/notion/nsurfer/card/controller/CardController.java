@@ -36,9 +36,10 @@ public class CardController {
     public ResponseDto<GetCardsDto.Response> getCards(
             @RequestParam(required = false, defaultValue = "") String nickname,
             @RequestParam(required = false, defaultValue = "") String numOfCards,
-            @RequestParam(required = false, defaultValue = "") String nextCardId
+            @RequestParam(required = false, defaultValue = "") String nextCardId,
+            @RequestParam(required = false, defaultValue = "") String label
     ){
-        return cardService.getCards(nickname, numOfCards, nextCardId);
+        return cardService.getCards(nickname, numOfCards, nextCardId, label);
     }
     @GetMapping("/{cardId}")
     public ResponseDto<GetCardDto.Response> getCard(@PathVariable UUID cardId){
