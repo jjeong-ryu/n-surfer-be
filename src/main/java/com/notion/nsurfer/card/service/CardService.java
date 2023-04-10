@@ -20,8 +20,8 @@ import com.notion.nsurfer.user.entity.User;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.cloudinary.json.JSONArray;
-import org.cloudinary.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.configurationprocessor.json.JSONObject;
 import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.ListOperations;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -82,7 +82,7 @@ public class CardService {
                 !nextCardId.equals("")
                 ? getNotionResponseWithPaging(webClient, nickname, numOfCards, nextCardId, label)
                 : getNotionResponseWithoutPaging(webClient, nickname, numOfCards, label);
-
+        System.out.println(notionResponse.getNextCardId());
         GetCardsDto.Response responseData = cardMapper.getCardsToResponse(notionResponse, numOfCards);
 
         // 현재 DB에 저장된 모든 카드 return
@@ -106,8 +106,10 @@ public class CardService {
     ) {
         return webClient.post()
                 .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON)
 //                .bodyValue(cardMapper.getCardsToNotionWithoutPagingRequest(nickname, Integer.valueOf(numOfCards), label))
-                .bodyValue(BodyInserters.fromValue(makeGetCardsBody(nickname, Integer.valueOf(numOfCards), label, "")))
+//                .bodyValue(BodyInserters.fromValue(makeGetCardsBody(nickname, Integer.valueOf(numOfCards), label, "").toString()))//
+                .bodyValue(makeGetCardsBody(nickname, Integer.valueOf(numOfCards), label, "").toString())
                 .retrieve()
                 .bodyToMono(GetCardsToNotionDto.Response.class)
                 .block();
@@ -369,14 +371,15 @@ public class CardService {
         JsonObject body = new JsonObject();
         JsonObject filterObject = new JsonObject();
         JsonArray andObject = new JsonArray();
-
         JsonObject creatorObject = new JsonObject();
-        creatorObject.addProperty("property", "Creator");
         JsonObject richTextContains = new JsonObject();
+        body.add("filter", filterObject);
+        filterObject.add("and", andObject);
+        andObject.add(creatorObject);
+        creatorObject.addProperty("property", "Creator");
         creatorObject.add("rich_text", richTextContains);
         richTextContains.addProperty("contains", nickname);
 
-        andObject.add(creatorObject);
 
         JsonObject labelObject = new JsonObject();
         labelObject.addProperty("property", "Label");
@@ -385,8 +388,6 @@ public class CardService {
         multiSelectObject.addProperty("contains", label);
         andObject.add(labelObject);
 
-        filterObject.add("and", andObject);
-        body.add("filter", filterObject);
         body.addProperty("page_size", pageSize);
 
         if(!nextCardId.equals("")){
