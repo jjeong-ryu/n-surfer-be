@@ -49,7 +49,6 @@ public class CardService {
     private final String NOTION_DB_URL = "https://api.notion.com/v1/databases/";
     private final CardMapper cardMapper;
     private final Cloudinary cloudinary;
-    private final SimpleDateFormat waveDateFormat = new SimpleDateFormat("yyyyMMdd");
 
     @Value("${notion.token}")
     private String apiKey;
@@ -60,17 +59,20 @@ public class CardService {
         Card card = cardRepository.findByIdWithUser(cardId)
                 .orElseThrow(CardNotFoundException::new);
         User user = card.getUser();
-        WebClient webClient = cardWebclientBuilder(cardId.toString());
-        GetCardToNotionDto.Response notionResponse = webClient.get()
-                .accept(MediaType.APPLICATION_JSON)
-                .retrieve()
-                .bodyToMono(GetCardToNotionDto.Response.class)
-                .block();
-        // 해당 정보를 받아 최종적으로 프론트로 전달
+        GetCardToNotionDto.Response notionResponse = getNotionResponse(cardId);
         return ResponseDto.<GetCardDto.Response>builder()
                 .responseCode(ResponseCode.GET_CARD_LIST)
                 .data(cardMapper.getCardToResponse(notionResponse, user.getNickname()))
                 .build();
+    }
+
+    private GetCardToNotionDto.Response getNotionResponse(UUID cardId) {
+        WebClient webClient = cardWebclientBuilder(cardId.toString());
+        return webClient.get()
+                .accept(MediaType.APPLICATION_JSON)
+                .retrieve()
+                .bodyToMono(GetCardToNotionDto.Response.class)
+                .block();
     }
 
     public ResponseDto<GetCardsDto.Response> getCards(final String nickname, String numOfCards,
@@ -82,7 +84,6 @@ public class CardService {
                 !nextCardId.equals("")
                 ? getNotionResponseWithPaging(webClient, nickname, numOfCards, nextCardId, label)
                 : getNotionResponseWithoutPaging(webClient, nickname, numOfCards, label);
-        System.out.println(notionResponse.getNextCardId());
         GetCardsDto.Response responseData = cardMapper.getCardsToResponse(notionResponse, numOfCards);
 
         // 현재 DB에 저장된 모든 카드 return
@@ -107,8 +108,6 @@ public class CardService {
         return webClient.post()
                 .accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.APPLICATION_JSON)
-//                .bodyValue(cardMapper.getCardsToNotionWithoutPagingRequest(nickname, Integer.valueOf(numOfCards), label))
-//                .bodyValue(BodyInserters.fromValue(makeGetCardsBody(nickname, Integer.valueOf(numOfCards), label, "").toString()))//
                 .bodyValue(makeGetCardsBody(nickname, Integer.valueOf(numOfCards), label, "").toString())
                 .retrieve()
                 .bodyToMono(GetCardsToNotionDto.Response.class)
