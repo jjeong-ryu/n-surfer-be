@@ -12,7 +12,8 @@ import lombok.NoArgsConstructor;
 @Builder
 @Entity
 public class Label {
-    @Id @GeneratedValue
+    @Id
+    @GeneratedValue
     private Long id;
 
     private String color;
