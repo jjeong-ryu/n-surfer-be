@@ -20,8 +20,8 @@ import com.notion.nsurfer.user.entity.User;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.cloudinary.json.JSONArray;
-import org.cloudinary.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.configurationprocessor.json.JSONObject;
 import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.ListOperations;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -49,7 +49,6 @@ public class CardService {
     private final String NOTION_DB_URL = "https://api.notion.com/v1/databases/";
     private final CardMapper cardMapper;
     private final Cloudinary cloudinary;
-    private final SimpleDateFormat waveDateFormat = new SimpleDateFormat("yyyyMMdd");
 
     @Value("${notion.token}")
     private String apiKey;
@@ -57,20 +56,23 @@ public class CardService {
     private String dbId;
     private final String VERSION = "2022-06-28";
     public ResponseDto<GetCardDto.Response> getCard(final UUID cardId){
-        Card card = cardRepository.findById(cardId)
+        Card card = cardRepository.findByIdWithUser(cardId)
                 .orElseThrow(CardNotFoundException::new);
         User user = card.getUser();
-        WebClient webClient = cardWebclientBuilder(cardId.toString());
-        GetCardToNotionDto.Response notionResponse = webClient.get()
-                .accept(MediaType.APPLICATION_JSON)
-                .retrieve()
-                .bodyToMono(GetCardToNotionDto.Response.class)
-                .block();
-        // 해당 정보를 받아 최종적으로 프론트로 전달
+        GetCardToNotionDto.Response notionResponse = getNotionResponse(cardId);
         return ResponseDto.<GetCardDto.Response>builder()
                 .responseCode(ResponseCode.GET_CARD_LIST)
                 .data(cardMapper.getCardToResponse(notionResponse, user.getNickname()))
                 .build();
+    }
+
+    private GetCardToNotionDto.Response getNotionResponse(UUID cardId) {
+        WebClient webClient = cardWebclientBuilder(cardId.toString());
+        return webClient.get()
+                .accept(MediaType.APPLICATION_JSON)
+                .retrieve()
+                .bodyToMono(GetCardToNotionDto.Response.class)
+                .block();
     }
 
     public ResponseDto<GetCardsDto.Response> getCards(final String nickname, String numOfCards,
@@ -82,7 +84,6 @@ public class CardService {
                 !nextCardId.equals("")
                 ? getNotionResponseWithPaging(webClient, nickname, numOfCards, nextCardId, label)
                 : getNotionResponseWithoutPaging(webClient, nickname, numOfCards, label);
-
         GetCardsDto.Response responseData = cardMapper.getCardsToResponse(notionResponse, numOfCards);
 
         // 현재 DB에 저장된 모든 카드 return
@@ -106,8 +107,8 @@ public class CardService {
     ) {
         return webClient.post()
                 .accept(MediaType.APPLICATION_JSON)
-//                .bodyValue(cardMapper.getCardsToNotionWithoutPagingRequest(nickname, Integer.valueOf(numOfCards), label))
-                .bodyValue(BodyInserters.fromValue(makeGetCardsBody(nickname, Integer.valueOf(numOfCards), label, "")))
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(makeGetCardsBody(nickname, Integer.valueOf(numOfCards), label, "").toString())
                 .retrieve()
                 .bodyToMono(GetCardsToNotionDto.Response.class)
                 .block();
@@ -160,7 +161,6 @@ public class CardService {
 
     private PostCardToNotionDto.Response postCardToNotion(PostCardDto.Request dto, User user, List<String> imageUrls, List<String> imageNames) {
         WebClient webClient = cardWebclientBuilder("");
-
         PostCardToNotionDto.Response notionResponse = webClient.post()
                     .accept(MediaType.APPLICATION_JSON)
                     .bodyValue(cardMapper.postCardToRequest(dto, user.getNickname(), dbId, imageUrls, imageNames))
@@ -187,7 +187,6 @@ public class CardService {
     private void addWaveToToday(String waveKey) {
         HashOperations<String, String, String> opsForHash = redisTemplate.opsForHash();
         String redisWaveTimeFormat = LocalDate.now().toString().replace("-", "");
-
 
         String todayWave = opsForHash.get(waveKey,"total");
         Integer intTotalWave = todayWave != null ? Integer.valueOf(todayWave) + 1 : 1;
@@ -371,14 +370,15 @@ public class CardService {
         JsonObject body = new JsonObject();
         JsonObject filterObject = new JsonObject();
         JsonArray andObject = new JsonArray();
-
         JsonObject creatorObject = new JsonObject();
-        creatorObject.addProperty("property", "Creator");
         JsonObject richTextContains = new JsonObject();
+        body.add("filter", filterObject);
+        filterObject.add("and", andObject);
+        andObject.add(creatorObject);
+        creatorObject.addProperty("property", "Creator");
         creatorObject.add("rich_text", richTextContains);
         richTextContains.addProperty("contains", nickname);
 
-        andObject.add(creatorObject);
 
         JsonObject labelObject = new JsonObject();
         labelObject.addProperty("property", "Label");
@@ -387,8 +387,6 @@ public class CardService {
         multiSelectObject.addProperty("contains", label);
         andObject.add(labelObject);
 
-        filterObject.add("and", andObject);
-        body.add("filter", filterObject);
         body.addProperty("page_size", pageSize);
 
         if(!nextCardId.equals("")){

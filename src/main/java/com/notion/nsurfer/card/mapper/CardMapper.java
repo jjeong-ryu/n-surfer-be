@@ -42,6 +42,7 @@ public interface CardMapper {
         }
         return GetCardsDto.Response.builder()
                 .cardList(cardList)
+                .nextCardId(response.getNextCardId())
                 .build();
     }
 

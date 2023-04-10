@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 public class GetCardsToNotionDto {
     @Getter
@@ -205,5 +206,7 @@ public class GetCardsToNotionDto {
                 }
             }
         }
+        @JsonProperty("next_cursor")
+        private UUID nextCardId;
     }
 }
