@@ -3,10 +3,12 @@ package com.notion.nsurfer.card.mapper;
 import com.notion.nsurfer.card.dto.*;
 import com.notion.nsurfer.card.util.CardComparator;
 import com.notion.nsurfer.common.CommonMapperConfig;
+import com.notion.nsurfer.mypage.dto.UpdateCardNicknameDto;
 import org.mapstruct.Mapper;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Mapper(config = CommonMapperConfig.class)
@@ -92,12 +94,37 @@ public interface CardMapper {
     List<GetCardsDto.Response.Card.Label> getCardsToCardLabels(List<GetCardsToNotionDto.Response.Result.Properties.Label.MultiSelect> multiSelect);
     GetCardsDto.Response.Card.Label getCardsToCardLabel(GetCardsToNotionDto.Response.Result.Properties.Label.MultiSelect label);
 
+    default UpdateCardNicknameDto.Request updateCardNicknameToRequest(String nickname, String dbId){
+        List<UpdateCardNicknameDto.Request.Properties.Creator.RichText> creatorRichTexts = new ArrayList<>();
+        UpdateCardNicknameDto.Request.Properties.Creator.RichText creatorRichText = UpdateCardNicknameDto.Request.Properties.Creator.RichText.builder()
+                .text(
+                        UpdateCardNicknameDto.Request.Properties.Creator.RichText.Text.builder()
+                                .content(nickname)
+                                .build()
+                )
+                .build();
+        creatorRichTexts.add(creatorRichText);
+        return UpdateCardNicknameDto.Request.builder()
+                .parent(
+                        UpdateCardNicknameDto.Request.Parent.builder()
+                                .databaseId(dbId).build()
+                )
+                .properties(
+                        UpdateCardNicknameDto.Request.Properties.builder()
+                                .creator(
+                                        UpdateCardNicknameDto.Request.Properties.Creator.builder()
+                                                .richTexts(creatorRichTexts)
+                                                .build()
+                                )
+                                .build())
+                .build();
+    }
     default PostCardToNotionDto.Request postCardToRequest(
             PostCardDto.Request dto,
-            String nickname,
-            String dbId,
-            List<String> imageUrls,
-            List<String> imageNames
+                                                                    String nickname,
+                                                                    String dbId,
+                                                                    List<String> imageUrls,
+                                                                    List<String> imageNames
     ){
         List<PostCardToNotionDto.Request.Properties.Name.Title> titles = new ArrayList<>();
         List<PostCardToNotionDto.Request.Properties.Content.RichText> contentRichTexts = new ArrayList<>();

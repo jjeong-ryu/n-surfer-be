@@ -19,9 +19,6 @@ import com.notion.nsurfer.mypage.utils.MyPageRedisKeyUtils;
 import com.notion.nsurfer.user.entity.User;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.cloudinary.json.JSONArray;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.configurationprocessor.json.JSONObject;
 import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.ListOperations;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -29,14 +26,14 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import java.io.IOException;
-import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
+
+import static com.notion.nsurfer.common.utils.NotionUtils.*;
 
 @Service
 @RequiredArgsConstructor
@@ -45,15 +42,9 @@ public class CardService {
     private final CardRepository cardRepository;
     private final CardImageRepository cardImageRepository;
     private final RedisTemplate<String, String> redisTemplate;
-    private final String NOTION_CARD_URL = "https://api.notion.com/v1/pages/";
-    private final String NOTION_DB_URL = "https://api.notion.com/v1/databases/";
     private final CardMapper cardMapper;
     private final Cloudinary cloudinary;
 
-    @Value("${notion.token}")
-    private String apiKey;
-    @Value("${notion.dbId}")
-    private String dbId;
     private final String VERSION = "2022-06-28";
     public ResponseDto<GetCardDto.Response> getCard(final UUID cardId){
         Card card = cardRepository.findByIdWithUser(cardId)
@@ -108,7 +99,7 @@ public class CardService {
         return webClient.post()
                 .accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(makeGetCardsBody(nickname, Integer.valueOf(numOfCards), label, "").toString())
+                .bodyValue(makeGetCardsBody(nickname, Integer.parseInt(numOfCards), label, "").toString())
                 .retrieve()
                 .bodyToMono(GetCardsToNotionDto.Response.class)
                 .block();
@@ -120,8 +111,7 @@ public class CardService {
         List<String> imageNames = new ArrayList<>();
         // 이미지 업로드 및 이미지 url 저장
         if(imgFiles != null){
-            for (int idx = 0; idx < imgFiles.size(); idx++) {
-                MultipartFile image = imgFiles.get(idx);
+            for (MultipartFile image : imgFiles) {
                 uploadImageToCloudinary(user, imageUrls, imageNames, image);
             }
         }
@@ -161,13 +151,12 @@ public class CardService {
 
     private PostCardToNotionDto.Response postCardToNotion(PostCardDto.Request dto, User user, List<String> imageUrls, List<String> imageNames) {
         WebClient webClient = cardWebclientBuilder("");
-        PostCardToNotionDto.Response notionResponse = webClient.post()
+        return webClient.post()
                     .accept(MediaType.APPLICATION_JSON)
                     .bodyValue(cardMapper.postCardToRequest(dto, user.getNickname(), dbId, imageUrls, imageNames))
                     .retrieve()
                     .bodyToMono(PostCardToNotionDto.Response.class)
                     .block();
-        return notionResponse;
     }
 
     private void uploadImageToCloudinary(User user, List<String> imageUrls, List<String> imageNames, MultipartFile image) throws IOException {
@@ -189,14 +178,14 @@ public class CardService {
         String redisWaveTimeFormat = LocalDate.now().toString().replace("-", "");
 
         String todayWave = opsForHash.get(waveKey,"total");
-        Integer intTotalWave = todayWave != null ? Integer.valueOf(todayWave) + 1 : 1;
+        Integer intTotalWave = todayWave != null ? Integer.parseInt(todayWave) + 1 : 1;
         opsForHash.put(waveKey, redisWaveTimeFormat, String.valueOf(intTotalWave));
 
     }
     private void addWaveToTotal(String waveKey) {
         HashOperations<String, String, String> opsForHash = redisTemplate.opsForHash();
         String totalWave = opsForHash.get(waveKey,"total");
-        Integer intTotalWave = totalWave != null ? Integer.valueOf(totalWave) + 1 : 1;
+        Integer intTotalWave = totalWave != null ? Integer.parseInt(totalWave) + 1 : 1;
         opsForHash.put(waveKey, "total", String.valueOf(intTotalWave));
     }
 
@@ -221,7 +210,6 @@ public class CardService {
         }
         // notion 상에서의 카드 정보 수정
         updateCardFromNotionDB(cardId, dto, user, imageNames, imageUrls);
-
         // wave 추가
         addWave(cardId, user);
 
@@ -244,15 +232,14 @@ public class CardService {
         ops.rightPush(cardId.toString(), historyValue);
     }
 
-    private UpdateCardToNotionDto.Response updateCardFromNotionDB(UUID cardId, PostCardDto.Request dto, User user, List<String> imageNames, List<String> imageUrls) {
+    private void updateCardFromNotionDB(UUID cardId, PostCardDto.Request dto, User user, List<String> imageNames, List<String> imageUrls) {
         WebClient webClient = cardWebclientBuilder(cardId.toString());
-        UpdateCardToNotionDto.Response result = webClient.patch()
+        webClient.patch()
                 .accept(MediaType.APPLICATION_JSON)
                 .bodyValue(cardMapper.postCardToRequest(dto, user.getNickname(), dbId, imageUrls, imageNames))
                 .retrieve()
                 .bodyToMono(UpdateCardToNotionDto.Response.class)
                 .block();
-        return result;
     }
 
     private void addImagesToNotionDBAndDB(List<MultipartFile> addedImages, User user, List<String> imageNames, List<String> imageUrls, Card card, List<CardImage> cardImages) throws IOException {
@@ -325,7 +312,7 @@ public class CardService {
     }
 
     private void deleteCardImagesFromNotionDB(Card deletedCard) throws Exception {
-        List<String> deletedImages = deletedCard.getCardImages().stream().map(ci -> ci.getCardImageName()).collect(Collectors.toList());
+        List<String> deletedImages = deletedCard.getCardImages().stream().map(CardImage::getCardImageName).collect(Collectors.toList());
         cloudinary.api().deleteResources(deletedImages, null);
     }
 
@@ -345,9 +332,9 @@ public class CardService {
         String userWaveHashKey = cardRecordValue.split(":")[1];
         HashOperations<String, String, String> opsForHash = redisTemplate.opsForHash();
         String wave = opsForHash.get(userWaveKey, userWaveHashKey);
-        opsForHash.put(userWaveKey, userWaveHashKey, String.valueOf(Integer.valueOf(wave) - 1));
+        opsForHash.put(userWaveKey, userWaveHashKey, String.valueOf(Integer.parseInt(wave) - 1));
         String totalWave = opsForHash.get(userWaveKey, "total");
-        opsForHash.put(userWaveKey, "total", String.valueOf(Integer.valueOf(totalWave) - 1) );
+        opsForHash.put(userWaveKey, "total", String.valueOf(Integer.parseInt(totalWave) - 1) );
     }
 
     private WebClient cardWebclientBuilder(String url){

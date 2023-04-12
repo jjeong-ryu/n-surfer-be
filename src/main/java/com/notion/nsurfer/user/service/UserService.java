@@ -68,9 +68,9 @@ public class UserService {
         for (Card card : cards) {
             deleteCardFromCloudinary(webClient, card);
             deleteCardWave(card.getId());
-            deleteUserWave(user);
             cardRepository.delete(card);
         }
+        deleteUserWave(user);
         user.delete();
         userRepository.delete(user);
         return ResponseDto.<DeleteUserDto.Response>builder()
@@ -81,11 +81,11 @@ public class UserService {
     private void deleteCardFromCloudinary(WebClient webClient, Card card) throws Exception {
         List<CardImage> cardImages = card.getCardImages();
         if(cardImages.size() > 0){
-            List<String> cardNames = cardImages.stream().map(ci -> ci.getCardImageName()).collect(Collectors.toList());
+            List<String> cardNames = cardImages.stream().map(CardImage::getCardImageName).collect(Collectors.toList());
             cloudinary.api().deleteResources(cardNames, null);
         }
         try {
-            webClient.patch().uri(WebClientBuilder.NOTION_CARD_URL + card.getId())
+            webClient.patch().uri(NOTION_CARD_URL + card.getId())
                     .bodyValue(DeleteCardDto.Request.builder()
                             .archived(true).build())
                     .accept(MediaType.APPLICATION_JSON)
@@ -163,7 +163,8 @@ public class UserService {
         return "good";
     }
     public SignUpDto.TestResponse localSignInForTest(SignInDto.Request request){
-        User user = userRepository.findByEmailAndPassword(request.getEmail(), request.getPassword()).get();
+        User user = userRepository.findByEmailAndPassword(request.getEmail(), request.getPassword())
+                .orElseThrow(UserNotFoundException::new);
         String accessToken = JwtUtil.createAccessToken(user);
         String refreshToken = JwtUtil.createRefreshToken(user);
         saveAccessTokenToRedis(user, accessToken);

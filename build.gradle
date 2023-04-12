@@ -60,15 +60,17 @@ dependencies {
     // for MacOS
     implementation 'io.netty:netty-resolver-dns-native-macos:4.1.86.Final:osx-aarch_64'
 
-    // spring actuator
+    // Spring actuator
     compileOnly "org.springframework.boot:spring-boot-starter-actuator"
 
-    // cloudinary
+    // Cloudinary
     implementation 'com.cloudinary:cloudinary-http44:1.31.0'
 
-    // gson
+    // Gson
     implementation 'com.google.code.gson:gson:2.8.9'
 
+    // Quartz
+    implementation "org.springframework.boot:spring-boot-starter-quartz"
 }
 
 tasks.named('test') {

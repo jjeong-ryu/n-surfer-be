@@ -88,8 +88,8 @@ public class User implements UserDetails {
         return false;
     }
 
-    public void update(UpdateUserProfileDto.Request dto){
-        this.nickname = dto.getNickname();
+    public void updateNickname(String nickname){
+        this.nickname = nickname;
     }
 
     public void updateImage(String url, String thumbnailImageName){
