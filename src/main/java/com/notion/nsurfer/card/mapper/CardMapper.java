@@ -7,6 +7,7 @@ import org.mapstruct.Mapper;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Mapper(config = CommonMapperConfig.class)
@@ -92,12 +93,37 @@ public interface CardMapper {
     List<GetCardsDto.Response.Card.Label> getCardsToCardLabels(List<GetCardsToNotionDto.Response.Result.Properties.Label.MultiSelect> multiSelect);
     GetCardsDto.Response.Card.Label getCardsToCardLabel(GetCardsToNotionDto.Response.Result.Properties.Label.MultiSelect label);
 
+    default PostCardToNotionDto.Request updateCardNicknameToRequest(String nickname, String dbId){
+        List<PostCardToNotionDto.Request.Properties.Creator.RichText> creatorRichTexts = new ArrayList<>();
+        PostCardToNotionDto.Request.Properties.Creator.RichText creatorRichText = PostCardToNotionDto.Request.Properties.Creator.RichText.builder()
+                .text(
+                        PostCardToNotionDto.Request.Properties.Creator.RichText.Text.builder()
+                                .content(nickname)
+                                .build()
+                )
+                .build();
+        creatorRichTexts.add(creatorRichText);
+        return PostCardToNotionDto.Request.builder()
+                .parent(
+                        PostCardToNotionDto.Request.Parent.builder()
+                                .databaseId(dbId).build()
+                )
+                .properties(
+                        PostCardToNotionDto.Request.Properties.builder()
+                                .creator(
+                                        PostCardToNotionDto.Request.Properties.Creator.builder()
+                                                .richTexts(creatorRichTexts)
+                                                .build()
+                                )
+                                .build())
+                .build();
+    }
     default PostCardToNotionDto.Request postCardToRequest(
             PostCardDto.Request dto,
-            String nickname,
-            String dbId,
-            List<String> imageUrls,
-            List<String> imageNames
+                                                                    String nickname,
+                                                                    String dbId,
+                                                                    List<String> imageUrls,
+                                                                    List<String> imageNames
     ){
         List<PostCardToNotionDto.Request.Properties.Name.Title> titles = new ArrayList<>();
         List<PostCardToNotionDto.Request.Properties.Content.RichText> contentRichTexts = new ArrayList<>();

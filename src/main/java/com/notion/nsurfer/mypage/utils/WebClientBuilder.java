@@ -3,8 +3,9 @@ package com.notion.nsurfer.mypage.utils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.reactive.function.client.WebClient;
 
+import static com.notion.nsurfer.common.utils.NotionUtils.NOTION_CARD_URL;
+
 public class WebClientBuilder {
-    public static final String NOTION_CARD_URL = "https://api.notion.com/v1/pages/";
     @Value("${notion.token}")
     public static String apiKey = "secret_bGUWaYI7PCpufgCmO7vX4pFD3Qt1kT2qiCv1aAJhcxR";
     @Value("${notion.dbId}")
