@@ -3,6 +3,7 @@ package com.notion.nsurfer.card.mapper;
 import com.notion.nsurfer.card.dto.*;
 import com.notion.nsurfer.card.util.CardComparator;
 import com.notion.nsurfer.common.CommonMapperConfig;
+import com.notion.nsurfer.mypage.dto.UpdateCardNicknameDto;
 import org.mapstruct.Mapper;
 
 import java.util.ArrayList;
@@ -93,25 +94,25 @@ public interface CardMapper {
     List<GetCardsDto.Response.Card.Label> getCardsToCardLabels(List<GetCardsToNotionDto.Response.Result.Properties.Label.MultiSelect> multiSelect);
     GetCardsDto.Response.Card.Label getCardsToCardLabel(GetCardsToNotionDto.Response.Result.Properties.Label.MultiSelect label);
 
-    default PostCardToNotionDto.Request updateCardNicknameToRequest(String nickname, String dbId){
-        List<PostCardToNotionDto.Request.Properties.Creator.RichText> creatorRichTexts = new ArrayList<>();
-        PostCardToNotionDto.Request.Properties.Creator.RichText creatorRichText = PostCardToNotionDto.Request.Properties.Creator.RichText.builder()
+    default UpdateCardNicknameDto.Request updateCardNicknameToRequest(String nickname, String dbId){
+        List<UpdateCardNicknameDto.Request.Properties.Creator.RichText> creatorRichTexts = new ArrayList<>();
+        UpdateCardNicknameDto.Request.Properties.Creator.RichText creatorRichText = UpdateCardNicknameDto.Request.Properties.Creator.RichText.builder()
                 .text(
-                        PostCardToNotionDto.Request.Properties.Creator.RichText.Text.builder()
+                        UpdateCardNicknameDto.Request.Properties.Creator.RichText.Text.builder()
                                 .content(nickname)
                                 .build()
                 )
                 .build();
         creatorRichTexts.add(creatorRichText);
-        return PostCardToNotionDto.Request.builder()
+        return UpdateCardNicknameDto.Request.builder()
                 .parent(
-                        PostCardToNotionDto.Request.Parent.builder()
+                        UpdateCardNicknameDto.Request.Parent.builder()
                                 .databaseId(dbId).build()
                 )
                 .properties(
-                        PostCardToNotionDto.Request.Properties.builder()
+                        UpdateCardNicknameDto.Request.Properties.builder()
                                 .creator(
-                                        PostCardToNotionDto.Request.Properties.Creator.builder()
+                                        UpdateCardNicknameDto.Request.Properties.Creator.builder()
                                                 .richTexts(creatorRichTexts)
                                                 .build()
                                 )

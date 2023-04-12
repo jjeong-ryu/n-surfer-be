@@ -19,6 +19,7 @@ import com.notion.nsurfer.user.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.HashOperations;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -42,7 +43,7 @@ public class MyPageService {
     private final CardMapper cardMapper;
     private final UserMapper userMapper;
 
-    private final HashOperations<String, String, String> opsForHash;
+    private final RedisTemplate<String, String> redisTemplate;
 
     private final String VERSION = "2022-06-28";
 
@@ -56,13 +57,15 @@ public class MyPageService {
     }
     private Integer getTotalWaves(User user) {
         String redisWavesKey = MyPageRedisKeyUtils.makeRedisWaveKey(user);
+        HashOperations<String, String, String> opsForHash = redisTemplate.opsForHash();
         String total = opsForHash.get(redisWavesKey, "total");
         return total != null ? Integer.valueOf(total) : 0;
     }
     private Integer getTodayWave(User user) {
-        String redisWaveKey = MyPageRedisKeyUtils.makeRedisWaveKey(user);
+        String redisWavesKey = MyPageRedisKeyUtils.makeRedisWaveKey(user);
         String redisWaveHashKey = LocalDate.now().toString().replace("-", "");
-        String todayWave = opsForHash.get(redisWaveKey, redisWaveHashKey);
+        HashOperations<String, String, String> opsForHash = redisTemplate.opsForHash();
+        String todayWave = opsForHash.get(redisWavesKey, redisWaveHashKey);
         return todayWave != null ? Integer.valueOf(todayWave) : 0;
     }
 

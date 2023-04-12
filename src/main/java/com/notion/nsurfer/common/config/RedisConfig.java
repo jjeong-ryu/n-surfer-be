@@ -7,6 +7,7 @@ import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
 
 @Configuration
 public class RedisConfig {
@@ -21,14 +22,15 @@ public class RedisConfig {
     }
 
     @Bean
-    public RedisTemplate<String, String> redisTemplate(){
-        RedisTemplate<String,String> redisTemplate = new RedisTemplate<>();
+    public RedisTemplate<?, ?> redisTemplate(){
+        RedisTemplate<?,?> redisTemplate = new RedisTemplate<>();
         redisTemplate.setConnectionFactory(redisConnectionFactory());
         return redisTemplate;
     }
 
-    @Bean
-    public HashOperations<String, String, String> opsForHash(){
-        return redisTemplate().opsForHash();
-    }
+//    @Bean
+//    public HashOperations<String, String, String> customOpsForHash(){
+//        StringRedisTemplate stringRedisTemplate = new StringRedisTemplate(redisConnectionFactory());
+//        return stringRedisTemplate.opsForHash();
+//    }
 }
